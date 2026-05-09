@@ -39,6 +39,67 @@
         }
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.6} }
 
+        /* ========= شاشة اختيار اللاعب ========= */
+        .player-select-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); display: flex;
+            justify-content: center; align-items: center; z-index: 2000;
+        }
+        .player-select-card {
+            background: linear-gradient(135deg, #1a1a35, #2c2c54);
+            border: 3px solid #F1C40F; border-radius: 25px; padding: 30px;
+            max-width: 450px; width: 92%; text-align: center;
+        }
+        .select-title {
+            font-size: 2em; color: #F1C40F; margin-bottom: 20px;
+        }
+        .select-subtitle {
+            font-size: 1.2em; color: #ecf0f1; margin-bottom: 25px;
+        }
+        .select-buttons {
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .select-btn {
+            padding: 20px; border-radius: 20px; border: 2px solid #F1C40F;
+            font-size: 1.3em; font-weight: bold; cursor: pointer;
+            transition: all 0.3s; color: white; background: rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+        }
+        .select-btn:active { transform: scale(0.95); }
+        .select-btn.king-btn { border-color: #F1C40F; }
+        .select-btn.king-btn:hover { background: rgba(241,196,15,0.2); }
+        .select-btn.challenger-btn { border-color: #3498db; }
+        .select-btn.challenger-btn:hover { background: rgba(52,152,219,0.2); }
+        .select-avatar { font-size: 50px; }
+
+        /* ========= شاشة تمرير الجهاز ========= */
+        .pass-device-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.97); display: flex;
+            justify-content: center;
+            align-items: center; z-index: 1500;
+        }
+        .pass-device-card {
+            background: linear-gradient(135deg, #1a1a35, #2c2c54);
+            border: 3px solid #F1C40F; border-radius: 25px; padding: 30px;
+            max-width: 450px; width: 92%; text-align: center;
+        }
+        .pass-icon { font-size: 80px; animation: bounceIcon 0.8s infinite; }
+        @keyframes bounceIcon { 0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)} }
+        .pass-title { font-size: 2em; color: #F1C40F; margin: 15px 0; }
+        .pass-message { font-size: 1.2em; color: #ecf0f1; line-height: 1.8; margin: 15px 0; }
+        .pass-warning {
+            font-size: 1em; color: #e74c3c; background: rgba(231,76,60,0.1);
+            padding: 10px; border-radius: 10px; margin: 15px 0;
+        }
+        .pass-btn {
+            padding: 15px 35px; border-radius: 25px; border: none;
+            font-size: 1.2em; font-weight: bold; cursor: pointer;
+            background: #27ae60; color: white; margin-top: 10px;
+        }
+        .pass-btn:active { transform: scale(0.95); }
+
+        /* ========= باقي التنسيقات ========= */
         .players-area { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         .player-card {
             text-align: center; flex: 1; transition: all 0.3s;
@@ -57,6 +118,17 @@
         .player-score { font-size: 1.8em; font-weight: bold; }
         .king-score { color: #F1C40F; } .challenger-score { color: #3498db; }
         .vs-badge { font-size: 1.3em; margin: 0 12px; }
+
+        .current-player-banner {
+            text-align: center; padding: 8px; border-radius: 12px;
+            margin: 8px 0; font-size: 1.1em; font-weight: bold;
+        }
+        .current-player-banner.king-banner {
+            background: rgba(241,196,15,0.15); color: #F1C40F; border: 1px solid #F1C40F;
+        }
+        .current-player-banner.challenger-banner {
+            background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid #3498db;
+        }
 
         .game-area {
             background: rgba(0,0,0,0.3); border-radius: 15px; padding: 8px;
@@ -95,7 +167,7 @@
         .control-buttons { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
         .hidden { display: none !important; }
 
-        /* ========= شاشة الشرح - 15 ثانية ========= */
+        /* ========= شاشة الشرح ========= */
         .tutorial-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.97); display: flex;
@@ -111,18 +183,20 @@
         }
         @keyframes slideUp { from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1} }
         .tutorial-icon { font-size: 80px; animation: bounceIcon 0.8s infinite; }
-        @keyframes bounceIcon { 0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)} }
         .tutorial-title { font-size: 2em; color: #F1C40F; margin: 15px 0; font-weight: bold; }
         .tutorial-desc {
             font-size: 1.2em; color: #ecf0f1; line-height: 2;
             margin: 15px 0; background: rgba(0,0,0,0.4); padding: 18px;
             border-radius: 15px; border-right: 4px solid #F1C40F;
         }
+        .tutorial-current-player {
+            font-size: 1.3em; color: #F1C40F; margin: 10px 0;
+            padding: 10px; background: rgba(241,196,15,0.1); border-radius: 10px;
+        }
         .tutorial-hint {
             font-size: 1.1em; color: #f39c12; margin: 12px 0;
             background: rgba(243,156,18,0.1); padding: 10px; border-radius: 10px;
         }
-        .tutorial-players { margin: 12px 0; font-size: 1.4em; }
         .tutorial-countdown-container { margin: 20px 0; }
         .tutorial-countdown-label { font-size: 1em; color: #95a5a6; margin-bottom: 5px; }
         .tutorial-countdown {
@@ -135,114 +209,63 @@
             padding: 10px 25px; border-radius: 20px; font-size: 0.95em;
             cursor: pointer; margin-top: 8px; transition: all 0.3s;
         }
-        .tutorial-skip:hover { background: rgba(241,196,15,0.2); }
 
-        /* ========= لعبة 1: ستروب ========= */
-        .stroop-word {
-            font-size: 4.5em; font-weight: bold; margin: 15px 0;
-            text-align: center; transition: all 0.3s;
-        }
-        .stroop-buttons {
-            display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-            margin-top: 20px;
-        }
+        /* ألعاب */
+        .stroop-word { font-size: 4.5em; font-weight: bold; margin: 15px 0; text-align: center; }
+        .stroop-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
         .stroop-btn {
             padding: 16px 28px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.3);
-            font-size: 1.3em; font-weight: bold; cursor: pointer;
-            transition: all 0.2s; touch-action: manipulation; color: white;
-            min-width: 90px;
+            font-size: 1.3em; font-weight: bold; cursor: pointer; color: white; min-width: 90px;
         }
-        .stroop-btn:active { transform: scale(0.9); border-color: white; }
-
-        /* ========= لعبة 2: اتجاهات ========= */
-        .direction-arrow {
-            font-size: 7em; text-align: center; margin: 10px 0;
-            transition: all 0.3s;
-        }
-        .direction-buttons {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 8px; max-width: 300px; margin: 15px auto;
-        }
+        .stroop-btn:active { transform: scale(0.9); }
+        .direction-arrow { font-size: 7em; text-align: center; margin: 10px 0; }
+        .direction-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 300px; margin: 15px auto; }
         .dir-btn {
             aspect-ratio: 1; border-radius: 15px; border: 2px solid #F1C40F;
-            background: rgba(255,255,255,0.1); color: white;
-            font-size: 2.2em; cursor: pointer; touch-action: manipulation;
-            transition: all 0.2s;
+            background: rgba(255,255,255,0.1); color: white; font-size: 2.2em; cursor: pointer;
         }
         .dir-btn:active { background: #F1C40F; color: #1a1a35; transform: scale(0.9); }
-
-        /* ========= لعبة 3: تتبع الكرة ========= */
-        .cups-container {
-            display: flex; justify-content: center; gap: 20px; margin: 20px 0;
-        }
+        .cups-container { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
         .cup {
             width: 85px; height: 110px; border-radius: 12px 12px 0 0;
             background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
-            cursor: pointer; transition: all 0.3s; touch-action: manipulation;
-            position: relative; display: flex; align-items: flex-end;
-            justify-content: center; padding-bottom: 12px;
+            cursor: pointer; position: relative; display: flex;
+            align-items: flex-end; justify-content: center; padding-bottom: 12px;
             border: 2px solid rgba(255,255,255,0.2);
         }
         .cup:active { transform: translateY(12px); }
         .cup.ball { box-shadow: 0 0 30px rgba(241,196,15,0.9); border-color: #F1C40F; }
         .cup.reveal { background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); }
-        .cup-label {
-            font-size: 0.85em; color: white; font-weight: bold;
-            position: absolute; bottom: -25px;
-        }
+        .cup-label { font-size: 0.85em; color: white; font-weight: bold; position: absolute; bottom: -25px; }
         .ball-emoji { font-size: 2.5em; }
-
-        /* ========= لعبة 4: صح وخطأ ========= */
         .tf-question {
             font-size: 2.2em; text-align: center; margin: 15px 0;
-            background: rgba(255,255,255,0.1); padding: 22px;
-            border-radius: 18px; line-height: 1.6;
+            background: rgba(255,255,255,0.1); padding: 22px; border-radius: 18px; line-height: 1.6;
         }
-        .tf-buttons {
-            display: flex; gap: 25px; justify-content: center; margin-top: 20px;
-        }
+        .tf-buttons { display: flex; gap: 25px; justify-content: center; margin-top: 20px; }
         .tf-btn {
             width: 110px; height: 110px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
-            font-size: 3em; cursor: pointer; touch-action: manipulation;
-            transition: all 0.2s; color: white; display: flex;
-            align-items: center; justify-content: center;
+            font-size: 3em; cursor: pointer; color: white;
+            display: flex; align-items: center; justify-content: center;
         }
-        .tf-true { background: #27ae60; }
-        .tf-false { background: #e74c3c; }
-        .tf-btn:active { transform: scale(0.85); border-color: white; }
-
-        /* ========= لعبة 5: سباق الأزرار ========= */
-        .race-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 12px; max-width: 360px; margin: 0 auto;
-        }
+        .tf-true { background: #27ae60; } .tf-false { background: #e74c3c; }
+        .tf-btn:active { transform: scale(0.85); }
+        .race-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 360px; margin: 0 auto; }
         .race-btn {
             aspect-ratio: 1; border-radius: 18px; border: 2px solid rgba(255,255,255,0.2);
-            font-size: 2.2em; cursor: pointer; touch-action: manipulation;
-            transition: all 0.12s; color: white; opacity: 0.25;
+            font-size: 2.2em; cursor: pointer; color: white; opacity: 0.25;
         }
-        .race-btn.active-btn {
-            opacity: 1; animation: raceGlow 0.5s infinite; border-color: white;
-        }
-        @keyframes raceGlow {
-            0%,100%{box-shadow:0 0 15px currentColor}50%{box-shadow:0 0 40px currentColor}
-        }
-        .race-btn:active { transform: scale(0.8); }
-        .race-scores {
-            display: flex; justify-content: space-around;
-            margin-bottom: 12px; font-size: 1.3em;
-        }
+        .race-btn.active-btn { opacity: 1; animation: raceGlow 0.5s infinite; border-color: white; }
+        @keyframes raceGlow { 0%,100%{box-shadow:0 0 15px currentColor}50%{box-shadow:0 0 40px currentColor} }
+        .race-scores { display: flex; justify-content: space-around; margin-bottom: 12px; font-size: 1.3em; }
 
-        /* ========= النتائج ========= */
         .result-message { text-align: center; animation: slideIn 0.5s ease-out; }
         @keyframes slideIn { from{transform:translateY(-25px);opacity:0}to{transform:translateY(0);opacity:1} }
-
         .victory-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.92); display: flex;
             justify-content: center; align-items: center; z-index: 1000;
         }
-
         .sidebar {
             background: rgba(0,0,0,0.5); border: 2px solid #F1C40F;
             border-radius: 15px; padding: 10px; margin-top: 8px;
@@ -252,46 +275,30 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 5px; border-bottom: 1px solid rgba(241,196,15,0.2); font-size: 0.8em;
         }
+        .hidden { display: none !important; }
 
         @media (max-width: 450px) {
             .title { font-size: 1.2em; }
             .player-avatar { font-size: 28px; }
             .player-score { font-size: 1.3em; }
-            .tutorial-card { padding: 15px; }
-            .tutorial-icon { font-size: 55px; }
-            .tutorial-title { font-size: 1.5em; }
-            .tutorial-desc { font-size: 1em; line-height: 1.7; }
-            .tutorial-countdown { font-size: 4em; }
+            .select-btn { font-size: 1.1em; padding: 15px; }
             .stroop-word { font-size: 3em; }
-            .stroop-btn { padding: 12px 18px; font-size: 1.1em; min-width: 70px; }
             .direction-arrow { font-size: 5em; }
-            .direction-buttons { max-width: 240px; }
-            .dir-btn { font-size: 1.8em; }
             .cup { width: 65px; height: 85px; }
-            .tf-question { font-size: 1.5em; padding: 15px; }
+            .tf-question { font-size: 1.5em; }
             .tf-btn { width: 85px; height: 85px; font-size: 2.3em; }
-            .race-grid { max-width: 280px; gap: 8px; }
             .race-btn { font-size: 1.7em; }
         }
     </style>
 </head>
 <body>
-    <!-- مؤثرات صوتية مخفية -->
-    <audio id="soundCorrect" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
-    </audio>
-    <audio id="soundWrong" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
-    </audio>
-    <audio id="soundStart" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
-    </audio>
-    <audio id="soundVictory" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
-    </audio>
-    <audio id="soundTick" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
-    </audio>
+    <!-- مؤثرات صوتية -->
+    <audio id="soundCorrect" preload="auto"><source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav"></audio>
+    <audio id="soundWrong" preload="auto"><source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav"></audio>
+    <audio id="soundStart" preload="auto"><source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav"></audio>
+    <audio id="soundVictory" preload="auto"><source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav"></audio>
+    <audio id="soundTick" preload="auto"><source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav"></audio>
+    <audio id="soundPass" preload="auto"><source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav"></audio>
 
     <div class="crown-header">
         <div class="crown-emoji">👑</div>
@@ -307,17 +314,22 @@
                 <div class="dot"></div><div class="dot"></div>
             </div>
 
+            <!-- شريط من يلعب الآن -->
+            <div class="current-player-banner king-banner" id="currentPlayerBanner">
+                👑 دور الملك الآن
+            </div>
+
             <div class="players-area">
                 <div class="player-card" id="kingCard">
                     <div class="player-avatar">🤴</div>
                     <div class="player-name">الملك</div>
-                    <div class="player-score king-score" id="kingScore">0</div>
+                    <div class="player-score king-score" id="kingScore">??</div>
                 </div>
                 <div class="vs-badge">⚡</div>
                 <div class="player-card" id="challengerCard">
                     <div class="player-avatar">🗡️</div>
                     <div class="player-name">المتحدي</div>
-                    <div class="player-score challenger-score" id="challengerScore">0</div>
+                    <div class="player-score challenger-score" id="challengerScore">??</div>
                 </div>
             </div>
 
@@ -343,14 +355,49 @@
         </div>
     </div>
 
-    <!-- شاشة الشرح - 15 ثانية -->
+    <!-- شاشة اختيار من يلعب أولاً -->
+    <div id="playerSelectOverlay" class="player-select-overlay hidden">
+        <div class="player-select-card">
+            <div class="select-title">🎮 من يلعب أولاً؟</div>
+            <div class="select-subtitle">اختر من سيبدأ هذه الجولة</div>
+            <div class="select-buttons">
+                <button class="select-btn king-btn" onclick="selectFirstPlayer('king')">
+                    <span class="select-avatar">🤴</span> الملك يبدأ أولاً
+                </button>
+                <button class="select-btn challenger-btn" onclick="selectFirstPlayer('challenger')">
+                    <span class="select-avatar">🗡️</span> المتحدي يبدأ أولاً
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة تمرير الجهاز -->
+    <div id="passDeviceOverlay" class="pass-device-overlay hidden">
+        <div class="pass-device-card">
+            <div class="pass-icon" id="passIcon">📱</div>
+            <div class="pass-title" id="passTitle">مرر الجهاز!</div>
+            <div class="pass-message" id="passMessage">
+                انتهى دور <b id="passPlayerName">اللاعب</b><br><br>
+                ⚠️ <b>لا تظهر الشاشة للاعب الآخر!</b><br>
+                مرر الجهاز للاعب التالي
+            </div>
+            <div class="pass-warning">
+                🔒 النتيجة مخفية حتى نهاية الجولة
+            </div>
+            <button class="pass-btn" onclick="confirmPassDevice()">
+                ✅ تم تسليم الجهاز - ابدأ
+            </button>
+        </div>
+    </div>
+
+    <!-- شاشة الشرح -->
     <div id="tutorialOverlay" class="tutorial-overlay hidden">
         <div class="tutorial-card">
             <div class="tutorial-icon" id="tutorialIcon">🎮</div>
             <div class="tutorial-title" id="tutorialTitle"></div>
+            <div class="tutorial-current-player" id="tutorialCurrentPlayer"></div>
             <div class="tutorial-desc" id="tutorialDesc"></div>
             <div class="tutorial-hint" id="tutorialHint"></div>
-            <div class="tutorial-players" id="tutorialPlayers"></div>
             <div class="tutorial-countdown-container">
                 <div class="tutorial-countdown-label">⏱️ يبدأ التحدي خلال</div>
                 <div class="tutorial-countdown" id="tutorialCountdown">15</div>
@@ -364,7 +411,12 @@
         <div style="text-align:center;">
             <div style="font-size:80px;animation:bounceIcon 0.5s infinite;">👑</div>
             <h2 style="color:#F1C40F;font-size:1.8em;" id="victoryMessage"></h2>
-            <h3 style="color:white;margin:8px 0;">النتيجة: <span id="victoryScore"></span></h3>
+            <h3 style="color:white;margin:8px 0;">النتيجة النهائية</h3>
+            <div style="font-size:2em; margin: 15px 0;">
+                🤴 <span id="finalKingScore" style="color:#F1C40F;">0</span>
+                -
+                <span id="finalChallengerScore" style="color:#3498db;">0</span> 🗡️
+            </div>
             <button class="btn btn-start" onclick="closeVictory()" style="margin-top:12px;">🏰 متابعة</button>
         </div>
     </div>
@@ -373,24 +425,16 @@
     <script>
         // ==================== نظام الصوت ====================
         const SoundFX = {
-            correct: document.getElementById('soundCorrect'),
-            wrong: document.getElementById('soundWrong'),
-            start: document.getElementById('soundStart'),
-            victory: document.getElementById('soundVictory'),
-            tick: document.getElementById('soundTick'),
-            
-            play: function(sound) {
-                if (this[sound]) {
-                    this[sound].currentTime = 0;
-                    this[sound].play().catch(() => {});
-                }
+            play: function(id) {
+                const s = document.getElementById(id);
+                if (s) { s.currentTime = 0; s.play().catch(() => {}); }
             },
-            
-            playCorrect: function() { this.play('correct'); },
-            playWrong: function() { this.play('wrong'); },
-            playStart: function() { this.play('start'); },
-            playVictory: function() { this.play('victory'); },
-            playTick: function() { this.play('tick'); }
+            correct: function() { this.play('soundCorrect'); },
+            wrong: function() { this.play('soundWrong'); },
+            start: function() { this.play('soundStart'); },
+            victory: function() { this.play('soundVictory'); },
+            tick: function() { this.play('soundTick'); },
+            pass: function() { this.play('soundPass'); }
         };
 
         // ==================== دوال مساعدة ====================
@@ -407,56 +451,168 @@
         const games = [
             {
                 name: '🎨 لون الكلمة', icon: '🎨', title: 'تحدي ستروب',
-                desc: 'ستظهر كلمة اسم لون (مثل: "<b>أحمر</b>")<br>ولكنها مكتوبة <b>بلون مختلف</b> عن اسمها!<br><br>🎯 <b>المطلوب:</b> المس الزر الذي يحمل<br><b>اسم اللون الذي تراه بعينك</b><br>وليس الكلمة المكتوبة.<br><br>مثال: كلمة "أزرق" مكتوبة باللون الأحمر<br>← الإجابة الصحيحة هي: <b>أحمر</b>',
-                hint: '🧠 الدماغ يقرأ الكلمة تلقائياً...<br>تجاهل معنى الكلمة وركز على اللون الذي تشاهده!',
-                players: '🤴 الملك و 🗡️ المتحدي يتناوبان<br>4 جولات لكل لاعب',
+                desc: 'ستظهر كلمة اسم لون (مثل: "<b>أحمر</b>")<br>ولكنها مكتوبة <b>بلون مختلف</b>!<br><br>🎯 <b>المطلوب:</b> المس اسم <b>اللون الذي تراه</b><br>وليس الكلمة المكتوبة.',
+                hint: '🧠 تجاهل معنى الكلمة وركز على اللون!',
+                players: '4 جولات لكل لاعب',
                 time: 8, roundsPerPlayer: 4,
-                init: initStroop, end: endStroop
+                init: initStroop
             },
             {
                 name: '🧭 الاتجاهات', icon: '🧭', title: 'الاتجاه المعاكس',
-                desc: 'سيظهر سهم يشير إلى اتجاه معين.<br><br>🎯 <b>المطلوب:</b> المس الزر الذي يمثل<br><b>الاتجاه المعاكس (العكس تماماً)!</b><br><br>مثال: ظهر سهم لليسار ⬅️<br>← الإجابة الصحيحة هي: <b>يمين</b> ➡️',
-                hint: '💡 تذكر: كل ما عليك هو عكس اتجاه السهم!<br>السهم للأعلى ⬆️ ← المس "أسفل" ⬇️',
-                players: '🤴 الملك و 🗡️ المتحدي يتناوبان<br>5 جولات لكل لاعب',
+                desc: 'سيظهر سهم لاتجاه معين.<br><br>🎯 <b>المطلوب:</b> المس <b>الاتجاه المعاكس</b><br>للسهم الظاهر!',
+                hint: '💡 السهم لليسار ← المس يمين!',
+                players: '5 جولات لكل لاعب',
                 time: 7, roundsPerPlayer: 5,
-                init: initDirection, end: endDirection
+                init: initDirection
             },
             {
                 name: '👁️ تتبع الكرة', icon: '👁️', title: 'تتبع الكرة الذهبية',
-                desc: '3 أكواب مقلوبة، كرة ذهبية 🟡 تحت واحد منها.<br>سترى الكرة ثم <b>تتحرك الأكواب</b> بسرعة!<br><br>🎯 <b>المطلوب:</b> بعد توقف الحركة،<br>المس الكوب الذي تعتقد أنه يخفي الكرة.',
-                hint: '👀 ثبت نظرك على الكأس الصحيح منذ البداية<br>ولا تنشغل بالأكواب الأخرى!',
-                players: '🤴 الملك و 🗡️ المتحدي يتناوبان<br>3 جولات لكل لاعب',
+                desc: '3 أكواب، كرة 🟡 تحت واحد.<br>ستتحرك الأكواب بسرعة!<br><br>🎯 <b>المطلوب:</b> المس الكوب الصحيح.',
+                hint: '👀 ثبت نظرك على الكأس الصحيح!',
+                players: '3 جولات لكل لاعب',
                 time: 8, roundsPerPlayer: 3,
-                init: initCups, end: null
+                init: initCups
             },
             {
                 name: '✅ صح أو خطأ', icon: '✅', title: 'صح أو خطأ السريع',
-                desc: 'ستظهر جملة على الشاشة.<br><br>🎯 <b>المطلوب:</b> حدد ما إذا كانت الجملة<br><b>صحيحة ✓</b> أم <b>خاطئة ✗</b><br>بأسرع وقت ممكن!<br><br>أمثلة:<br>"الشمس تشرق من الشرق" ← ✓ صحيح<br>"السماء خضراء" ← ✗ خطأ',
-                hint: '⚡ بعض الجمل بديهية جداً... لا تتردد!<br>السرعة أهم من التفكير الطويل.',
-                players: '🤴 الملك و 🗡️ المتحدي يتناوبان<br>5 جمل لكل لاعب',
+                desc: 'ستظهر جملة على الشاشة.<br><br>🎯 <b>المطلوب:</b> حدد ✓ صحيحة أو ✗ خاطئة<br>بأسرع وقت!',
+                hint: '⚡ لا تتردد... سرعة البديهة أهم!',
+                players: '5 جمل لكل لاعب',
                 time: 5, roundsPerPlayer: 5,
-                init: initTrueFalse, end: endTrueFalse
+                init: initTrueFalse
             },
             {
                 name: '🏃 سباق الأزرار', icon: '🏃', title: 'سباق الأزرار التنافسي',
-                desc: '6 أزرار ملونة على الشاشة.<br>ستضيء الأزرار <b>بشكل عشوائي</b> واحداً تلو الآخر.<br><br>🎯 <b>المطلوب:</b> اللاعبان يتنافسان معاً!<br>من يلمس الزر المضيء <b>أولاً</b> يكسب نقطة.<br>الذي يجمع نقاطاً أكثر يفوز!',
-                hint: '🎯 ضع إصبعك في منتصف الشاشة<br>لتكون أسرع في الوصول لأي زر!',
-                players: '🤴 الملك 🆚 🗡️ المتحدي<br>يتنافسان معاً مباشرة!',
+                desc: '6 أزرار، ستضيء عشوائياً.<br><br>🎯 <b>المطلوب:</b> اللاعبان معاً!<br>المس الزر المضيء أولاً.',
+                hint: '🎯 هذه الجولة تنافسية مباشرة!',
+                players: 'الجولة الوحيدة التي يلعبها اللاعبان معاً',
                 time: 15, roundsPerPlayer: 0,
-                init: initRace, end: endRace
+                init: initRace
             }
         ];
 
         // ==================== حالة اللعبة ====================
         const state = {
-            running: false, round: 0, kingScore: 0, challengerScore: 0,
-            currentPlayer: 'king', timer: null, timeLeft: 10,
+            running: false, round: 0,
+            kingScore: 0, challengerScore: 0,
+            kingRoundScores: [], // تخزين نتائج كل جولة للملك
+            challengerRoundScores: [], // تخزين نتائج كل جولة للمتحدي
+            currentPlayer: 'king',
+            firstPlayer: 'king', // من يبدأ هذه الجولة
+            timer: null, timeLeft: 10,
             gameData: {}, touchLocked: false,
             tutorialInterval: null, tutorialSeconds: 15,
-            tutorialCallback: null
+            tutorialCallback: null,
+            // لتتبع إذا كان اللاعب قد أكمل دوره
+            kingDoneThisRound: false,
+            challengerDoneThisRound: false
         };
 
-        // ==================== شاشة الشرح (15 ثانية) ====================
+        // ==================== اختيار من يبدأ ====================
+        function showPlayerSelect(callback) {
+            state.tutorialCallback = callback;
+            document.getElementById('playerSelectOverlay').classList.remove('hidden');
+        }
+
+        function selectFirstPlayer(player) {
+            state.firstPlayer = player;
+            state.currentPlayer = player;
+            state.kingDoneThisRound = false;
+            state.challengerDoneThisRound = false;
+            state.kingRoundScores[state.round - 1] = 0;
+            state.challengerRoundScores[state.round - 1] = 0;
+            
+            document.getElementById('playerSelectOverlay').classList.add('hidden');
+            updateCurrentPlayerBanner();
+            updateActivePlayer();
+            
+            if (state.tutorialCallback) {
+                const cb = state.tutorialCallback;
+                state.tutorialCallback = null;
+                cb();
+            }
+        }
+
+        // ==================== شاشة تمرير الجهاز ====================
+        function showPassDevice(nextPlayer) {
+            state.touchLocked = true;
+            const overlay = document.getElementById('passDeviceOverlay');
+            const icon = document.getElementById('passIcon');
+            const title = document.getElementById('passTitle');
+            const playerName = document.getElementById('passPlayerName');
+            
+            if (nextPlayer === 'king') {
+                icon.textContent = '🤴';
+                title.textContent = 'دور الملك الآن!';
+                playerName.textContent = 'المتحدي';
+            } else {
+                icon.textContent = '🗡️';
+                title.textContent = 'دور المتحدي الآن!';
+                playerName.textContent = 'الملك';
+            }
+            
+            overlay.classList.remove('hidden');
+            SoundFX.pass();
+            
+            // تخزين اللاعب التالي
+            state.nextPlayerAfterPass = nextPlayer;
+        }
+
+        function confirmPassDevice() {
+            document.getElementById('passDeviceOverlay').classList.add('hidden');
+            state.currentPlayer = state.nextPlayerAfterPass;
+            state.touchLocked = false;
+            state.nextPlayerAfterPass = null;
+            
+            updateCurrentPlayerBanner();
+            updateActivePlayer();
+            updateScoresDisplay(); // إظهار علامات الاستفهام للاعب الثاني
+            
+            // بدء دور اللاعب التالي
+            const game = games[state.round - 1];
+            game.init();
+            startTimer();
+        }
+
+        // ==================== تحديث واجهة من يلعب ====================
+        function updateCurrentPlayerBanner() {
+            const banner = document.getElementById('currentPlayerBanner');
+            banner.classList.remove('king-banner', 'challenger-banner');
+            
+            if (state.currentPlayer === 'king') {
+                banner.classList.add('king-banner');
+                banner.innerHTML = '👑 دور الملك الآن';
+            } else {
+                banner.classList.add('challenger-banner');
+                banner.innerHTML = '🗡️ دور المتحدي الآن';
+            }
+        }
+
+        function updateActivePlayer() {
+            const king = document.getElementById('kingCard');
+            const chal = document.getElementById('challengerCard');
+            king.classList.remove('active'); chal.classList.remove('active');
+            if (state.currentPlayer === 'king') king.classList.add('active');
+            else chal.classList.add('active');
+        }
+
+        // إخفاء النقاط أثناء اللعب
+        function updateScoresDisplay() {
+            if (!state.kingDoneThisRound) {
+                document.getElementById('kingScore').textContent = '??';
+            } else {
+                // لا تظهر النتيجة حتى نهاية الجولة
+                document.getElementById('kingScore').textContent = '✓';
+            }
+            
+            if (!state.challengerDoneThisRound) {
+                document.getElementById('challengerScore').textContent = '??';
+            } else {
+                document.getElementById('challengerScore').textContent = '✓';
+            }
+        }
+
+        // ==================== شاشة الشرح ====================
         function showTutorial(roundIndex, callback) {
             state.tutorialCallback = callback;
             
@@ -466,7 +622,17 @@
             document.getElementById('tutorialTitle').textContent = game.title;
             document.getElementById('tutorialDesc').innerHTML = game.desc;
             document.getElementById('tutorialHint').innerHTML = '💡 ' + game.hint;
-            document.getElementById('tutorialPlayers').textContent = game.players;
+            
+            // إظهار من سيلعب
+            const playerInfo = document.getElementById('tutorialCurrentPlayer');
+            if (state.currentPlayer === 'king') {
+                playerInfo.innerHTML = '👑 <b>الملك</b> سيلعب الآن';
+                playerInfo.style.color = '#F1C40F';
+            } else {
+                playerInfo.innerHTML = '🗡️ <b>المتحدي</b> سيلعب الآن';
+                playerInfo.style.color = '#3498db';
+            }
+            
             overlay.classList.remove('hidden');
 
             state.tutorialSeconds = 15;
@@ -480,19 +646,15 @@
                 state.tutorialSeconds--;
                 cd.textContent = state.tutorialSeconds;
 
-                if (state.tutorialSeconds <= 3) {
-                    cd.style.color = '#e74c3c';
-                    SoundFX.playTick();
-                } else if (state.tutorialSeconds <= 5) {
-                    cd.style.color = '#f39c12';
-                }
+                if (state.tutorialSeconds <= 3) { cd.style.color = '#e74c3c'; SoundFX.tick(); }
+                else if (state.tutorialSeconds <= 5) { cd.style.color = '#f39c12'; }
 
                 if (state.tutorialSeconds <= 0) {
                     clearInterval(state.tutorialInterval);
                     cd.textContent = '🚀 انطلق!';
                     cd.style.color = '#2ecc71';
                     cd.style.animation = 'none';
-                    SoundFX.playStart();
+                    SoundFX.start();
                     setTimeout(() => {
                         overlay.classList.add('hidden');
                         cd.style.animation = 'countPulse 1s infinite';
@@ -513,8 +675,7 @@
             cd.textContent = '🚀 انطلق!';
             cd.style.color = '#2ecc71';
             cd.style.animation = 'none';
-            SoundFX.playStart();
-            
+            SoundFX.start();
             setTimeout(() => {
                 overlay.classList.add('hidden');
                 cd.style.animation = 'countPulse 1s infinite';
@@ -526,7 +687,7 @@
             }, 400);
         }
 
-        // ==================== لعبة 1: ستروب ====================
+        // ==================== الألعاب (مختصرة) ====================
         const colorList = [
             { name: 'أحمر', code: '#e74c3c' },
             { name: 'أزرق', code: '#3498db' },
@@ -535,34 +696,16 @@
         ];
 
         function initStroop() {
-            state.currentPlayer = 'king';
             state.timeLeft = games[0].time;
-            state.gameData = { kingScore: 0, challengerScore: 0, roundNum: 0, playerDone: false, totalScore: 0 };
+            state.gameData = { roundNum: 0, totalScore: 0 };
             nextStroopRound();
-            updateActivePlayer();
         }
 
         function nextStroopRound() {
             state.gameData.roundNum++;
             if (state.gameData.roundNum > games[0].roundsPerPlayer) {
-                if (!state.gameData.playerDone) {
-                    state.gameData.playerDone = true;
-                    state.gameData.roundNum = 1;
-                    state.gameData.kingScore = state.gameData.totalScore || 0;
-                    state.gameData.totalScore = 0;
-                    state.currentPlayer = 'challenger';
-                    state.timeLeft = games[0].time;
-                    resetTimer();
-                    updateActivePlayer();
-                    renderStroop();
-                    return;
-                } else {
-                    state.gameData.challengerScore = state.gameData.totalScore || 0;
-                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
-                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
-                    endMiniGame(winner);
-                    return;
-                }
+                finishPlayerTurn(state.gameData.totalScore);
+                return;
             }
             renderStroop();
         }
@@ -572,24 +715,20 @@
             let colorCode;
             do { colorCode = colorList[Math.floor(Math.random() * 4)]; }
             while (colorCode.name === colorName.name);
-
             const shuffledColors = shuffle([...colorList]);
             state.gameData.correctAnswer = colorCode.name;
 
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
-                    <div style="color:#95a5a6;margin-bottom:5px;">
-                        المس <b>اسم اللون</b> الذي تراه (وليس الكلمة)
-                    </div>
-                    <div class="stroop-word" style="color:${colorCode.code};" id="stroopWord">
-                        ${colorName.name}
-                    </div>
+                    <div style="color:#95a5a6;margin-bottom:5px;">المس <b>اسم اللون</b> الذي تراه</div>
+                    <div class="stroop-word" style="color:${colorCode.code};">${colorName.name}</div>
                     <div class="stroop-buttons">
                         ${shuffledColors.map(c => `
                             <button class="stroop-btn" style="background:${c.code};"
                                 onclick="stroopAnswer('${c.name}')">${c.name}</button>
                         `).join('')}
                     </div>
+                    <div style="color:#95a5a6;margin-top:10px;">جولة ${state.gameData.roundNum} من ${games[0].roundsPerPlayer}</div>
                 </div>
             `;
         }
@@ -597,55 +736,33 @@
         function stroopAnswer(answered) {
             if (state.touchLocked || !state.running) return;
             if (answered === state.gameData.correctAnswer) {
-                state.gameData.totalScore = (state.gameData.totalScore || 0) + 25;
-                SoundFX.playCorrect();
-                flashGreen();
+                state.gameData.totalScore += 25;
+                SoundFX.correct(); flashGreen();
             } else {
-                SoundFX.playWrong();
-                flashRed();
+                SoundFX.wrong(); flashRed();
             }
             nextStroopRound();
         }
 
-        function endStroop() {}
-
         // ==================== لعبة 2: اتجاهات ====================
         const directionList = [
-            { arrow: '⬆️', name: 'أعلى', opposite: 'أسفل', oppArrow: '⬇️' },
-            { arrow: '⬇️', name: 'أسفل', opposite: 'أعلى', oppArrow: '⬆️' },
-            { arrow: '⬅️', name: 'يسار', opposite: 'يمين', oppArrow: '➡️' },
-            { arrow: '➡️', name: 'يمين', opposite: 'يسار', oppArrow: '⬅️' }
+            { arrow: '⬆️', name: 'أعلى', opposite: 'أسفل' },
+            { arrow: '⬇️', name: 'أسفل', opposite: 'أعلى' },
+            { arrow: '⬅️', name: 'يسار', opposite: 'يمين' },
+            { arrow: '➡️', name: 'يمين', opposite: 'يسار' }
         ];
 
         function initDirection() {
-            state.currentPlayer = 'king';
             state.timeLeft = games[1].time;
-            state.gameData = { kingScore: 0, challengerScore: 0, roundNum: 0, playerDone: false, totalScore: 0 };
+            state.gameData = { roundNum: 0, totalScore: 0 };
             nextDirectionRound();
-            updateActivePlayer();
         }
 
         function nextDirectionRound() {
             state.gameData.roundNum++;
             if (state.gameData.roundNum > games[1].roundsPerPlayer) {
-                if (!state.gameData.playerDone) {
-                    state.gameData.playerDone = true;
-                    state.gameData.roundNum = 1;
-                    state.gameData.kingScore = state.gameData.totalScore;
-                    state.gameData.totalScore = 0;
-                    state.currentPlayer = 'challenger';
-                    state.timeLeft = games[1].time;
-                    resetTimer();
-                    updateActivePlayer();
-                    renderDirection();
-                    return;
-                } else {
-                    state.gameData.challengerScore = state.gameData.totalScore;
-                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
-                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
-                    endMiniGame(winner);
-                    return;
-                }
+                finishPlayerTurn(state.gameData.totalScore);
+                return;
             }
             renderDirection();
         }
@@ -657,16 +774,14 @@
 
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
-                    <div style="color:#95a5a6;margin-bottom:5px;">
-                        المس <b>الاتجاه المعاكس</b> للسهم
-                    </div>
+                    <div style="color:#95a5a6;">المس <b>الاتجاه المعاكس</b></div>
                     <div class="direction-arrow">${dir.arrow}</div>
-                    <div style="font-size:1.4em;color:#F1C40F;margin:5px 0;">⬇️ عكس ⬇️</div>
                     <div class="direction-buttons">
                         ${shuffledDirs.map(d => `
-                            <button class="dir-btn" onclick="dirAnswer('${d.name}')">${d.oppArrow || d.arrow}</button>
+                            <button class="dir-btn" onclick="dirAnswer('${d.name}')">${d.arrow}</button>
                         `).join('')}
                     </div>
+                    <div style="color:#95a5a6;margin-top:10px;">جولة ${state.gameData.roundNum} من ${games[1].roundsPerPlayer}</div>
                 </div>
             `;
         }
@@ -675,52 +790,26 @@
             if (state.touchLocked || !state.running) return;
             if (answered === state.gameData.correctAnswer) {
                 state.gameData.totalScore += 25;
-                SoundFX.playCorrect();
-                flashGreen();
+                SoundFX.correct(); flashGreen();
             } else {
-                SoundFX.playWrong();
-                flashRed();
+                SoundFX.wrong(); flashRed();
             }
             nextDirectionRound();
         }
 
-        function endDirection() {}
-
         // ==================== لعبة 3: تتبع الكرة ====================
         function initCups() {
-            state.currentPlayer = 'king';
             state.timeLeft = games[2].time;
-            state.gameData = {
-                ballPos: 0, roundNum: 0, playerDone: false,
-                kingScore: 0, challengerScore: 0, totalScore: 0, answered: false
-            };
+            state.gameData = { roundNum: 0, totalScore: 0, ballPos: 0, answered: false };
             nextCupRound();
-            updateActivePlayer();
         }
 
         function nextCupRound() {
             state.gameData.roundNum++;
             if (state.gameData.roundNum > games[2].roundsPerPlayer) {
-                if (!state.gameData.playerDone) {
-                    state.gameData.playerDone = true;
-                    state.gameData.roundNum = 1;
-                    state.gameData.kingScore = state.gameData.totalScore;
-                    state.gameData.totalScore = 0;
-                    state.currentPlayer = 'challenger';
-                    state.timeLeft = games[2].time;
-                    resetTimer();
-                    updateActivePlayer();
-                    renderCups('hide');
-                    return;
-                } else {
-                    state.gameData.challengerScore = state.gameData.totalScore;
-                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
-                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
-                    endMiniGame(winner);
-                    return;
-                }
+                finishPlayerTurn(state.gameData.totalScore);
+                return;
             }
-
             state.gameData.ballPos = Math.floor(Math.random() * 3);
             state.gameData.answered = false;
             renderCups('hide');
@@ -729,9 +818,7 @@
         function renderCups(mode) {
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
-                    <p style="color:#F1C40F;margin-bottom:10px;font-size:1.2em;">
-                        ${mode === 'hide' ? '👀 تابع الكرة الذهبية...' : '🤔 أين الكرة الآن؟'}
-                    </p>
+                    <p style="color:#F1C40F;">${mode==='hide' ? '👀 تابع الكرة...' : '🤔 أين الكرة؟'}</p>
                     <div class="cups-container">
                         ${[0,1,2].map(i => `
                             <div class="cup ${mode==='show' && i===state.gameData.ballPos ? 'ball reveal' : ''}"
@@ -741,34 +828,26 @@
                             </div>
                         `).join('')}
                     </div>
-                    ${mode === 'hide' ? '<p style="color:#95a5a6;margin-top:10px;">⏳ تتحرك الأكواب...</p>' : ''}
+                    <div style="color:#95a5a6;margin-top:10px;">جولة ${state.gameData.roundNum} من ${games[2].roundsPerPlayer}</div>
                 </div>
             `;
-
-            if (mode === 'hide') {
-                SoundFX.playTick();
-                setTimeout(() => renderCups('show'), 1500);
-            }
+            if (mode === 'hide') { SoundFX.tick(); setTimeout(() => renderCups('show'), 1500); }
         }
 
         function cupClick(index) {
             if (state.touchLocked || !state.running || state.gameData.answered) return;
             state.gameData.answered = true;
-
             document.querySelectorAll('.cup').forEach((cup, i) => {
                 if (i === state.gameData.ballPos) {
                     cup.classList.add('reveal', 'ball');
                     cup.innerHTML = '<span class="ball-emoji">🟡</span><span class="cup-label">كوب '+(i+1)+'</span>';
                 }
             });
-
             if (index === state.gameData.ballPos) {
                 state.gameData.totalScore += 35;
-                SoundFX.playCorrect();
-                flashGreen();
+                SoundFX.correct(); flashGreen();
             } else {
-                SoundFX.playWrong();
-                flashRed();
+                SoundFX.wrong(); flashRed();
             }
             setTimeout(nextCupRound, 1000);
         }
@@ -778,57 +857,31 @@
             { q: 'الشمس تشرق من الشرق', a: true },
             { q: 'السماء خضراء', a: false },
             { q: 'الماء يغلي عند 100 درجة', a: true },
-            { q: 'الأسماك تطير في الهواء', a: false },
-            { q: 'القمر كوكب وليس قمراً', a: false },
+            { q: 'الأسماك تطير', a: false },
             { q: '2 + 2 = 4', a: true },
             { q: 'الزرافة حيوان بحري', a: false },
-            { q: 'الثلج بارد جداً', a: true },
+            { q: 'الثلج بارد', a: true },
             { q: '10 × 10 = 1000', a: false },
             { q: 'عدد أيام الأسبوع 7', a: true },
             { q: 'النار باردة', a: false },
             { q: 'الذهب معدن ثمين', a: true },
             { q: 'الفيل أصغر من النملة', a: false },
-            { q: 'اللغة العربية من أجمل اللغات', a: true },
-            { q: 'البحر مالح', a: true },
-            { q: 'السماء تمطر ذهباً', a: false },
             { q: 'السعودية في آسيا', a: true },
-            { q: 'البطريق يطير', a: false }
+            { q: 'البحر مالح', a: true }
         ];
 
         function initTrueFalse() {
-            state.currentPlayer = 'king';
             state.timeLeft = games[3].time;
-            state.gameData = {
-                kingScore: 0, challengerScore: 0, roundNum: 0,
-                playerDone: false, totalScore: 0, used: []
-            };
+            state.gameData = { roundNum: 0, totalScore: 0, used: [] };
             nextTFRound();
-            updateActivePlayer();
         }
 
         function nextTFRound() {
             state.gameData.roundNum++;
             if (state.gameData.roundNum > games[3].roundsPerPlayer) {
-                if (!state.gameData.playerDone) {
-                    state.gameData.playerDone = true;
-                    state.gameData.roundNum = 1;
-                    state.gameData.kingScore = state.gameData.totalScore;
-                    state.gameData.totalScore = 0;
-                    state.currentPlayer = 'challenger';
-                    state.timeLeft = games[3].time;
-                    resetTimer();
-                    updateActivePlayer();
-                    renderTF();
-                    return;
-                } else {
-                    state.gameData.challengerScore = state.gameData.totalScore;
-                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
-                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
-                    endMiniGame(winner);
-                    return;
-                }
+                finishPlayerTurn(state.gameData.totalScore);
+                return;
             }
-
             let q;
             do { q = tfQuestions[Math.floor(Math.random() * tfQuestions.length)]; }
             while (state.gameData.used.includes(q.q) && state.gameData.used.length < tfQuestions.length);
@@ -840,16 +893,12 @@
 
         function renderTF() {
             const q = state.gameData.currentQ;
-            const trueLeft = state.gameData.trueLeft;
-
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
-                    <div style="color:#95a5a6;margin-bottom:5px;">
-                        المس ✓ للصحيح أو ✗ للخاطئ
-                    </div>
+                    <div style="color:#95a5a6;">المس ✓ أو ✗</div>
                     <div class="tf-question">${q.q}</div>
                     <div class="tf-buttons">
-                        ${trueLeft ? `
+                        ${state.gameData.trueLeft ? `
                             <button class="tf-btn tf-true" onclick="tfAnswer(true)">✓</button>
                             <button class="tf-btn tf-false" onclick="tfAnswer(false)">✗</button>
                         ` : `
@@ -857,6 +906,7 @@
                             <button class="tf-btn tf-true" onclick="tfAnswer(true)">✓</button>
                         `}
                     </div>
+                    <div style="color:#95a5a6;margin-top:10px;">جملة ${state.gameData.roundNum} من ${games[3].roundsPerPlayer}</div>
                 </div>
             `;
         }
@@ -865,22 +915,17 @@
             if (state.touchLocked || !state.running) return;
             if (answer === state.gameData.currentQ.a) {
                 state.gameData.totalScore += 25;
-                SoundFX.playCorrect();
-                flashGreen();
+                SoundFX.correct(); flashGreen();
             } else {
-                SoundFX.playWrong();
-                flashRed();
+                SoundFX.wrong(); flashRed();
             }
             nextTFRound();
         }
 
-        function endTrueFalse() {}
-
         // ==================== لعبة 5: سباق الأزرار ====================
         function initRace() {
             state.timeLeft = games[4].time;
-            state.gameData = { kingClicks: 0, challengerClicks: 0, activeBtn: null };
-
+            state.gameData = { kingClicks: 0, challengerClicks: 0 };
             const allColors = [
                 { emoji: '🔴', code: '#e74c3c' },
                 { emoji: '🔵', code: '#3498db' },
@@ -889,14 +934,11 @@
                 { emoji: '🟣', code: '#9b59b6' },
                 { emoji: '💗', code: '#e91e63' }
             ];
-
             const shuffledColors = shuffle([...allColors]);
 
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
-                    <div style="color:#95a5a6;margin-bottom:5px;">
-                        المس الزر المضيء بأسرع ما يمكن!
-                    </div>
+                    <div style="color:#95a5a6;">اللاعبان معاً - المس الزر المضيء!</div>
                     <div class="race-scores">
                         <span>🤴 <b id="raceKingScore" style="color:#F1C40F;">0</b></span>
                         <span style="color:#F1C40F;">🏆</span>
@@ -904,54 +946,140 @@
                     </div>
                     <div class="race-grid" id="raceGrid">
                         ${shuffledColors.map((c, i) => `
-                            <button class="race-btn" data-btn="${i}" data-color="${c.code}"
-                                style="background:${c.code};" onclick="raceClick(this)">
-                                ${c.emoji}
-                            </button>
+                            <button class="race-btn" data-btn="${i}"
+                                style="background:${c.code};" onclick="raceClick(this)">${c.emoji}</button>
                         `).join('')}
                     </div>
                 </div>
             `;
-
             startRaceRound();
         }
 
         function startRaceRound() {
-            document.querySelectorAll('.race-btn').forEach(b => {
-                b.classList.remove('active-btn');
-            });
-
+            document.querySelectorAll('.race-btn').forEach(b => b.classList.remove('active-btn'));
             const btns = document.querySelectorAll('.race-btn');
             const randomBtn = btns[Math.floor(Math.random() * btns.length)];
             randomBtn.classList.add('active-btn');
-            state.gameData.activeBtn = randomBtn;
-            SoundFX.playTick();
+            SoundFX.tick();
         }
 
         function raceClick(btn) {
             if (state.touchLocked || !state.running) return;
             if (!btn.classList.contains('active-btn')) return;
-
             btn.classList.remove('active-btn');
             state.gameData.kingClicks++;
-            updateRaceScores();
-            SoundFX.playCorrect();
-            flashGreen();
+            document.getElementById('raceKingScore').textContent = state.gameData.kingClicks;
+            SoundFX.correct(); flashGreen();
             setTimeout(startRaceRound, 250);
         }
 
-        function updateRaceScores() {
-            document.getElementById('raceKingScore').textContent = state.gameData.kingClicks;
-            document.getElementById('raceChallengerScore').textContent = state.gameData.challengerClicks;
+        // ==================== إنهاء دور اللاعب ====================
+        function finishPlayerTurn(score) {
+            clearInterval(state.timer);
+            
+            // تخزين النتيجة
+            if (state.currentPlayer === 'king') {
+                state.kingRoundScores[state.round - 1] = score;
+                state.kingDoneThisRound = true;
+            } else {
+                state.challengerRoundScores[state.round - 1] = score;
+                state.challengerDoneThisRound = true;
+            }
+            
+            document.getElementById('gameArea').innerHTML = `
+                <div class="result-message">
+                    <div style="font-size:3em;">${state.currentPlayer === 'king' ? '🤴' : '🗡️'}</div>
+                    <div style="font-size:1.3em;color:#F1C40F;">انتهى الدور!</div>
+                    <div style="color:#95a5a6;">تم تسجيل النتيجة 🔒</div>
+                </div>
+            `;
+            
+            updateScoresDisplay();
+            
+            // تحديد ماذا بعد
+            setTimeout(() => {
+                if (state.round === 5) {
+                    // الجولة الخامسة تنافسية - انتهت
+                    calculateRoundWinner(5);
+                    return;
+                }
+                
+                if (!state.kingDoneThisRound) {
+                    showPassDevice('king');
+                } else if (!state.challengerDoneThisRound) {
+                    showPassDevice('challenger');
+                } else {
+                    // كلا اللاعبين أنهيا - احسب الفائز
+                    calculateRoundWinner(state.round);
+                }
+            }, 1500);
         }
 
-        function endRace() {
-            const winner = state.gameData.kingClicks > state.gameData.challengerClicks ? 'king' :
-                          state.gameData.challengerClicks > state.gameData.kingClicks ? 'challenger' : 'draw';
-            endMiniGame(winner);
+        function calculateRoundWinner(roundNum) {
+            const kingScore = state.kingRoundScores[roundNum - 1] || 0;
+            const challengerScore = state.challengerRoundScores[roundNum - 1] || 0;
+            
+            const points = [0, 50, 50, 40, 50, 60][roundNum];
+            let winner;
+            
+            if (kingScore > challengerScore) {
+                state.kingScore += points;
+                winner = 'king';
+            } else if (challengerScore > kingScore) {
+                state.challengerScore += points;
+                winner = 'challenger';
+            } else {
+                state.kingScore += Math.floor(points/2);
+                state.challengerScore += Math.floor(points/2);
+                winner = 'draw';
+            }
+            
+            // الآن نظهر النقاط الحقيقية
+            document.getElementById('kingScore').textContent = state.kingScore;
+            document.getElementById('challengerScore').textContent = state.challengerScore;
+            updateScores();
+            
+            const emoji = winner === 'king' ? '🤴' : winner === 'challenger' ? '🗡️' : '🤝';
+            const msg = winner === 'draw' ? 'تعادل!' : winner === 'king' ? 'الملك يفوز بالجولة!' : 'المتحدي يفوز بالجولة!';
+            
+            document.getElementById('gameArea').innerHTML = `
+                <div class="result-message">
+                    <div style="font-size:3.5em;">${emoji}</div>
+                    <div style="font-size:1.4em;color:#F1C40F;">${msg}</div>
+                    <div style="color:white;margin:8px 0;">
+                        🤴 ${kingScore} - ${challengerScore} 🗡️
+                    </div>
+                    <div style="color:#95a5a6;">+${points} نقطة</div>
+                </div>
+            `;
+            
+            SoundFX.correct();
+            
+            setTimeout(() => {
+                state.round++;
+                if (state.round > 5) {
+                    endGame();
+                } else {
+                    updateDots();
+                    document.getElementById('roundNum').textContent = state.round;
+                    // إعادة تعيين
+                    state.kingDoneThisRound = false;
+                    state.challengerDoneThisRound = false;
+                    updateScoresDisplay();
+                    
+                    // اختيار من يبدأ الجولة التالية
+                    showPlayerSelect(() => {
+                        showTutorial(state.round - 1, () => {
+                            const game = games[state.round - 1];
+                            game.init();
+                            startTimer();
+                        });
+                    });
+                }
+            }, 2500);
         }
 
-        // ==================== تأثيرات بصرية ====================
+        // ==================== تأثيرات ====================
         function flashGreen() {
             const area = document.getElementById('gameArea');
             area.style.boxShadow = 'inset 0 0 60px rgba(46,204,113,0.7)';
@@ -963,17 +1091,29 @@
             setTimeout(() => area.style.boxShadow = '', 300);
         }
 
-        // ==================== إدارة اللعبة العامة ====================
+        // ==================== إدارة اللعبة ====================
         function startGame() {
             if (state.running) return;
             state.running = true; state.round = 1;
             state.kingScore = 0; state.challengerScore = 0;
+            state.kingRoundScores = []; state.challengerRoundScores = [];
+            state.kingDoneThisRound = false; state.challengerDoneThisRound = false;
             state.touchLocked = false;
-            updateScores(); updateDots();
+            
+            document.getElementById('kingScore').textContent = '??';
+            document.getElementById('challengerScore').textContent = '??';
+            updateDots();
             document.getElementById('roundNum').textContent = state.round;
             document.getElementById('btnStart').disabled = true;
 
-            showTutorial(0, () => loadRound());
+            // اختيار من يبدأ أولاً
+            showPlayerSelect(() => {
+                showTutorial(0, () => {
+                    const game = games[0];
+                    game.init();
+                    startTimer();
+                });
+            });
         }
 
         function loadRound() {
@@ -992,14 +1132,11 @@
             state.timer = setInterval(() => {
                 state.timeLeft--;
                 updateTimerDisplay();
-                if (state.timeLeft <= 3) {
-                    document.getElementById('timerDisplay').classList.add('urgent');
-                    SoundFX.playTick();
-                }
+                if (state.timeLeft <= 3) { document.getElementById('timerDisplay').classList.add('urgent'); SoundFX.tick(); }
                 if (state.timeLeft <= 0) {
                     clearInterval(state.timer);
-                    SoundFX.playWrong();
-                    handleTimeout();
+                    SoundFX.wrong();
+                    finishPlayerTurn(state.gameData.totalScore || 0);
                 }
             }, 1000);
         }
@@ -1015,65 +1152,16 @@
             document.getElementById('timerDisplay').textContent = `⏱️ ${state.timeLeft}`;
         }
 
-        function handleTimeout() {
-            document.getElementById('timerDisplay').classList.remove('urgent');
-            const game = games[state.round - 1];
-            if (game.end) game.end();
-            else endMiniGame('draw');
-        }
-
-        function endMiniGame(winner) {
-            clearInterval(state.timer);
-            document.getElementById('timerDisplay').classList.remove('urgent');
-            state.touchLocked = true;
-
-            const points = [0, 50, 50, 40, 50, 60][state.round];
-            if (winner === 'king') state.kingScore += points;
-            else if (winner === 'challenger') state.challengerScore += points;
-            else { state.kingScore += Math.floor(points/2); state.challengerScore += Math.floor(points/2); }
-            updateScores();
-
-            const emoji = winner === 'king' ? '🤴' : winner === 'challenger' ? '🗡️' : '🤝';
-            const msg = winner === 'draw' ? 'تعادل!' : winner === 'king' ? 'الملك يفوز!' : 'المتحدي يفوز!';
-
-            SoundFX.playCorrect();
-
-            document.getElementById('gameArea').innerHTML = `
-                <div class="result-message">
-                    <div style="font-size:3.5em;">${emoji}</div>
-                    <div style="font-size:1.4em;color:#F1C40F;margin:6px 0;">${msg}</div>
-                    <div style="color:#95a5a6;">+${points} نقطة</div>
-                </div>
-            `;
-
-            setTimeout(() => {
-                state.round++; state.touchLocked = false;
-                if (state.round > 5) endGame();
-                else {
-                    updateDots();
-                    document.getElementById('roundNum').textContent = state.round;
-                    showTutorial(state.round - 1, () => loadRound());
-                }
-            }, 2000);
-        }
-
         function endGame() {
             state.running = false;
             const kingWins = state.kingScore > state.challengerScore;
             document.getElementById('victoryMessage').textContent = kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
-            document.getElementById('victoryScore').textContent = `${state.kingScore} - ${state.challengerScore}`;
+            document.getElementById('finalKingScore').textContent = state.kingScore;
+            document.getElementById('finalChallengerScore').textContent = state.challengerScore;
             document.getElementById('victoryOverlay').classList.remove('hidden');
-            SoundFX.playVictory();
+            SoundFX.victory();
             updateChampions(kingWins ? 'الملك' : 'المتحدي');
             document.getElementById('btnStart').disabled = false;
-        }
-
-        function updateActivePlayer() {
-            const king = document.getElementById('kingCard');
-            const chal = document.getElementById('challengerCard');
-            king.classList.remove('active'); chal.classList.remove('active');
-            if (state.currentPlayer === 'king') king.classList.add('active');
-            else chal.classList.add('active');
         }
 
         function updateScores() {
@@ -1104,8 +1192,12 @@
             clearInterval(state.tutorialInterval);
             state.running = false; state.round = 0;
             state.kingScore = 0; state.challengerScore = 0;
+            state.kingRoundScores = []; state.challengerRoundScores = [];
+            state.kingDoneThisRound = false; state.challengerDoneThisRound = false;
             state.touchLocked = false;
-            updateScores();
+            
+            document.getElementById('kingScore').textContent = '0';
+            document.getElementById('challengerScore').textContent = '0';
             document.querySelectorAll('.dot').forEach((d,i) => {
                 d.classList.remove('done','active');
                 if (i===0) d.classList.add('active');
@@ -1115,6 +1207,7 @@
             document.getElementById('timerDisplay').classList.remove('urgent');
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('btnStart').disabled = false;
+            document.getElementById('currentPlayerBanner').innerHTML = '👑 جاهز للبدء';
         }
 
         function closeVictory() {
