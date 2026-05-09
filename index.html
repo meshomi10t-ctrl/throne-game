@@ -230,7 +230,8 @@
     </div></div>
 
     <div id="qrOverlay" class="overlay hidden"><div class="card">
-        <h2>📱 تحدي العرش</h2><div id="qrCodeDisplay"></div>
+        <h2>📱 تحدي العرش</h2>
+        <div id="qrCodeDisplay" style="display:flex; justify-content:center; margin:20px 0;"></div>
         <div class="qr-timer" id="qrTimer">30</div>
         <button class="btn btn-start" onclick="closeQR()">إغلاق</button>
     </div></div>
@@ -241,7 +242,6 @@
         <button class="btn btn-start" onclick="attemptReconnect()">🔄 إعادة الاتصال</button>
     </div></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
         // ==================== Sound System ====================
         const Sound = {
@@ -642,13 +642,12 @@
 
         // ==================== QR & Return ====================
         function showChallengeQR() {
+            const link = window.location.href.split('?')[0] + '?challenge=' + Date.now();
+            const qrDiv = document.getElementById('qrCodeDisplay');
+            qrDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}" style="width:200px;height:200px;border-radius:15px;" alt="QR Code">`;
             document.getElementById('qrOverlay').classList.remove('hidden');
-            document.getElementById('qrCodeDisplay').innerHTML = '';
-            new QRCode(document.getElementById('qrCodeDisplay'), {
-                text: window.location.href+'?challenge='+Date.now(),
-                width:180, height:180, colorDark:"#2c3e50", colorLight:"#ffffff"
-            });
-            state.qrSeconds = 30; document.getElementById('qrTimer').textContent = state.qrSeconds;
+            state.qrSeconds = 30;
+            document.getElementById('qrTimer').textContent = state.qrSeconds;
             clearInterval(state.qrTimer);
             state.qrTimer = setInterval(()=>{
                 state.qrSeconds--;
@@ -656,12 +655,16 @@
                 if (state.qrSeconds<=0) closeQR();
             }, 1000);
         }
-        function closeQR() { clearInterval(state.qrTimer); document.getElementById('qrOverlay').classList.add('hidden'); }
+        function closeQR() {
+            clearInterval(state.qrTimer);
+            document.getElementById('qrOverlay').classList.add('hidden');
+        }
 
         function leaveThrone() { if (confirm('مغادرة العرش؟')) startReturnCountdown(); }
         function startReturnCountdown() {
             document.getElementById('returnOverlay').classList.remove('hidden');
-            state.returnSeconds = 180; document.getElementById('returnCountdown').textContent = state.returnSeconds;
+            state.returnSeconds = 180;
+            document.getElementById('returnCountdown').textContent = state.returnSeconds;
             Sound.alarm();
             clearInterval(state.returnTimer);
             state.returnTimer = setInterval(()=>{
