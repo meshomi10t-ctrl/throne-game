@@ -118,7 +118,6 @@
         }
         @keyframes targetPop { from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)} }
 
-        /* Code Break */
         .codebreak-area { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; }
         .digit-row { display:flex; gap:8px; justify-content:center; }
         .digit-slot {
@@ -212,7 +211,7 @@
     <div id="returnOverlay" class="overlay hidden"><div class="card" style="border-color:var(--red);"><div class="card-icon">⚠️</div><div class="card-title" style="color:var(--red);">انقطع الاتصال!</div><div class="return-countdown" id="returnCountdown">180</div><button class="btn btn-start" onclick="attemptReconnect()">🔄 إعادة الاتصال</button></div></div>
 
     <script>
-        // ==================== نظام الصوت (Web Audio API) ====================
+        // ==================== نظام الصوت ====================
         const Sound = {
             ctx: null, muted: false,
             init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
@@ -284,8 +283,10 @@
             document.getElementById('loginScreen').classList.remove('active');
             document.getElementById('arenaScreen').classList.add('active');
             document.getElementById('btnStart').style.display = 'none';
-            document.querySelector('.btn-qr')?.remove();
-            document.querySelector('.btn-leave')?.remove();
+            const qrBtn = document.querySelector('.btn-qr');
+            if (qrBtn) qrBtn.style.display = 'none';
+            const leaveBtn = document.querySelector('.btn-leave');
+            if (leaveBtn) leaveBtn.style.display = 'none';
             document.getElementById('mainControls').innerHTML = `
                 <button class="btn btn-reset" onclick="resetGame()">🔄 جديد</button>
                 <button class="btn btn-sound" id="btnSound" onclick="toggleSound()">🔊</button>
@@ -408,7 +409,7 @@
             nextDir(zone);
         }
 
-        // ==================== اللعبة 3: Code Break (تنافس مباشر) ====================
+        // ==================== اللعبة 3: Code Break ====================
         function initCodeBreak(zone) {
             if (zone === 'king' || !state.sharedCodeSecret) state.sharedCodeSecret = [rand(0,9), rand(0,9), rand(0,9), rand(0,9)];
             state['code'+zone] = { secret: state.sharedCodeSecret, attempts:[], current:[null,null,null,null], locked:[false,false,false,false], score:0 };
