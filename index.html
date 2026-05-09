@@ -318,7 +318,7 @@
         const games = [
             { name:'🎨 لون الكلمة', icon:'🎨', title:'تحدي ستروب', desc:'كلمة لون مكتوبة بلون مختلف! المس <b>اسم اللون</b> الذي تشاهده.', time:45, rounds:8, init(zone){ initStroop(zone); } },
             { name:'🧭 الاتجاه المعاكس', icon:'🧭', title:'الاتجاه المعاكس', desc:'سهم يظهر، المس <b>الاتجاه المعاكس</b>.', time:40, rounds:8, init(zone){ initDirection(zone); } },
-            { name:'🧩 كسر الشيفرة', icon:'🧩', title:'Code Break', desc:'خمّن الشيفرة المكونة من <b>4 أرقام</b>.<br>🟢 تثبيت للصحيح | 🟡 موجود في مكان آخر | 🔴 خطأ<br>⏱️ دقيقتان', time:120, rounds:1, init(zone){ initCodeBreak(zone); } },
+            { name:'🧩 كسر الشيفرة', icon:'🧩', title:'Code Break', desc:'خمّن الشيفرة المكونة من <b>4 أرقام</b>.<br>⚡ أول من يكسرها يفوز بالجولة!<br>🟢 تثبيت للصحيح | 🟡 موجود في مكان آخر | 🔴 خطأ<br>⏱️ دقيقتان', time:120, rounds:1, init(zone){ initCodeBreak(zone); } },
             { name:'✅ صح أو خطأ', icon:'✅', title:'صح أم خطأ', desc:'جملة تظهر، حدد ✓ أو ✗.', time:40, rounds:10, init(zone){ initTrueFalse(zone); } },
             { name:'🎯 القناص', icon:'🎯', title:'تحدي القناص', desc:'هدف يظهر عشوائياً، المسه بأسرع وقت.', time:45, rounds:1, init(zone){ initSniper(zone); } }
         ];
@@ -329,8 +329,10 @@
             kingRoundScore:0, challengerRoundScore:0, timer:null, timeLeft:50,
             tutInterval:null, tutSeconds:15, _tutCb:null,
             kingDone:false, challengerDone:false,
+            kingTimeUsed:0, challengerTimeUsed:0,
             returnTimer:null, returnSeconds:180, qrTimer:null, qrSeconds:30,
-            suddenDeath:false
+            suddenDeath:false,
+            codeBreakWinner: null // 'king', 'challenger', or null
         };
 
         // ==================== Tutorial ====================
@@ -412,10 +414,21 @@
             nextDir(zone);
         }
 
-        // ==================== Game 3: Code Break (Numbers) ====================
+        // ==================== Game 3: Code Break (تنافس مباشر) ====================
         function initCodeBreak(zone) {
-            const secret = [rand(0,9), rand(0,9), rand(0,9), rand(0,9)];
-            state['code'+zone] = { secret, attempts:[], current:[null,null,null,null], locked:[false,false,false,false], score:0 };
+            // توليد شيفرة مشتركة مرة واحدة فقط (عند استدعاء الملك)
+            if (zone === 'king' || !state.sharedCodeSecret) {
+                const secret = [rand(0,9), rand(0,9), rand(0,9), rand(0,9)];
+                state.sharedCodeSecret = secret;
+            }
+            // تخزين بيانات اللاعب
+            state['code'+zone] = {
+                secret: state.sharedCodeSecret,
+                attempts: [],
+                current: [null,null,null,null],
+                locked: [false,false,false,false],
+                score: 0
+            };
             renderCodeBreak(zone);
         }
         function renderCodeBreak(zone) {
@@ -443,14 +456,17 @@
         }
         function pickDigit(zone, digit) {
             const data = state['code'+zone]; if (!data||!state.running) return;
+            // لا يمكن اللعب إذا انتهت الجولة بفوز أحدهم
+            if (state.codeBreakWinner !== null) return;
             for (let i=0;i<4;i++) { if (!data.locked[i] && data.current[i]===null) { data.current[i]=digit; renderCodeBreak(zone); return; } }
         }
         function selectSlot(zone, idx) {
-            const data = state['code'+zone]; if (!data||data.locked[idx]) return;
+            const data = state['code'+zone]; if (!data||data.locked[idx] || state.codeBreakWinner !== null) return;
             data.current[idx] = null; renderCodeBreak(zone);
         }
         function submitCode(zone) {
-            const data = state['code'+zone]; if (!data||!state.running) return;
+            if (!state.running || state.codeBreakWinner !== null) return;
+            const data = state['code'+zone]; if (!data) return;
             if (data.current.some((v,i)=>!data.locked[i]&&v===null)) { Sound.wrong(); return; }
             const guess = [...data.current];
             const fb = ['red','red','red','red'];
@@ -459,8 +475,31 @@
             for (let i=0;i<4;i++) { if (guess[i]===-1) continue; const idx = usedSecret.indexOf(guess[i]); if (idx!==-1) { fb[i]='yellow'; usedSecret[idx]=-1; } }
             data.attempts.push({ guess: [...data.current], fb });
             for (let i=0;i<4;i++) { if (fb[i]==='green') data.locked[i]=true; else data.current[i]=null; }
-            if (data.locked.filter(l=>l).length===4) { Sound.victory(); finishPlayer(zone, 300 + (12-data.attempts.length)*50); return; }
-            if (data.attempts.length>=12) { Sound.wrong(); finishPlayer(zone, data.attempts.length*15); return; }
+
+            // التحقق من الفوز
+            if (data.locked.filter(l=>l).length===4) {
+                // تم كسر الشيفرة بواسطة هذا اللاعب
+                state.codeBreakWinner = zone; // 'king' or 'challenger'
+                Sound.victory();
+                // إنهاء الجولة للفائز
+                finishPlayer(zone, 300 + (12-data.attempts.length)*50);
+                // إجبار الخصم على إنهاء الجولة بنقاط أقل
+                const other = zone === 'king' ? 'challenger' : 'king';
+                if (!state[other+'Done']) {
+                    const otherData = state['code'+other];
+                    const otherScore = otherData ? otherData.attempts.length * 10 : 0;
+                    finishPlayer(other, otherScore);
+                }
+                return;
+            }
+            if (data.attempts.length>=12) {
+                // هذا اللاعب استنفذ محاولاته (قد يخسر إذا لم يكسر الخصم)
+                Sound.wrong();
+                // لا ننهي الجولة بالكامل، قد يفوز الخصم لاحقاً
+                // نعطي نقاط قليلة جداً ونعتبره أنهى دوره
+                finishPlayer(zone, data.attempts.length * 5);
+                return;
+            }
             renderCodeBreak(zone); Sound.correct();
         }
 
@@ -521,9 +560,20 @@
             clearInterval(state.timer);
             const points = [0,50,50,100,50,60][state.round];
             let winner;
-            if (state.kingRoundScore > state.challengerRoundScore) { state.kingScore += points; winner='king'; }
-            else if (state.challengerRoundScore > state.kingRoundScore) { state.challengerScore += points; winner='challenger'; }
-            else { state.kingScore += Math.floor(points/2); state.challengerScore += Math.floor(points/2); winner='draw'; }
+            // في حالة Code Break، الفائز يحصل على النقاط كاملة، والخاسر لا شيء إضافي
+            if (state.codeBreakWinner) {
+                if (state.codeBreakWinner === 'king') {
+                    state.kingScore += points;
+                    winner = 'king';
+                } else {
+                    state.challengerScore += points;
+                    winner = 'challenger';
+                }
+            } else {
+                if (state.kingRoundScore > state.challengerRoundScore) { state.kingScore += points; winner='king'; }
+                else if (state.challengerRoundScore > state.kingRoundScore) { state.challengerScore += points; winner='challenger'; }
+                else { state.kingScore += Math.floor(points/2); state.challengerScore += Math.floor(points/2); winner='draw'; }
+            }
             updateScores(); Sound.victory();
             document.getElementById('resultIcon').textContent = winner==='king'?'🤴':(winner==='challenger'?'🗡️':'🤝');
             document.getElementById('resultTitle').textContent = winner==='draw'?'تعادل!':`${winner==='king'?players.king.name:players.challenger.name} يفوز بالجولة!`;
@@ -534,6 +584,7 @@
         function closeRoundResult() {
             document.getElementById('roundResultOverlay').classList.add('hidden');
             state.round++;
+            state.codeBreakWinner = null; // إعادة تعيين الفائز بالشيفرة
             if (state.round > 5) { endGame(); return; }
             state.kingDone = false; state.challengerDone = false;
             updateDots(); document.getElementById('roundNum').textContent = state.round;
@@ -546,6 +597,7 @@
             Sound.init(); state.running = true; state.round = 1;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
+            state.codeBreakWinner = null;
             updateScores(); updateDots();
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('btnStart').disabled = true;
@@ -557,6 +609,7 @@
             const game = games[state.round-1];
             state.timeLeft = game.time;
             state.kingRoundScore = 0; state.challengerRoundScore = 0;
+            state.codeBreakWinner = null;
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">⏳...</div>';
             document.getElementById('challengerGame').innerHTML = '<div style="color:var(--blue);">⏳...</div>';
             game.init('king'); game.init('challenger');
@@ -630,6 +683,7 @@
             state.running = false; state.round = 0; gameActive = false;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
+            state.codeBreakWinner = null;
             updateScores(); updateDots();
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">انتظر البدء...</div>';
