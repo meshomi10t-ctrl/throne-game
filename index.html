@@ -71,33 +71,33 @@
 
         /* الساحة */
         .header {
-            text-align: center; padding: 10px;
+            text-align: center; padding: 8px;
             background: rgba(0,0,0,0.6); border-bottom: 2px solid var(--gold);
         }
-        .header-crown { font-size: 40px; animation: float 2s infinite; }
-        .header-title { font-size: 1.6em; color: var(--gold); font-weight: bold; }
+        .header-crown { font-size: 35px; animation: float 2s infinite; }
+        .header-title { font-size: 1.4em; color: var(--gold); font-weight: bold; }
         .live-badge {
-            display: inline-block; background: var(--red); padding: 4px 12px;
-            border-radius: 15px; font-size: 0.8em; animation: pulse 1.5s infinite;
+            display: inline-block; background: var(--red); padding: 3px 10px;
+            border-radius: 12px; font-size: 0.7em; animation: pulse 1.5s infinite;
         }
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.6} }
 
         .round-bar {
-            text-align: center; padding: 8px; font-size: 1.2em;
+            text-align: center; padding: 6px; font-size: 1em;
             color: var(--gold); background: rgba(0,0,0,0.4);
         }
-        .r-dots { display: flex; justify-content: center; gap: 8px; margin: 5px 0; }
+        .r-dots { display: flex; justify-content: center; gap: 6px; margin: 4px 0; }
         .r-dot {
-            width: 14px; height: 14px; border-radius: 50%;
+            width: 12px; height: 12px; border-radius: 50%;
             background: #34495e; border: 2px solid var(--gold); transition: 0.3s;
         }
         .r-dot.active { background: var(--gold); animation: glow 0.8s infinite; }
         .r-dot.done { background: var(--green); border-color: var(--green); }
-        @keyframes glow { 0%,100%{box-shadow:0 0 6px var(--gold)}50%{box-shadow:0 0 16px var(--gold)} }
+        @keyframes glow { 0%,100%{box-shadow:0 0 5px var(--gold)}50%{box-shadow:0 0 14px var(--gold)} }
 
         .timer-big {
-            text-align: center; font-size: 3em; font-weight: bold;
-            color: var(--gold); padding: 5px;
+            text-align: center; font-size: 2.5em; font-weight: bold;
+            color: var(--gold); padding: 4px;
         }
         .timer-big.urgent { color: var(--red); animation: blink 0.4s infinite; }
         @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
@@ -110,7 +110,7 @@
         .player-zone {
             position: relative; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            padding: 15px; min-height: 350px;
+            padding: 10px; min-height: 320px;
             border: 3px solid transparent; transition: 0.4s;
         }
         .king-zone {
@@ -126,68 +126,76 @@
             animation: zoneGlow 0.8s infinite; z-index: 5;
         }
         @keyframes zoneGlow {
-            0%,100%{box-shadow:0 0 25px rgba(241,196,15,0.3)}
-            50%{box-shadow:0 0 60px rgba(241,196,15,0.6)}
+            0%,100%{box-shadow:0 0 20px rgba(241,196,15,0.3)}
+            50%{box-shadow:0 0 45px rgba(241,196,15,0.6)}
         }
         .zone-label {
-            position: absolute; top: 10px; font-size: 1.2em;
-            font-weight: bold; padding: 5px 15px; border-radius: 20px;
+            position: absolute; top: 8px; font-size: 1em;
+            font-weight: bold; padding: 4px 12px; border-radius: 15px;
         }
         .king-zone .zone-label { background: rgba(241,196,15,0.2); color: var(--gold); }
         .challenger-zone .zone-label { background: rgba(52,152,219,0.2); color: var(--blue); }
-        .zone-avatar { font-size: 70px; transition: 0.3s; }
+        .zone-avatar { font-size: 55px; transition: 0.3s; }
         .player-zone.active-turn .zone-avatar {
             animation: bounce 0.5s infinite;
-            filter: drop-shadow(0 0 25px var(--gold));
+            filter: drop-shadow(0 0 20px var(--gold));
         }
         @keyframes bounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.2)} }
-        .zone-name { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
+        .zone-name { font-size: 1.1em; font-weight: bold; margin: 4px 0; }
         .king-zone .zone-name { color: var(--gold); }
         .challenger-zone .zone-name { color: var(--blue); }
-        .zone-score { font-size: 3.5em; font-weight: bold; transition: 0.3s; }
+        .zone-score { font-size: 2.8em; font-weight: bold; transition: 0.3s; }
         .king-zone .zone-score { color: var(--gold); }
         .challenger-zone .zone-score { color: var(--blue); }
 
         .mini-game {
-            width: 100%; max-width: 380px; min-height: 180px;
+            width: 100%; max-width: 360px; min-height: 160px;
             display: flex; align-items: center; justify-content: center;
             border-radius: 15px; background: rgba(0,0,0,0.4);
-            padding: 12px; margin: 8px 0;
+            padding: 10px; margin: 6px 0;
         }
 
         /* ========= عناصر الألعاب ========= */
-        .stroop-word { font-size: 3em; font-weight: bold; margin: 10px 0; text-align: center; }
-        .stroop-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+        .stroop-word { font-size: 2.8em; font-weight: bold; margin: 8px 0; text-align: center; }
+        .stroop-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
         .stroop-btn {
-            padding: 14px 22px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.3);
-            font-size: 1.2em; font-weight: bold; cursor: pointer; color: white;
-            transition: 0.15s; min-width: 80px;
+            padding: 12px 18px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3);
+            font-size: 1.1em; font-weight: bold; cursor: pointer; color: white;
+            transition: 0.15s; min-width: 70px;
         }
         .stroop-btn:active { transform: scale(0.9); border-color: white; }
 
-        .dir-arrow { font-size: 6em; text-align: center; margin: 5px 0; }
-        .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 220px; margin: 10px auto; }
+        .dir-arrow {
+            font-size: 7em; text-align: center; margin: 5px 0;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.6));
+            animation: arrowPulse 1.5s infinite;
+        }
+        @keyframes arrowPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+        .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 200px; margin: 10px auto; }
         .dir-btn {
-            aspect-ratio: 1; border-radius: 14px; border: 2px solid var(--gold);
-            background: rgba(255,255,255,0.1); color: white; font-size: 2.2em; cursor: pointer;
+            aspect-ratio: 1; border-radius: 12px; border: 2px solid var(--gold);
+            background: rgba(255,255,255,0.1); color: white; font-size: 2em; cursor: pointer;
         }
         .dir-btn:active { background: var(--gold); color: var(--bg); transform: scale(0.9); }
 
         .tf-question {
-            font-size: 1.6em; text-align: center; margin: 10px 0;
-            background: rgba(255,255,255,0.1); padding: 15px; border-radius: 14px; line-height: 1.6;
+            font-size: 1.4em; text-align: center; margin: 8px 0;
+            background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; line-height: 1.6;
         }
-        .tf-btns { display: flex; gap: 25px; justify-content: center; margin-top: 15px; }
+        .tf-btns { display: flex; gap: 20px; justify-content: center; margin-top: 12px; }
         .tf-btn {
-            width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
-            font-size: 2.8em; cursor: pointer; color: white;
+            width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
+            font-size: 2.5em; cursor: pointer; color: white;
             display: flex; align-items: center; justify-content: center;
         }
         .tf-true { background: var(--green); } .tf-false { background: var(--red); }
         .tf-btn:active { transform: scale(0.85); }
 
         .sniper-area {
-            position: relative; width: 100%; height: 180px;
+            position: relative; width: 100%; height: 160px;
             background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
         }
         .target {
@@ -195,66 +203,20 @@
             background: radial-gradient(circle, var(--gold), var(--red));
             transform: translate(-50%, -50%);
             animation: targetPop 0.3s ease-out;
-            box-shadow: 0 0 35px rgba(241,196,15,0.8);
+            box-shadow: 0 0 30px rgba(241,196,15,0.8);
         }
         @keyframes targetPop { from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)} }
 
-        /* ========= لعبة Raindrops ========= */
-        .raindrop-area {
-            position: relative; width: 100%; height: 300px;
-            background: linear-gradient(180deg, rgba(10,10,30,0.9) 0%, rgba(30,60,100,0.8) 100%);
-            border-radius: 15px; overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
-        .water-line {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, #3498db, #1abc9c, #3498db);
-            opacity: 0.8;
-        }
-        .raindrop {
-            position: absolute; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; color: white; cursor: pointer;
-            transition: opacity 0.2s; z-index: 2;
-            box-shadow: 0 2px 10px rgba(52,152,219,0.5);
-            animation: dropFall var(--fall-speed, 8s) linear forwards;
-        }
-        .raindrop.wrong {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            animation: shake 0.4s ease-out;
-        }
-        @keyframes shake {
-            0%,100%{ transform: translateX(0); }
-            25%{ transform: translateX(-8px); }
-            75%{ transform: translateX(8px); }
-        }
-        @keyframes dropFall {
-            from { top: -50px; }
-            to { top: 100%; }
-        }
-        .lives-display {
-            display: flex; gap: 5px; margin: 5px 0;
-            font-size: 1.5em;
-        }
-        .raindrop-input {
-            width: 100%; padding: 8px; border-radius: 10px;
-            border: 2px solid var(--gold); background: rgba(0,0,0,0.6);
-            color: white; font-size: 1.1em; text-align: center;
-            outline: none; margin-top: 5px;
-        }
-        .raindrop-input:focus { border-color: var(--green); }
-
         /* ========= لعبة Code Break ========= */
         .codebreak-area {
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            width: 100%; max-width: 380px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            width: 100%; max-width: 360px;
         }
         .code-row {
-            display: flex; gap: 8px; margin: 5px 0;
+            display: flex; gap: 6px; margin: 4px 0;
         }
         .code-peg {
-            width: 45px; height: 45px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.4); cursor: pointer;
             transition: 0.2s;
         }
@@ -262,33 +224,37 @@
         .code-peg.selected { border-color: white; box-shadow: 0 0 20px white; }
         .peg-red { background: #e74c3c; } .peg-blue { background: #3498db; }
         .peg-green { background: #2ecc71; } .peg-yellow { background: #f1c40f; }
-        .peg-purple { background: #9b59b6; } .peg-orange { background: #f39c12; }
-        .peg-white { background: #ecf0f1; } .peg-black { background: #2c3e50; }
+        .peg-purple { background: #9b59b6; } .peg-teal { background: #1abc9c; }
+        .peg-white { background: #ecf0f1; border: 2px solid #333; }
 
+        .feedback-row {
+            display: flex; gap: 4px; margin-left: 8px;
+        }
         .feedback-dot {
-            width: 12px; height: 12px; border-radius: 50%; margin: 2px;
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.5);
         }
         .feedback-black { background: #2c3e50; }
-        .feedback-white { background: #ecf0f1; border: 1px solid #95a5a6; }
+        .feedback-white { background: #ecf0f1; }
 
         /* ========= الأزرار ========= */
         .controls {
-            display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-            padding: 12px; background: rgba(0,0,0,0.7);
+            display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+            padding: 10px; background: rgba(0,0,0,0.7);
             border-top: 2px solid var(--gold);
         }
         .btn {
-            padding: 12px 25px; border: none; border-radius: 25px;
-            font-size: 1.1em; font-weight: bold; cursor: pointer;
+            padding: 10px 20px; border: none; border-radius: 20px;
+            font-size: 1em; font-weight: bold; cursor: pointer;
             transition: 0.3s; color: white;
         }
         .btn:active { transform: scale(0.95); }
-        .btn-start { background: var(--green); font-size: 1.3em; }
+        .btn-start { background: var(--green); font-size: 1.2em; }
         .btn-qr { background: #8e44ad; }
         .btn-reset { background: #e67e22; }
         .btn-sound { background: #2c3e50; }
         .btn-leave { background: var(--red); }
-        .btn-check { background: var(--blue); padding: 8px 20px; font-size: 1em; }
+        .btn-check { background: var(--blue); padding: 6px 16px; font-size: 0.9em; }
 
         .hidden { display: none !important; }
         .overlay {
@@ -298,20 +264,20 @@
         }
         .card {
             background: var(--card); border: 3px solid var(--gold);
-            border-radius: 25px; padding: 25px; max-width: 500px; width: 92%;
+            border-radius: 20px; padding: 20px; max-width: 450px; width: 92%;
             text-align: center; animation: slideUp 0.5s ease-out;
         }
-        .card-icon { font-size: 80px; animation: bounceIcon 0.8s infinite; }
-        @keyframes bounceIcon { 0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)} }
-        .card-title { font-size: 2em; color: var(--gold); margin: 12px 0; }
+        .card-icon { font-size: 70px; animation: bounceIcon 0.8s infinite; }
+        @keyframes bounceIcon { 0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)} }
+        .card-title { font-size: 1.8em; color: var(--gold); margin: 10px 0; }
         .card-desc {
-            font-size: 1.2em; color: #ecf0f1; line-height: 2;
-            margin: 12px 0; background: rgba(0,0,0,0.4); padding: 15px;
-            border-radius: 15px; border-right: 4px solid var(--gold);
+            font-size: 1.1em; color: #ecf0f1; line-height: 1.8;
+            margin: 10px 0; background: rgba(0,0,0,0.4); padding: 12px;
+            border-radius: 12px; border-right: 4px solid var(--gold);
         }
-        .card-countdown { font-size: 5em; font-weight: bold; color: var(--gold); margin: 15px 0; }
+        .card-countdown { font-size: 4em; font-weight: bold; color: var(--gold); margin: 10px 0; }
 
-        .victory-icon { font-size: 100px; animation: victoryBounce 0.5s infinite; }
+        .victory-icon { font-size: 80px; animation: victoryBounce 0.5s infinite; }
         @keyframes victoryBounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.2) rotate(10deg)} }
 
         .qr-overlay {
@@ -321,10 +287,10 @@
         }
         .qr-card {
             background: var(--card); border: 3px solid var(--gold);
-            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            border-radius: 20px; padding: 25px; max-width: 400px; width: 90%;
             text-align: center;
         }
-        .qr-timer { font-size: 3em; color: var(--red); font-weight: bold; margin: 15px 0; }
+        .qr-timer { font-size: 2.5em; color: var(--red); font-weight: bold; margin: 10px 0; }
 
         .return-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -333,22 +299,20 @@
         }
         .return-card {
             background: var(--card); border: 3px solid var(--red);
-            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            border-radius: 20px; padding: 25px; max-width: 400px; width: 90%;
             text-align: center;
         }
-        .return-countdown { font-size: 5em; color: var(--red); font-weight: bold; margin: 20px 0; }
+        .return-countdown { font-size: 4em; color: var(--red); font-weight: bold; margin: 15px 0; }
 
         @media (max-width: 650px) {
             .arena { grid-template-columns: 1fr; }
             .king-zone { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            .zone-avatar { font-size: 45px; }
-            .zone-score { font-size: 2.2em; }
-            .zone-name { font-size: 1em; }
-            .stroop-word { font-size: 2em; }
-            .dir-arrow { font-size: 3.5em; }
-            .btn { padding: 8px 16px; font-size: 0.9em; }
-            .raindrop-area { height: 220px; }
-            .code-peg { width: 35px; height: 35px; }
+            .zone-avatar { font-size: 40px; }
+            .zone-score { font-size: 2em; }
+            .zone-name { font-size: 0.9em; }
+            .stroop-word { font-size: 1.8em; }
+            .dir-arrow { font-size: 4.5em; }
+            .btn { padding: 8px 15px; font-size: 0.85em; }
         }
     </style>
 </head>
@@ -398,7 +362,7 @@
             </div>
         </div>
 
-        <div class="timer-big" id="timerDisplay">⏱️ 50</div>
+        <div class="timer-big" id="timerDisplay">⏱️ 45</div>
 
         <div class="arena">
             <div class="player-zone king-zone active-turn" id="kingZone">
@@ -442,7 +406,17 @@
         </div>
     </div>
 
-    <!-- النصر -->
+    <!-- نتيجة الجولة -->
+    <div id="roundResultOverlay" class="overlay hidden">
+        <div class="card">
+            <div class="card-icon" id="resultIcon">🏆</div>
+            <div class="card-title" id="resultTitle"></div>
+            <div class="card-desc" id="resultDesc"></div>
+            <button class="btn btn-start" onclick="closeRoundResult()">▶️ متابعة</button>
+        </div>
+    </div>
+
+    <!-- النصر النهائي -->
     <div id="victoryOverlay" class="overlay hidden">
         <div class="card">
             <div class="victory-icon">👑</div>
@@ -478,7 +452,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
-        // ==================== نظام الصوت ====================
+        // ==================== نظام الصوت (مرتفع جداً) ====================
         const Sound = {
             ctx: null, muted: false,
             init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
@@ -487,19 +461,27 @@
                 try {
                     const o = this.ctx.createOscillator(), g = this.ctx.createGain();
                     o.type = type || 'square'; o.frequency.value = freq;
-                    g.gain.value = vol || 0.3;
+                    g.gain.value = Math.min(1.0, vol || 0.5);
                     g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
                     o.connect(g); g.connect(this.ctx.destination);
                     o.start(); o.stop(this.ctx.currentTime + dur);
                 } catch(e) {}
             },
-            correct() { this.tone(880,0.15,'square',0.4); setTimeout(()=>this.tone(1100,0.2,'square',0.3),150); },
-            wrong() { this.tone(200,0.3,'sawtooth',0.5); this.tone(150,0.4,'sawtooth',0.4); },
+            correct() { this.tone(880,0.15,'square',0.6); setTimeout(()=>this.tone(1100,0.2,'square',0.5),150); },
+            wrong() { this.tone(200,0.3,'sawtooth',0.8); this.tone(150,0.4,'sawtooth',0.6); },
             start() { this.tone(440,0.1);setTimeout(()=>this.tone(660,0.1),100);setTimeout(()=>this.tone(880,0.2),200); },
-            victory() { [523,659,784,1047].forEach((n,i)=>setTimeout(()=>this.tone(n,0.3,'square',0.4),i*200)); },
-            tick() { this.tone(1000,0.05,'square',0.2); },
-            alarm() { for(let i=0;i<5;i++) setTimeout(()=>this.tone(800,0.15,'square',0.5),i*300); },
-            splash() { this.tone(600,0.1,'triangle',0.2); this.tone(400,0.15,'triangle',0.15); }
+            victory() {
+                [523, 659, 784, 1047].forEach((n,i) => {
+                    setTimeout(() => this.tone(n, 0.4, 'square', 0.9), i * 250);
+                });
+                for(let i=0; i<15; i++) {
+                    setTimeout(() => {
+                        this.tone(200 + Math.random() * 500, 0.15, 'triangle', 0.7);
+                    }, i * 100 + 500);
+                }
+            },
+            tick() { this.tone(1000,0.05,'square',0.3); },
+            alarm() { for(let i=0;i<5;i++) setTimeout(()=>this.tone(800,0.15,'square',0.7),i*300); },
         };
         document.addEventListener('touchstart', ()=>Sound.init(), {once:true});
         document.addEventListener('click', ()=>Sound.init(), {once:true});
@@ -544,7 +526,13 @@
             document.getElementById('arenaScreen').classList.add('active');
         }
 
-        // ==================== الألعاب ====================
+        // ==================== الألعاب (بدون برتقالي) ====================
+        const colorList = [
+            { name: 'أحمر', code: '#e74c3c' }, { name: 'أزرق', code: '#3498db' },
+            { name: 'أخضر', code: '#2ecc71' }, { name: 'أصفر', code: '#f1c40f' },
+            { name: 'بنفسجي', code: '#9b59b6' }, { name: 'فيروزي', code: '#1abc9c' }
+        ];
+
         const games = [
             {
                 name: '🎨 لون الكلمة', icon: '🎨', title: 'تحدي ستروب',
@@ -560,8 +548,8 @@
             },
             {
                 name: '🧩 كسر الشيفرة', icon: '🧩', title: 'Code Break',
-                desc: 'خمّن الشيفرة السرية المكونة من 4 ألوان!<br>⚫ = لون صحيح في مكان صحيح<br>⚪ = لون صحيح في مكان خاطئ<br><br>⏱️ الوقت: <b>60 ثانية</b>',
-                time: 60, rounds: 1,
+                desc: 'خمّن الشيفرة السرية المكونة من 4 ألوان!<br>⚫ = لون صحيح في مكان صحيح<br>⚪ = لون صحيح في مكان خاطئ<br><br>⏱️ الوقت: <b>90 ثانية</b>',
+                time: 90, rounds: 1,
                 init(zone) { initCodeBreak(zone); }
             },
             {
@@ -587,7 +575,8 @@
             tutInterval: null, tutSeconds: 15, tutCallback: null,
             kingDone: false, challengerDone: false,
             returnTimer: null, returnSeconds: 180,
-            qrTimer: null, qrSeconds: 30
+            qrTimer: null, qrSeconds: 30,
+            suddenDeath: false
         };
 
         // ==================== شرح الجولة ====================
@@ -625,12 +614,6 @@
         }
 
         // ==================== لعبة 1: ستروب (مصححة) ====================
-        const colorList = [
-            { name: 'أحمر', code: '#e74c3c' }, { name: 'أزرق', code: '#3498db' },
-            { name: 'أخضر', code: '#2ecc71' }, { name: 'أصفر', code: '#f1c40f' },
-            { name: 'بنفسجي', code: '#9b59b6' }, { name: 'برتقالي', code: '#f39c12' }
-        ];
-
         function initStroop(zone) {
             state['stroop' + zone] = { round: 0, score: 0, correct: null };
             nextStroop(zone);
@@ -646,14 +629,11 @@
             do { displayColor = colorList[rand(0, colorList.length-1)]; } while (displayColor.name === nameColor.name);
             data.correct = displayColor.name;
 
-            // إنشاء خيارات: اللون الصحيح + 3 ألوان عشوائية أخرى
             let options = [displayColor];
             const otherColors = colorList.filter(c => c.name !== displayColor.name);
             while (options.length < 4) {
-                const randomColor = otherColors[rand(0, otherColors.length-1)];
-                if (!options.find(o => o.name === randomColor.name)) {
-                    options.push(randomColor);
-                }
+                const rc = otherColors[rand(0, otherColors.length-1)];
+                if (!options.find(o => o.name === rc.name)) options.push(rc);
             }
             options = shuffle(options);
 
@@ -677,7 +657,7 @@
             nextStroop(zone);
         }
 
-        // ==================== لعبة 2: اتجاهات ====================
+        // ==================== لعبة 2: اتجاهات (أسهم احترافية) ====================
         const dirs = [
             { arrow: '⬆️', name: 'أعلى', opp: 'أسفل' },
             { arrow: '⬇️', name: 'أسفل', opp: 'أعلى' },
@@ -718,91 +698,68 @@
             nextDir(zone);
         }
 
-        // ==================== 🆕 لعبة 3: Code Break ====================
+        // ==================== لعبة 3: Code Break (90 ثانية، بدون برتقالي) ====================
         function initCodeBreak(zone) {
-            // إنشاء شيفرة سرية عشوائية (4 ألوان من 6)
-            const pegColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+            const pegColors = ['red', 'blue', 'green', 'yellow', 'purple', 'teal'];
             const secret = [];
-            for (let i = 0; i < 4; i++) {
-                secret.push(pegColors[rand(0, pegColors.length-1)]);
-            }
+            for (let i = 0; i < 4; i++) secret.push(pegColors[rand(0, pegColors.length-1)]);
 
-            const data = state['codebreak' + zone] = {
+            state['codebreak' + zone] = {
                 secret: secret,
                 attempts: [],
                 currentGuess: [null, null, null, null],
-                maxAttempts: 10,
+                maxAttempts: 15,
                 score: 0
             };
-
             renderCodeBreak(zone);
         }
 
         function renderCodeBreak(zone) {
             const data = state['codebreak' + zone];
             if (!data) return;
-
-            const pegColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
-            const colorNames = {
-                red: 'أحمر', blue: 'أزرق', green: 'أخضر',
-                yellow: 'أصفر', purple: 'بنفسجي', orange: 'برتقالي'
-            };
+            const pegColors = ['red', 'blue', 'green', 'yellow', 'purple', 'teal'];
+            const colorNames = { red:'أحمر', blue:'أزرق', green:'أخضر', yellow:'أصفر', purple:'بنفسجي', teal:'فيروزي' };
 
             let html = '<div class="codebreak-area">';
-            
-            // عرض المحاولات السابقة
-            html += '<div style="width:100%; max-height:200px; overflow-y:auto; margin-bottom:10px;">';
+            html += '<div style="width:100%; max-height:180px; overflow-y:auto; margin-bottom:8px;">';
             for (const attempt of data.attempts) {
-                html += '<div style="display:flex; align-items:center; gap:10px; margin:5px 0;">';
+                html += '<div style="display:flex; align-items:center; gap:8px; margin:3px 0;">';
                 html += '<div class="code-row">';
-                for (const color of attempt.guess) {
-                    html += `<div class="code-peg peg-${color}"></div>`;
-                }
+                for (const color of attempt.guess) html += `<div class="code-peg peg-${color}"></div>`;
                 html += '</div>';
-                html += '<div style="display:flex; gap:3px;">';
-                for (const fb of attempt.feedback) {
-                    html += `<div class="feedback-dot feedback-${fb}"></div>`;
-                }
+                html += '<div class="feedback-row">';
+                for (const fb of attempt.feedback) html += `<div class="feedback-dot feedback-${fb}"></div>`;
                 html += '</div>';
                 html += '</div>';
             }
             html += '</div>';
 
-            // صف التخمين الحالي
             html += '<div class="code-row">';
             for (let i = 0; i < 4; i++) {
                 const color = data.currentGuess[i];
                 html += `<div class="code-peg ${color ? 'peg-'+color : ''}" 
-                    onclick="selectCodePeg('${zone}', ${i})" id="${zone}peg${i}">
-                    ${color ? '' : '?'}
-                </div>`;
+                    onclick="selectCodePeg('${zone}', ${i})" id="${zone}peg${i}">${color ? '' : '?'}</div>`;
             }
             html += '</div>';
 
-            // لوحة الألوان
             html += '<div class="code-row">';
             for (const color of pegColors) {
                 html += `<div class="code-peg peg-${color}" 
-                    onclick="pickCodeColor('${zone}', '${color}')"
-                    title="${colorNames[color]}"></div>`;
+                    onclick="pickCodeColor('${zone}', '${color}')" title="${colorNames[color]}"></div>`;
             }
             html += '</div>';
 
             html += `<button class="btn btn-check" onclick="submitCodeGuess('${zone}')">✅ تحقق</button>`;
             html += `<div style="color:#95a5a6;margin-top:5px;">المحاولات: ${data.attempts.length}/${data.maxAttempts}</div>`;
             html += '</div>';
-
             document.getElementById(zone + 'Game').innerHTML = html;
         }
 
         function pickCodeColor(zone, color) {
             const data = state['codebreak' + zone];
             if (!data) return;
-
-            // ابحث عن أول خانة فارغة
             const emptyIndex = data.currentGuess.findIndex(c => c === null);
-            if (emptyIndex === -1) return; // كل الخانات ممتلئة
-
+            if (emptyIndex === -1) return;
             data.currentGuess[emptyIndex] = color;
             renderCodeBreak(zone);
         }
@@ -810,11 +767,8 @@
         function selectCodePeg(zone, index) {
             const data = state['codebreak' + zone];
             if (!data) return;
-
-            // الضغط على خانة محددة يمسحها
             if (data.currentGuess[index] !== null) {
                 data.currentGuess[index] = null;
-                // إزاحة الفراغ لليسار (اختياري)
                 data.currentGuess = data.currentGuess.filter(c => c !== null);
                 while (data.currentGuess.length < 4) data.currentGuess.push(null);
                 renderCodeBreak(zone);
@@ -824,66 +778,38 @@
         function submitCodeGuess(zone) {
             const data = state['codebreak' + zone];
             if (!data || !state.running) return;
+            if (data.currentGuess.includes(null)) { Sound.wrong(); return; }
 
-            // التأكد من اكتمال التخمين
-            if (data.currentGuess.includes(null)) {
-                Sound.wrong();
-                return;
-            }
-
-            // حساب التلميحات
             const secret = [...data.secret];
             const guess = [...data.currentGuess];
             let black = 0, white = 0;
 
-            // الأسود: اللون والمكان صحيحان
             for (let i = 0; i < 4; i++) {
-                if (guess[i] === secret[i]) {
-                    black++;
-                    secret[i] = null;
-                    guess[i] = null;
-                }
+                if (guess[i] === secret[i]) { black++; secret[i] = null; guess[i] = null; }
             }
-
-            // الأبيض: اللون موجود لكن في مكان آخر
             for (let i = 0; i < 4; i++) {
                 if (guess[i] === null) continue;
                 const idx = secret.indexOf(guess[i]);
-                if (idx !== -1) {
-                    white++;
-                    secret[idx] = null;
-                }
+                if (idx !== -1) { white++; secret[idx] = null; }
             }
 
-            // بناء التلميحات (أسود ثم أبيض)
             const feedback = [];
             for (let i = 0; i < black; i++) feedback.push('black');
             for (let i = 0; i < white; i++) feedback.push('white');
 
-            // حفظ المحاولة
-            data.attempts.push({
-                guess: [...data.currentGuess],
-                feedback: feedback
-            });
+            data.attempts.push({ guess: [...data.currentGuess], feedback });
 
-            // تحقق من الفوز
             if (black === 4) {
                 Sound.victory();
-                const baseScore = 200;
-                const bonus = (data.maxAttempts - data.attempts.length + 1) * 50;
-                finishPlayer(zone, baseScore + bonus);
+                finishPlayer(zone, 200 + (data.maxAttempts - data.attempts.length + 1) * 50);
                 return;
             }
-
-            // تحقق من استنفاد المحاولات
             if (data.attempts.length >= data.maxAttempts) {
                 Sound.wrong();
-                // بعض النقاط للمحاولة
-                finishPlayer(zone, data.attempts.length * 15);
+                finishPlayer(zone, data.attempts.length * 10);
                 return;
             }
 
-            // إعادة تعيين التخمين الحالي
             data.currentGuess = [null, null, null, null];
             renderCodeBreak(zone);
             Sound.correct();
@@ -909,13 +835,10 @@
             const data = state['tf' + zone];
             data.round++;
             if (data.round > games[3].rounds) { finishPlayer(zone, data.score); return; }
-
             let q;
-            do { q = tfList[rand(0, tfList.length-1)]; }
-            while (data.used.includes(q.q) && data.used.length < tfList.length);
+            do { q = tfList[rand(0, tfList.length-1)]; } while (data.used.includes(q.q) && data.used.length < tfList.length);
             data.used.push(q.q);
             data.correct = q.a;
-
             const left = Math.random() > 0.5;
             document.getElementById(zone + 'Game').innerHTML = `
                 <div style="text-align:center;">
@@ -982,44 +905,46 @@
             setTimeout(() => el.style.boxShadow = '', 350);
         }
 
-        // ==================== إنهاء اللاعب ====================
+        // ==================== إنهاء اللاعب ونتيجة الجولة ====================
         function finishPlayer(zone, score) {
             if (zone === 'king') { state.kingRoundScore = score; state.kingDone = true; }
             else { state.challengerRoundScore = score; state.challengerDone = true; }
-
-            document.getElementById(zone + 'Game').innerHTML =
-                '<div style="text-align:center;font-size:1.5em;color:var(--gold);">✅ تم!</div>';
-
+            document.getElementById(zone + 'Game').innerHTML = '<div style="text-align:center;font-size:1.5em;color:var(--gold);">✅ تم!</div>';
             if (state.kingDone && state.challengerDone) endRound();
         }
 
         function endRound() {
             clearInterval(state.timer);
-            const points = [0, 50, 50, 60, 50, 60][state.round];
+            const points = [0, 50, 50, 70, 50, 60][state.round];
             let winner;
+            if (state.kingRoundScore > state.challengerRoundScore) { state.kingScore += points; winner = 'king'; }
+            else if (state.challengerRoundScore > state.kingRoundScore) { state.challengerScore += points; winner = 'challenger'; }
+            else { state.kingScore += Math.floor(points/2); state.challengerScore += Math.floor(points/2); winner = 'draw'; }
+            updateScores();
+            Sound.victory();
 
-            if (state.kingRoundScore > state.challengerRoundScore) {
-                state.kingScore += points; winner = 'king';
-            } else if (state.challengerRoundScore > state.kingRoundScore) {
-                state.challengerScore += points; winner = 'challenger';
-            } else {
-                state.kingScore += Math.floor(points/2);
-                state.challengerScore += Math.floor(points/2);
-                winner = 'draw';
+            // عرض نتيجة الجولة
+            const winMsg = winner === 'king' ? `👑 ${players.king.name} يفوز بالجولة!` : (winner === 'challenger' ? `🗡️ ${players.challenger.name} يفوز بالجولة!` : '🤝 تعادل!');
+            document.getElementById('resultIcon').textContent = winner === 'king' ? '🤴' : (winner === 'challenger' ? '🗡️' : '🤝');
+            document.getElementById('resultTitle').textContent = winMsg;
+            document.getElementById('resultDesc').innerHTML = `
+                النتيجة الحالية:<br>
+                🤴 ${players.king.name}: ${state.kingScore} نقطة<br>
+                🗡️ ${players.challenger.name}: ${state.challengerScore} نقطة
+            `;
+            document.getElementById('roundResultOverlay').classList.remove('hidden');
+        }
+
+        function closeRoundResult() {
+            document.getElementById('roundResultOverlay').classList.add('hidden');
+            state.round++;
+            if (state.round > 5) { endGame(); }
+            else {
+                state.kingDone = false; state.challengerDone = false;
+                updateDots();
+                document.getElementById('roundNum').textContent = state.round;
+                showTutorial(state.round-1, () => startRound());
             }
-
-            updateScores(); Sound.victory();
-
-            setTimeout(() => {
-                state.round++;
-                if (state.round > 5) { endGame(); }
-                else {
-                    state.kingDone = false; state.challengerDone = false;
-                    updateDots();
-                    document.getElementById('roundNum').textContent = state.round;
-                    showTutorial(state.round-1, () => startRound());
-                }
-            }, 2500);
         }
 
         // ==================== إدارة اللعبة ====================
@@ -1029,6 +954,7 @@
             state.running = true; state.round = 1;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
+            state.suddenDeath = false;
             updateScores(); updateDots();
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('btnStart').disabled = true;
@@ -1061,21 +987,28 @@
         function updateTimer() { document.getElementById('timerDisplay').textContent = `⏱️ ${state.timeLeft}`; }
 
         function handleTimeout() {
-            if (!state.kingDone) finishPlayer('king',
-                state['stroopking']?.score || state['dirking']?.score ||
-                state['codebreakking']?.score || state['tfking']?.score ||
-                state['sniperking']?.score || 0);
-            if (!state.challengerDone) finishPlayer('challenger',
-                state['stroopchallenger']?.score || state['dirchallenger']?.score ||
-                state['codebreakchallenger']?.score || state['tfchallenger']?.score ||
-                state['sniperchallenger']?.score || 0);
+            if (!state.kingDone) finishPlayer('king', 0);
+            if (!state.challengerDone) finishPlayer('challenger', 0);
         }
 
         function endGame() {
+            if (state.kingScore === state.challengerScore) {
+                // جولة الموت المفاجئ
+                alert('⚔️ تعادل! جولة الموت المفاجئ (القناص)');
+                state.suddenDeath = true;
+                state.round = 6; // جولة إضافية
+                document.getElementById('roundNum').textContent = '☠️';
+                state.kingDone = false; state.challengerDone = false;
+                state.kingRoundScore = 0; state.challengerRoundScore = 0;
+                games[4].init('king'); games[4].init('challenger');
+                state.timeLeft = 20;
+                startTimer();
+                return;
+            }
+
             state.running = false; gameActive = false;
             const kingWins = state.kingScore > state.challengerScore;
-            document.getElementById('victoryMsg').textContent = kingWins ?
-                '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
+            document.getElementById('victoryMsg').textContent = kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
             document.getElementById('victoryDetail').innerHTML = `
                 🤴 ${players.king.name}: ${state.kingScore}<br>
                 🗡️ ${players.challenger.name}: ${state.challengerScore}`;
@@ -1186,7 +1119,7 @@
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">انتظر البدء...</div>';
             document.getElementById('challengerGame').innerHTML = '<div style="color:var(--blue);">انتظر البدء...</div>';
-            document.getElementById('timerDisplay').textContent = '⏱️ 50';
+            document.getElementById('timerDisplay').textContent = '⏱️ 45';
             document.getElementById('timerDisplay').classList.remove('urgent');
             document.getElementById('btnStart').disabled = false;
         }
