@@ -95,7 +95,7 @@
         .control-buttons { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
         .hidden { display: none !important; }
 
-        /* ========= شاشة الشرح - وقت أطول ========= */
+        /* ========= شاشة الشرح - 15 ثانية ========= */
         .tutorial-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.97); display: flex;
@@ -106,7 +106,7 @@
         .tutorial-card {
             background: linear-gradient(135deg, #1a1a35, #2c2c54);
             border: 3px solid #F1C40F; border-radius: 25px; padding: 25px;
-            max-width: 480px; width: 92%; text-align: center;
+            max-width: 500px; width: 92%; text-align: center;
             animation: slideUp 0.5s ease-out;
         }
         @keyframes slideUp { from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1} }
@@ -132,8 +132,8 @@
         @keyframes countPulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.1)} }
         .tutorial-skip {
             background: none; border: 1px solid #F1C40F; color: #F1C40F;
-            padding: 8px 20px; border-radius: 20px; font-size: 0.9em;
-            cursor: pointer; margin-top: 5px; transition: all 0.3s;
+            padding: 10px 25px; border-radius: 20px; font-size: 0.95em;
+            cursor: pointer; margin-top: 8px; transition: all 0.3s;
         }
         .tutorial-skip:hover { background: rgba(241,196,15,0.2); }
 
@@ -210,7 +210,6 @@
         .tf-true { background: #27ae60; }
         .tf-false { background: #e74c3c; }
         .tf-btn:active { transform: scale(0.85); border-color: white; }
-        .tf-label { font-size: 0.35em; margin-top: 5px; }
 
         /* ========= لعبة 5: سباق الأزرار ========= */
         .race-grid {
@@ -254,12 +253,6 @@
             padding: 5px; border-bottom: 1px solid rgba(241,196,15,0.2); font-size: 0.8em;
         }
 
-        .current-player-indicator {
-            text-align: center; font-size: 1em; color: #F1C40F;
-            margin: 4px 0; padding: 4px; background: rgba(241,196,15,0.1);
-            border-radius: 8px;
-        }
-
         @media (max-width: 450px) {
             .title { font-size: 1.2em; }
             .player-avatar { font-size: 28px; }
@@ -283,6 +276,23 @@
     </style>
 </head>
 <body>
+    <!-- مؤثرات صوتية مخفية -->
+    <audio id="soundCorrect" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
+    </audio>
+    <audio id="soundWrong" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
+    </audio>
+    <audio id="soundStart" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
+    </audio>
+    <audio id="soundVictory" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
+    </audio>
+    <audio id="soundTick" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4CAf39/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f3+AgH9/f3+Af39/gIB/f39/gH9/f4B/f38=" type="audio/wav">
+    </audio>
+
     <div class="crown-header">
         <div class="crown-emoji">👑</div>
         <h1 class="title">تحدي العرش</h1>
@@ -333,7 +343,7 @@
         </div>
     </div>
 
-    <!-- شاشة الشرح - 10 ثواني -->
+    <!-- شاشة الشرح - 15 ثانية -->
     <div id="tutorialOverlay" class="tutorial-overlay hidden">
         <div class="tutorial-card">
             <div class="tutorial-icon" id="tutorialIcon">🎮</div>
@@ -343,7 +353,7 @@
             <div class="tutorial-players" id="tutorialPlayers"></div>
             <div class="tutorial-countdown-container">
                 <div class="tutorial-countdown-label">⏱️ يبدأ التحدي خلال</div>
-                <div class="tutorial-countdown" id="tutorialCountdown">10</div>
+                <div class="tutorial-countdown" id="tutorialCountdown">15</div>
             </div>
             <button class="tutorial-skip" onclick="skipTutorial()">⏭️ تخطي وابدأ الآن</button>
         </div>
@@ -361,6 +371,28 @@
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
+        // ==================== نظام الصوت ====================
+        const SoundFX = {
+            correct: document.getElementById('soundCorrect'),
+            wrong: document.getElementById('soundWrong'),
+            start: document.getElementById('soundStart'),
+            victory: document.getElementById('soundVictory'),
+            tick: document.getElementById('soundTick'),
+            
+            play: function(sound) {
+                if (this[sound]) {
+                    this[sound].currentTime = 0;
+                    this[sound].play().catch(() => {});
+                }
+            },
+            
+            playCorrect: function() { this.play('correct'); },
+            playWrong: function() { this.play('wrong'); },
+            playStart: function() { this.play('start'); },
+            playVictory: function() { this.play('victory'); },
+            playTick: function() { this.play('tick'); }
+        };
+
         // ==================== دوال مساعدة ====================
         function shuffle(arr) {
             const a = [...arr];
@@ -369,10 +401,6 @@
                 [a[i], a[j]] = [a[j], a[i]];
             }
             return a;
-        }
-
-        function randInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         // ==================== بيانات الألعاب ====================
@@ -424,11 +452,14 @@
             running: false, round: 0, kingScore: 0, challengerScore: 0,
             currentPlayer: 'king', timer: null, timeLeft: 10,
             gameData: {}, touchLocked: false,
-            tutorialInterval: null, tutorialSeconds: 10
+            tutorialInterval: null, tutorialSeconds: 15,
+            tutorialCallback: null
         };
 
-        // ==================== شاشة الشرح (10 ثواني) ====================
+        // ==================== شاشة الشرح (15 ثانية) ====================
         function showTutorial(roundIndex, callback) {
+            state.tutorialCallback = callback;
+            
             const game = games[roundIndex];
             const overlay = document.getElementById('tutorialOverlay');
             document.getElementById('tutorialIcon').textContent = game.icon;
@@ -438,26 +469,38 @@
             document.getElementById('tutorialPlayers').textContent = game.players;
             overlay.classList.remove('hidden');
 
-            state.tutorialSeconds = 10;
+            state.tutorialSeconds = 15;
             const cd = document.getElementById('tutorialCountdown');
             cd.textContent = state.tutorialSeconds;
             cd.style.color = '#F1C40F';
+            cd.style.animation = 'countPulse 1s infinite';
 
             clearInterval(state.tutorialInterval);
             state.tutorialInterval = setInterval(() => {
                 state.tutorialSeconds--;
                 cd.textContent = state.tutorialSeconds;
 
-                if (state.tutorialSeconds <= 3) cd.style.color = '#e74c3c';
-                else if (state.tutorialSeconds <= 5) cd.style.color = '#f39c12';
+                if (state.tutorialSeconds <= 3) {
+                    cd.style.color = '#e74c3c';
+                    SoundFX.playTick();
+                } else if (state.tutorialSeconds <= 5) {
+                    cd.style.color = '#f39c12';
+                }
 
                 if (state.tutorialSeconds <= 0) {
                     clearInterval(state.tutorialInterval);
                     cd.textContent = '🚀 انطلق!';
                     cd.style.color = '#2ecc71';
+                    cd.style.animation = 'none';
+                    SoundFX.playStart();
                     setTimeout(() => {
                         overlay.classList.add('hidden');
-                        if (callback) callback();
+                        cd.style.animation = 'countPulse 1s infinite';
+                        if (state.tutorialCallback) {
+                            const cb = state.tutorialCallback;
+                            state.tutorialCallback = null;
+                            cb();
+                        }
                     }, 500);
                 }
             }, 1000);
@@ -469,10 +512,17 @@
             const cd = document.getElementById('tutorialCountdown');
             cd.textContent = '🚀 انطلق!';
             cd.style.color = '#2ecc71';
+            cd.style.animation = 'none';
+            SoundFX.playStart();
+            
             setTimeout(() => {
                 overlay.classList.add('hidden');
-                // استدعاء اللعبة الحالية
-                loadRound();
+                cd.style.animation = 'countPulse 1s infinite';
+                if (state.tutorialCallback) {
+                    const cb = state.tutorialCallback;
+                    state.tutorialCallback = null;
+                    cb();
+                }
             }, 400);
         }
 
@@ -487,7 +537,7 @@
         function initStroop() {
             state.currentPlayer = 'king';
             state.timeLeft = games[0].time;
-            state.gameData = { kingScore: 0, challengerScore: 0, roundNum: 0, playerDone: false };
+            state.gameData = { kingScore: 0, challengerScore: 0, roundNum: 0, playerDone: false, totalScore: 0 };
             nextStroopRound();
             updateActivePlayer();
         }
@@ -523,7 +573,6 @@
             do { colorCode = colorList[Math.floor(Math.random() * 4)]; }
             while (colorCode.name === colorName.name);
 
-            // ترتيب عشوائي للأزرار
             const shuffledColors = shuffle([...colorList]);
             state.gameData.correctAnswer = colorCode.name;
 
@@ -549,8 +598,10 @@
             if (state.touchLocked || !state.running) return;
             if (answered === state.gameData.correctAnswer) {
                 state.gameData.totalScore = (state.gameData.totalScore || 0) + 25;
+                SoundFX.playCorrect();
                 flashGreen();
             } else {
+                SoundFX.playWrong();
                 flashRed();
             }
             nextStroopRound();
@@ -602,8 +653,7 @@
         function renderDirection() {
             const dir = directionList[Math.floor(Math.random() * 4)];
             state.gameData.correctAnswer = dir.opposite;
-
-            // ترتيب عشوائي لأزرار الاتجاهات            const shuffledDirs = shuffle([...directionList]);
+            const shuffledDirs = shuffle([...directionList]);
 
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
@@ -625,8 +675,10 @@
             if (state.touchLocked || !state.running) return;
             if (answered === state.gameData.correctAnswer) {
                 state.gameData.totalScore += 25;
+                SoundFX.playCorrect();
                 flashGreen();
             } else {
+                SoundFX.playWrong();
                 flashRed();
             }
             nextDirectionRound();
@@ -694,6 +746,7 @@
             `;
 
             if (mode === 'hide') {
+                SoundFX.playTick();
                 setTimeout(() => renderCups('show'), 1500);
             }
         }
@@ -702,7 +755,6 @@
             if (state.touchLocked || !state.running || state.gameData.answered) return;
             state.gameData.answered = true;
 
-            // إظهار كل الأكواب
             document.querySelectorAll('.cup').forEach((cup, i) => {
                 if (i === state.gameData.ballPos) {
                     cup.classList.add('reveal', 'ball');
@@ -712,8 +764,10 @@
 
             if (index === state.gameData.ballPos) {
                 state.gameData.totalScore += 35;
+                SoundFX.playCorrect();
                 flashGreen();
             } else {
+                SoundFX.playWrong();
                 flashRed();
             }
             setTimeout(nextCupRound, 1000);
@@ -735,7 +789,10 @@
             { q: 'الذهب معدن ثمين', a: true },
             { q: 'الفيل أصغر من النملة', a: false },
             { q: 'اللغة العربية من أجمل اللغات', a: true },
-            { q: 'البحر مالح', a: true }
+            { q: 'البحر مالح', a: true },
+            { q: 'السماء تمطر ذهباً', a: false },
+            { q: 'السعودية في آسيا', a: true },
+            { q: 'البطريق يطير', a: false }
         ];
 
         function initTrueFalse() {
@@ -772,14 +829,11 @@
                 }
             }
 
-            // اختيار سؤال غير مستخدم
             let q;
             do { q = tfQuestions[Math.floor(Math.random() * tfQuestions.length)]; }
             while (state.gameData.used.includes(q.q) && state.gameData.used.length < tfQuestions.length);
             state.gameData.used.push(q.q);
             state.gameData.currentQ = q;
-
-            // أماكن الأزرار عشوائية
             state.gameData.trueLeft = Math.random() > 0.5;
             renderTF();
         }
@@ -811,8 +865,10 @@
             if (state.touchLocked || !state.running) return;
             if (answer === state.gameData.currentQ.a) {
                 state.gameData.totalScore += 25;
+                SoundFX.playCorrect();
                 flashGreen();
             } else {
+                SoundFX.playWrong();
                 flashRed();
             }
             nextTFRound();
@@ -823,19 +879,18 @@
         // ==================== لعبة 5: سباق الأزرار ====================
         function initRace() {
             state.timeLeft = games[4].time;
-            state.gameData = { kingClicks: 0, challengerClicks: 0, activeBtn: null, currentColor: 0 };
+            state.gameData = { kingClicks: 0, challengerClicks: 0, activeBtn: null };
 
-            const colors = [
-                { name: 'أحمر', code: '#e74c3c' },
-                { name: 'أزرق', code: '#3498db' },
-                { name: 'أخضر', code: '#2ecc71' },
-                { name: 'برتقالي', code: '#f39c12' },
-                { name: 'بنفسجي', code: '#9b59b6' },
-                { name: 'وردي', code: '#e91e63' }
+            const allColors = [
+                { emoji: '🔴', code: '#e74c3c' },
+                { emoji: '🔵', code: '#3498db' },
+                { emoji: '🟢', code: '#2ecc71' },
+                { emoji: '🟠', code: '#f39c12' },
+                { emoji: '🟣', code: '#9b59b6' },
+                { emoji: '💗', code: '#e91e63' }
             ];
 
-            // ترتيب عشوائي للأزرار
-            const shuffledColors = shuffle([...colors]);
+            const shuffledColors = shuffle([...allColors]);
 
             document.getElementById('gameArea').innerHTML = `
                 <div style="text-align:center;">
@@ -851,7 +906,7 @@
                         ${shuffledColors.map((c, i) => `
                             <button class="race-btn" data-btn="${i}" data-color="${c.code}"
                                 style="background:${c.code};" onclick="raceClick(this)">
-                                ${['🔴','🔵','🟢','🟠','🟣','💗'][colors.indexOf(c)]}
+                                ${c.emoji}
                             </button>
                         `).join('')}
                     </div>
@@ -870,7 +925,7 @@
             const randomBtn = btns[Math.floor(Math.random() * btns.length)];
             randomBtn.classList.add('active-btn');
             state.gameData.activeBtn = randomBtn;
-            state.gameData.roundStart = Date.now();
+            SoundFX.playTick();
         }
 
         function raceClick(btn) {
@@ -880,8 +935,9 @@
             btn.classList.remove('active-btn');
             state.gameData.kingClicks++;
             updateRaceScores();
+            SoundFX.playCorrect();
             flashGreen();
-            setTimeout(startRaceRound, 300);
+            setTimeout(startRaceRound, 250);
         }
 
         function updateRaceScores() {
@@ -895,16 +951,16 @@
             endMiniGame(winner);
         }
 
-        // ==================== تأثيرات ====================
+        // ==================== تأثيرات بصرية ====================
         function flashGreen() {
             const area = document.getElementById('gameArea');
-            area.style.boxShadow = 'inset 0 0 50px rgba(46,204,113,0.6)';
-            setTimeout(() => area.style.boxShadow = '', 250);
+            area.style.boxShadow = 'inset 0 0 60px rgba(46,204,113,0.7)';
+            setTimeout(() => area.style.boxShadow = '', 300);
         }
         function flashRed() {
             const area = document.getElementById('gameArea');
-            area.style.boxShadow = 'inset 0 0 50px rgba(231,76,60,0.6)';
-            setTimeout(() => area.style.boxShadow = '', 250);
+            area.style.boxShadow = 'inset 0 0 60px rgba(231,76,60,0.7)';
+            setTimeout(() => area.style.boxShadow = '', 300);
         }
 
         // ==================== إدارة اللعبة العامة ====================
@@ -936,8 +992,15 @@
             state.timer = setInterval(() => {
                 state.timeLeft--;
                 updateTimerDisplay();
-                if (state.timeLeft <= 3) document.getElementById('timerDisplay').classList.add('urgent');
-                if (state.timeLeft <= 0) { clearInterval(state.timer); handleTimeout(); }
+                if (state.timeLeft <= 3) {
+                    document.getElementById('timerDisplay').classList.add('urgent');
+                    SoundFX.playTick();
+                }
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timer);
+                    SoundFX.playWrong();
+                    handleTimeout();
+                }
             }, 1000);
         }
 
@@ -973,6 +1036,8 @@
             const emoji = winner === 'king' ? '🤴' : winner === 'challenger' ? '🗡️' : '🤝';
             const msg = winner === 'draw' ? 'تعادل!' : winner === 'king' ? 'الملك يفوز!' : 'المتحدي يفوز!';
 
+            SoundFX.playCorrect();
+
             document.getElementById('gameArea').innerHTML = `
                 <div class="result-message">
                     <div style="font-size:3.5em;">${emoji}</div>
@@ -998,6 +1063,7 @@
             document.getElementById('victoryMessage').textContent = kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
             document.getElementById('victoryScore').textContent = `${state.kingScore} - ${state.challengerScore}`;
             document.getElementById('victoryOverlay').classList.remove('hidden');
+            SoundFX.playVictory();
             updateChampions(kingWins ? 'الملك' : 'المتحدي');
             document.getElementById('btnStart').disabled = false;
         }
