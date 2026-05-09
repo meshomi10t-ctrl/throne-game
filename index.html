@@ -21,13 +21,10 @@
             touch-action: manipulation;
         }
 
-        /* ========= الشاشة الرئيسية ========= */
-        .screen {
-            display: none; min-height: 100vh;
-        }
+        .screen { display: none; min-height: 100vh; }
         .screen.active { display: block; }
 
-        /* ========= تسجيل الدخول ========= */
+        /* تسجيل الدخول */
         .login-screen {
             display: flex; justify-content: center; align-items: center;
             background: linear-gradient(135deg, #0a0a1a, #1a1a35);
@@ -58,7 +55,7 @@
         .login-btn:active { transform: scale(0.95); }
         .login-btn:disabled { background: #7f8c8d; }
 
-        /* ========= شاشة الانتظار ========= */
+        /* الانتظار */
         .wait-screen {
             display: flex; justify-content: center; align-items: center;
             background: linear-gradient(135deg, #0a0a1a, #1a1a35);
@@ -72,7 +69,7 @@
         .wait-title { font-size: 1.8em; color: var(--gold); margin: 15px 0; }
         .wait-message { font-size: 1.2em; color: #ecf0f1; line-height: 1.8; }
 
-        /* ========= الساحة ========= */
+        /* الساحة */
         .header {
             text-align: center; padding: 10px;
             background: rgba(0,0,0,0.6); border-bottom: 2px solid var(--gold);
@@ -176,17 +173,6 @@
         }
         .dir-btn:active { background: var(--gold); color: var(--bg); transform: scale(0.9); }
 
-        .tap-circle {
-            width: 150px; height: 150px; border-radius: 50%;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.2em; cursor: pointer; box-shadow: 0 0 35px rgba(231,76,60,0.6);
-            transition: 0.1s;
-        }
-        .king-zone .tap-circle { background: linear-gradient(135deg, var(--gold), #f39c12); box-shadow: 0 0 35px rgba(241,196,15,0.6); }
-        .tap-circle:active { transform: scale(0.85); }
-        .tap-counter { font-size: 2.5em; margin-top: 10px; font-weight: bold; }
-
         .tf-question {
             font-size: 1.6em; text-align: center; margin: 10px 0;
             background: rgba(255,255,255,0.1); padding: 15px; border-radius: 14px; line-height: 1.6;
@@ -213,7 +199,79 @@
         }
         @keyframes targetPop { from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)} }
 
-        /* ========= الأزرار السفلية ========= */
+        /* ========= لعبة Raindrops ========= */
+        .raindrop-area {
+            position: relative; width: 100%; height: 300px;
+            background: linear-gradient(180deg, rgba(10,10,30,0.9) 0%, rgba(30,60,100,0.8) 100%);
+            border-radius: 15px; overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .water-line {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, #3498db, #1abc9c, #3498db);
+            opacity: 0.8;
+        }
+        .raindrop {
+            position: absolute; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: white; cursor: pointer;
+            transition: opacity 0.2s; z-index: 2;
+            box-shadow: 0 2px 10px rgba(52,152,219,0.5);
+            animation: dropFall var(--fall-speed, 8s) linear forwards;
+        }
+        .raindrop.wrong {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            animation: shake 0.4s ease-out;
+        }
+        @keyframes shake {
+            0%,100%{ transform: translateX(0); }
+            25%{ transform: translateX(-8px); }
+            75%{ transform: translateX(8px); }
+        }
+        @keyframes dropFall {
+            from { top: -50px; }
+            to { top: 100%; }
+        }
+        .lives-display {
+            display: flex; gap: 5px; margin: 5px 0;
+            font-size: 1.5em;
+        }
+        .raindrop-input {
+            width: 100%; padding: 8px; border-radius: 10px;
+            border: 2px solid var(--gold); background: rgba(0,0,0,0.6);
+            color: white; font-size: 1.1em; text-align: center;
+            outline: none; margin-top: 5px;
+        }
+        .raindrop-input:focus { border-color: var(--green); }
+
+        /* ========= لعبة Code Break ========= */
+        .codebreak-area {
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            width: 100%; max-width: 380px;
+        }
+        .code-row {
+            display: flex; gap: 8px; margin: 5px 0;
+        }
+        .code-peg {
+            width: 45px; height: 45px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.4); cursor: pointer;
+            transition: 0.2s;
+        }
+        .code-peg:active { transform: scale(0.9); }
+        .code-peg.selected { border-color: white; box-shadow: 0 0 20px white; }
+        .peg-red { background: #e74c3c; } .peg-blue { background: #3498db; }
+        .peg-green { background: #2ecc71; } .peg-yellow { background: #f1c40f; }
+        .peg-purple { background: #9b59b6; } .peg-orange { background: #f39c12; }
+        .peg-white { background: #ecf0f1; } .peg-black { background: #2c3e50; }
+
+        .feedback-dot {
+            width: 12px; height: 12px; border-radius: 50%; margin: 2px;
+        }
+        .feedback-black { background: #2c3e50; }
+        .feedback-white { background: #ecf0f1; border: 1px solid #95a5a6; }
+
+        /* ========= الأزرار ========= */
         .controls {
             display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
             padding: 12px; background: rgba(0,0,0,0.7);
@@ -230,40 +288,14 @@
         .btn-reset { background: #e67e22; }
         .btn-sound { background: #2c3e50; }
         .btn-leave { background: var(--red); }
+        .btn-check { background: var(--blue); padding: 8px 20px; font-size: 1em; }
 
-        /* ========= QR للجمهور ========= */
-        .qr-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95); display: flex;
-            justify-content: center; align-items: center; z-index: 300;
-        }
-        .qr-card {
-            background: var(--card); border: 3px solid var(--gold);
-            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
-            text-align: center;
-        }
-        .qr-timer { font-size: 3em; color: var(--red); font-weight: bold; margin: 15px 0; }
-
-        /* ========= العد التنازلي للعودة ========= */
-        .return-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95); display: flex;
-            justify-content: center; align-items: center; z-index: 250;
-        }
-        .return-card {
-            background: var(--card); border: 3px solid var(--red);
-            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
-            text-align: center;
-        }
-        .return-countdown { font-size: 5em; color: var(--red); font-weight: bold; margin: 20px 0; }
-
-        /* ========= التراكبات ========= */
+        .hidden { display: none !important; }
         .overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.95); display: flex;
             justify-content: center; align-items: center; z-index: 200;
         }
-        .hidden { display: none !important; }
         .card {
             background: var(--card); border: 3px solid var(--gold);
             border-radius: 25px; padding: 25px; max-width: 500px; width: 92%;
@@ -282,6 +314,30 @@
         .victory-icon { font-size: 100px; animation: victoryBounce 0.5s infinite; }
         @keyframes victoryBounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.2) rotate(10deg)} }
 
+        .qr-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); display: flex;
+            justify-content: center; align-items: center; z-index: 300;
+        }
+        .qr-card {
+            background: var(--card); border: 3px solid var(--gold);
+            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            text-align: center;
+        }
+        .qr-timer { font-size: 3em; color: var(--red); font-weight: bold; margin: 15px 0; }
+
+        .return-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); display: flex;
+            justify-content: center; align-items: center; z-index: 250;
+        }
+        .return-card {
+            background: var(--card); border: 3px solid var(--red);
+            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            text-align: center;
+        }
+        .return-countdown { font-size: 5em; color: var(--red); font-weight: bold; margin: 20px 0; }
+
         @media (max-width: 650px) {
             .arena { grid-template-columns: 1fr; }
             .king-zone { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -291,12 +347,14 @@
             .stroop-word { font-size: 2em; }
             .dir-arrow { font-size: 3.5em; }
             .btn { padding: 8px 16px; font-size: 0.9em; }
+            .raindrop-area { height: 220px; }
+            .code-peg { width: 35px; height: 35px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ==================== شاشة تسجيل الدخول ==================== -->
+    <!-- تسجيل الدخول -->
     <div class="screen active" id="loginScreen">
         <div class="login-screen">
             <div class="login-card">
@@ -312,23 +370,19 @@
         </div>
     </div>
 
-    <!-- ==================== شاشة الانتظار ==================== -->
+    <!-- الانتظار -->
     <div class="screen" id="waitScreen">
         <div class="wait-screen">
             <div class="wait-card">
                 <div class="wait-icon">⏳</div>
                 <div class="wait-title">في قائمة الانتظار</div>
-                <div class="wait-message" id="waitMessage">
-                    انتظر دورك للتحدي...
-                </div>
-                <div style="margin-top:20px;color:#95a5a6;">
-                    سيظهر إشعار عندما يحين دورك
-                </div>
+                <div class="wait-message" id="waitMessage">انتظر دورك للتحدي...</div>
+                <div style="margin-top:20px;color:#95a5a6;">سيظهر إشعار عندما يحين دورك</div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== الساحة الرئيسية ==================== -->
+    <!-- الساحة -->
     <div class="screen" id="arenaScreen">
         <div class="header">
             <div class="header-crown">👑</div>
@@ -344,10 +398,9 @@
             </div>
         </div>
 
-        <div class="timer-big" id="timerDisplay">⏱️ 45</div>
+        <div class="timer-big" id="timerDisplay">⏱️ 50</div>
 
         <div class="arena">
-            <!-- الملك -->
             <div class="player-zone king-zone active-turn" id="kingZone">
                 <div class="zone-label">👑 الملك</div>
                 <div class="zone-avatar">🤴</div>
@@ -358,7 +411,6 @@
                 </div>
             </div>
 
-            <!-- المتحدي -->
             <div class="player-zone challenger-zone active-turn" id="challengerZone">
                 <div class="zone-label">🗡️ المتحدي</div>
                 <div class="zone-avatar">🗡️</div>
@@ -379,7 +431,7 @@
         </div>
     </div>
 
-    <!-- ==================== شرح الجولة ==================== -->
+    <!-- شرح الجولة -->
     <div id="tutorialOverlay" class="overlay hidden">
         <div class="card">
             <div class="card-icon" id="tutIcon">🎮</div>
@@ -390,7 +442,7 @@
         </div>
     </div>
 
-    <!-- ==================== شاشة النصر ==================== -->
+    <!-- النصر -->
     <div id="victoryOverlay" class="overlay hidden">
         <div class="card">
             <div class="victory-icon">👑</div>
@@ -400,7 +452,7 @@
         </div>
     </div>
 
-    <!-- ==================== QR للتحدي ==================== -->
+    <!-- QR -->
     <div id="qrOverlay" class="qr-overlay hidden">
         <div class="qr-card">
             <h2 style="color:var(--gold);">📱 تحدي العرش!</h2>
@@ -412,7 +464,7 @@
         </div>
     </div>
 
-    <!-- ==================== شاشة العودة ==================== -->
+    <!-- العودة -->
     <div id="returnOverlay" class="return-overlay hidden">
         <div class="return-card">
             <div class="card-icon">⚠️</div>
@@ -429,15 +481,11 @@
         // ==================== نظام الصوت ====================
         const Sound = {
             ctx: null, muted: false,
-            init() {
-                try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-                catch(e) { console.log('صوت غير مدعوم'); }
-            },
+            init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
             tone(freq, dur, type, vol) {
                 if (this.muted || !this.ctx) return;
                 try {
-                    const o = this.ctx.createOscillator();
-                    const g = this.ctx.createGain();
+                    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
                     o.type = type || 'square'; o.frequency.value = freq;
                     g.gain.value = vol || 0.3;
                     g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
@@ -450,7 +498,8 @@
             start() { this.tone(440,0.1);setTimeout(()=>this.tone(660,0.1),100);setTimeout(()=>this.tone(880,0.2),200); },
             victory() { [523,659,784,1047].forEach((n,i)=>setTimeout(()=>this.tone(n,0.3,'square',0.4),i*200)); },
             tick() { this.tone(1000,0.05,'square',0.2); },
-            alarm() { for(let i=0;i<5;i++) setTimeout(()=>this.tone(800,0.15,'square',0.5),i*300); }
+            alarm() { for(let i=0;i<5;i++) setTimeout(()=>this.tone(800,0.15,'square',0.5),i*300); },
+            splash() { this.tone(600,0.1,'triangle',0.2); this.tone(400,0.15,'triangle',0.15); }
         };
         document.addEventListener('touchstart', ()=>Sound.init(), {once:true});
         document.addEventListener('click', ()=>Sound.init(), {once:true});
@@ -469,27 +518,19 @@
         let waitingPlayers = [];
         let gameActive = false;
 
-        // ==================== الانضمام للعبة ====================
         function joinGame() {
             const nameInput = document.getElementById('playerNameInput');
             const name = nameInput.value.trim();
             if (!name) { nameInput.focus(); return; }
-
             const finalName = name.startsWith('@') ? name : '@' + name;
-            
+
             if (!players.king.name || players.king.name === '@الملك') {
-                // أول لاعب = الملك
-                players.king.name = finalName;
-                currentKingName = finalName;
-                document.getElementById('kingName').textContent = finalName;
-                showArena();
+                players.king.name = finalName; currentKingName = finalName;
+                document.getElementById('kingName').textContent = finalName; showArena();
             } else if (!players.challenger.name || players.challenger.name === '@المتسابق') {
-                // ثاني لاعب = المتحدي
                 players.challenger.name = finalName;
-                document.getElementById('challengerName').textContent = finalName;
-                showArena();
+                document.getElementById('challengerName').textContent = finalName; showArena();
             } else {
-                // في قائمة الانتظار
                 waitingPlayers.push(finalName);
                 document.getElementById('waitMessage').textContent = `أهلاً ${finalName}!\nأنت في قائمة الانتظار (${waitingPlayers.length})`;
                 document.getElementById('loginScreen').classList.remove('active');
@@ -503,7 +544,7 @@
             document.getElementById('arenaScreen').classList.add('active');
         }
 
-        // ==================== الألعاب (وقت أطول) ====================
+        // ==================== الألعاب ====================
         const games = [
             {
                 name: '🎨 لون الكلمة', icon: '🎨', title: 'تحدي ستروب',
@@ -518,10 +559,10 @@
                 init(zone) { initDirection(zone); }
             },
             {
-                name: '👆 النقر السريع', icon: '👆', title: 'تحدي النقر',
-                desc: 'انقر الدائرة بأقصى سرعة!<br>أكبر عدد نقرات = فوز<br><br>⏱️ الوقت: <b>35 ثانية</b>',
-                time: 35, rounds: 1,
-                init(zone) { initTapRace(zone); }
+                name: '🧩 كسر الشيفرة', icon: '🧩', title: 'Code Break',
+                desc: 'خمّن الشيفرة السرية المكونة من 4 ألوان!<br>⚫ = لون صحيح في مكان صحيح<br>⚪ = لون صحيح في مكان خاطئ<br><br>⏱️ الوقت: <b>60 ثانية</b>',
+                time: 60, rounds: 1,
+                init(zone) { initCodeBreak(zone); }
             },
             {
                 name: '✅ صح أو خطأ', icon: '✅', title: 'صح أم خطأ',
@@ -542,7 +583,7 @@
             running: false, round: 0,
             kingScore: 0, challengerScore: 0,
             kingRoundScore: 0, challengerRoundScore: 0,
-            timer: null, timeLeft: 45,
+            timer: null, timeLeft: 50,
             tutInterval: null, tutSeconds: 15, tutCallback: null,
             kingDone: false, challengerDone: false,
             returnTimer: null, returnSeconds: 180,
@@ -557,11 +598,9 @@
             document.getElementById('tutTitle').textContent = g.title;
             document.getElementById('tutDesc').innerHTML = g.desc;
             document.getElementById('tutorialOverlay').classList.remove('hidden');
-
             state.tutSeconds = 15;
             const cd = document.getElementById('tutCountdown');
             cd.textContent = state.tutSeconds; cd.style.color = '#F1C40F';
-
             clearInterval(state.tutInterval);
             state.tutInterval = setInterval(() => {
                 state.tutSeconds--;
@@ -569,8 +608,7 @@
                 if (state.tutSeconds <= 3) { cd.style.color = '#e74c3c'; Sound.tick(); }
                 if (state.tutSeconds <= 0) {
                     clearInterval(state.tutInterval);
-                    cd.textContent = '🚀'; cd.style.color = '#2ecc71';
-                    Sound.start();
+                    cd.textContent = '🚀'; cd.style.color = '#2ecc71'; Sound.start();
                     setTimeout(() => {
                         document.getElementById('tutorialOverlay').classList.add('hidden');
                         if (state.tutCallback) { const cb = state.tutCallback; state.tutCallback = null; cb(); }
@@ -586,15 +624,15 @@
             if (state.tutCallback) { const cb = state.tutCallback; state.tutCallback = null; cb(); }
         }
 
-        // ==================== لعبة 1: ستروب ====================
-        const colors = [
+        // ==================== لعبة 1: ستروب (مصححة) ====================
+        const colorList = [
             { name: 'أحمر', code: '#e74c3c' }, { name: 'أزرق', code: '#3498db' },
             { name: 'أخضر', code: '#2ecc71' }, { name: 'أصفر', code: '#f1c40f' },
             { name: 'بنفسجي', code: '#9b59b6' }, { name: 'برتقالي', code: '#f39c12' }
         ];
 
         function initStroop(zone) {
-            const data = state['stroop' + zone] = { round: 0, score: 0, correct: null };
+            state['stroop' + zone] = { round: 0, score: 0, correct: null };
             nextStroop(zone);
         }
 
@@ -603,17 +641,27 @@
             data.round++;
             if (data.round > games[0].rounds) { finishPlayer(zone, data.score); return; }
 
-            const nameColor = colors[rand(0, colors.length-1)];
-            let codeColor;
-            do { codeColor = colors[rand(0, colors.length-1)]; } while (codeColor.name === nameColor.name);
-            data.correct = codeColor.name;
+            const nameColor = colorList[rand(0, colorList.length-1)];
+            let displayColor;
+            do { displayColor = colorList[rand(0, colorList.length-1)]; } while (displayColor.name === nameColor.name);
+            data.correct = displayColor.name;
 
-            const btns = shuffle([...colors]).slice(0, 4);
+            // إنشاء خيارات: اللون الصحيح + 3 ألوان عشوائية أخرى
+            let options = [displayColor];
+            const otherColors = colorList.filter(c => c.name !== displayColor.name);
+            while (options.length < 4) {
+                const randomColor = otherColors[rand(0, otherColors.length-1)];
+                if (!options.find(o => o.name === randomColor.name)) {
+                    options.push(randomColor);
+                }
+            }
+            options = shuffle(options);
+
             document.getElementById(zone + 'Game').innerHTML = `
                 <div style="text-align:center;">
-                    <div class="stroop-word" style="color:${codeColor.code};">${nameColor.name}</div>
+                    <div class="stroop-word" style="color:${displayColor.code};">${nameColor.name}</div>
                     <div class="stroop-btns">
-                        ${btns.map(c => `<button class="stroop-btn" style="background:${c.code};"
+                        ${options.map(c => `<button class="stroop-btn" style="background:${c.code};"
                             onclick="ansStroop('${zone}','${c.name}')">${c.name}</button>`).join('')}
                     </div>
                     <div style="color:#95a5a6;margin-top:10px;">${data.round}/${games[0].rounds}</div>
@@ -638,7 +686,7 @@
         ];
 
         function initDirection(zone) {
-            const data = state['dir' + zone] = { round: 0, score: 0, correct: null };
+            state['dir' + zone] = { round: 0, score: 0, correct: null };
             nextDir(zone);
         }
 
@@ -670,23 +718,175 @@
             nextDir(zone);
         }
 
-        // ==================== لعبة 3: النقر ====================
-        function initTapRace(zone) {
-            state['tap' + zone] = { clicks: 0 };
-            document.getElementById(zone + 'Game').innerHTML = `
-                <div style="text-align:center;">
-                    <div class="tap-counter" id="${zone}TapCnt">0</div>
-                    <div class="tap-circle" id="${zone}TapBtn" onclick="tapClick('${zone}')">👆 المس!</div>
-                </div>`;
+        // ==================== 🆕 لعبة 3: Code Break ====================
+        function initCodeBreak(zone) {
+            // إنشاء شيفرة سرية عشوائية (4 ألوان من 6)
+            const pegColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+            const secret = [];
+            for (let i = 0; i < 4; i++) {
+                secret.push(pegColors[rand(0, pegColors.length-1)]);
+            }
+
+            const data = state['codebreak' + zone] = {
+                secret: secret,
+                attempts: [],
+                currentGuess: [null, null, null, null],
+                maxAttempts: 10,
+                score: 0
+            };
+
+            renderCodeBreak(zone);
         }
 
-        function tapClick(zone) {
-            if (!state.running) return;
-            const data = state['tap' + zone];
+        function renderCodeBreak(zone) {
+            const data = state['codebreak' + zone];
             if (!data) return;
-            data.clicks++;
-            document.getElementById(zone + 'TapCnt').textContent = data.clicks;
-            Sound.tick();
+
+            const pegColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+            const colorNames = {
+                red: 'أحمر', blue: 'أزرق', green: 'أخضر',
+                yellow: 'أصفر', purple: 'بنفسجي', orange: 'برتقالي'
+            };
+
+            let html = '<div class="codebreak-area">';
+            
+            // عرض المحاولات السابقة
+            html += '<div style="width:100%; max-height:200px; overflow-y:auto; margin-bottom:10px;">';
+            for (const attempt of data.attempts) {
+                html += '<div style="display:flex; align-items:center; gap:10px; margin:5px 0;">';
+                html += '<div class="code-row">';
+                for (const color of attempt.guess) {
+                    html += `<div class="code-peg peg-${color}"></div>`;
+                }
+                html += '</div>';
+                html += '<div style="display:flex; gap:3px;">';
+                for (const fb of attempt.feedback) {
+                    html += `<div class="feedback-dot feedback-${fb}"></div>`;
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+            html += '</div>';
+
+            // صف التخمين الحالي
+            html += '<div class="code-row">';
+            for (let i = 0; i < 4; i++) {
+                const color = data.currentGuess[i];
+                html += `<div class="code-peg ${color ? 'peg-'+color : ''}" 
+                    onclick="selectCodePeg('${zone}', ${i})" id="${zone}peg${i}">
+                    ${color ? '' : '?'}
+                </div>`;
+            }
+            html += '</div>';
+
+            // لوحة الألوان
+            html += '<div class="code-row">';
+            for (const color of pegColors) {
+                html += `<div class="code-peg peg-${color}" 
+                    onclick="pickCodeColor('${zone}', '${color}')"
+                    title="${colorNames[color]}"></div>`;
+            }
+            html += '</div>';
+
+            html += `<button class="btn btn-check" onclick="submitCodeGuess('${zone}')">✅ تحقق</button>`;
+            html += `<div style="color:#95a5a6;margin-top:5px;">المحاولات: ${data.attempts.length}/${data.maxAttempts}</div>`;
+            html += '</div>';
+
+            document.getElementById(zone + 'Game').innerHTML = html;
+        }
+
+        function pickCodeColor(zone, color) {
+            const data = state['codebreak' + zone];
+            if (!data) return;
+
+            // ابحث عن أول خانة فارغة
+            const emptyIndex = data.currentGuess.findIndex(c => c === null);
+            if (emptyIndex === -1) return; // كل الخانات ممتلئة
+
+            data.currentGuess[emptyIndex] = color;
+            renderCodeBreak(zone);
+        }
+
+        function selectCodePeg(zone, index) {
+            const data = state['codebreak' + zone];
+            if (!data) return;
+
+            // الضغط على خانة محددة يمسحها
+            if (data.currentGuess[index] !== null) {
+                data.currentGuess[index] = null;
+                // إزاحة الفراغ لليسار (اختياري)
+                data.currentGuess = data.currentGuess.filter(c => c !== null);
+                while (data.currentGuess.length < 4) data.currentGuess.push(null);
+                renderCodeBreak(zone);
+            }
+        }
+
+        function submitCodeGuess(zone) {
+            const data = state['codebreak' + zone];
+            if (!data || !state.running) return;
+
+            // التأكد من اكتمال التخمين
+            if (data.currentGuess.includes(null)) {
+                Sound.wrong();
+                return;
+            }
+
+            // حساب التلميحات
+            const secret = [...data.secret];
+            const guess = [...data.currentGuess];
+            let black = 0, white = 0;
+
+            // الأسود: اللون والمكان صحيحان
+            for (let i = 0; i < 4; i++) {
+                if (guess[i] === secret[i]) {
+                    black++;
+                    secret[i] = null;
+                    guess[i] = null;
+                }
+            }
+
+            // الأبيض: اللون موجود لكن في مكان آخر
+            for (let i = 0; i < 4; i++) {
+                if (guess[i] === null) continue;
+                const idx = secret.indexOf(guess[i]);
+                if (idx !== -1) {
+                    white++;
+                    secret[idx] = null;
+                }
+            }
+
+            // بناء التلميحات (أسود ثم أبيض)
+            const feedback = [];
+            for (let i = 0; i < black; i++) feedback.push('black');
+            for (let i = 0; i < white; i++) feedback.push('white');
+
+            // حفظ المحاولة
+            data.attempts.push({
+                guess: [...data.currentGuess],
+                feedback: feedback
+            });
+
+            // تحقق من الفوز
+            if (black === 4) {
+                Sound.victory();
+                const baseScore = 200;
+                const bonus = (data.maxAttempts - data.attempts.length + 1) * 50;
+                finishPlayer(zone, baseScore + bonus);
+                return;
+            }
+
+            // تحقق من استنفاد المحاولات
+            if (data.attempts.length >= data.maxAttempts) {
+                Sound.wrong();
+                // بعض النقاط للمحاولة
+                finishPlayer(zone, data.attempts.length * 15);
+                return;
+            }
+
+            // إعادة تعيين التخمين الحالي
+            data.currentGuess = [null, null, null, null];
+            renderCodeBreak(zone);
+            Sound.correct();
         }
 
         // ==================== لعبة 4: صح وخطأ ====================
@@ -701,7 +901,7 @@
         ];
 
         function initTrueFalse(zone) {
-            const data = state['tf' + zone] = { round: 0, score: 0, used: [], correct: null };
+            state['tf' + zone] = { round: 0, score: 0, used: [], correct: null };
             nextTF(zone);
         }
 
@@ -748,7 +948,6 @@
         function spawnTarget(zone) {
             const data = state['sniper' + zone];
             if (!data || !state.running) return;
-
             const x = rand(15, 85), y = rand(15, 70), size = rand(50, 80);
             document.getElementById(zone + 'Game').innerHTML = `
                 <div class="sniper-area">
@@ -758,7 +957,6 @@
                     </div>
                 </div>
                 <div style="color:#95a5a6;margin-top:5px;">أهداف: ${data.score}</div>`;
-
             data.active = true;
             data.timeout = setTimeout(() => {
                 if (data.active) { data.active = false; Sound.wrong(); spawnTarget(zone); }
@@ -797,7 +995,7 @@
 
         function endRound() {
             clearInterval(state.timer);
-            const points = [0, 50, 50, 40, 40, 60][state.round];
+            const points = [0, 50, 50, 60, 50, 60][state.round];
             let winner;
 
             if (state.kingRoundScore > state.challengerRoundScore) {
@@ -810,14 +1008,12 @@
                 winner = 'draw';
             }
 
-            updateScores();
-            Sound.victory();
+            updateScores(); Sound.victory();
 
             setTimeout(() => {
                 state.round++;
-                if (state.round > 5) {
-                    endGame();
-                } else {
+                if (state.round > 5) { endGame(); }
+                else {
                     state.kingDone = false; state.challengerDone = false;
                     updateDots();
                     document.getElementById('roundNum').textContent = state.round;
@@ -833,12 +1029,10 @@
             state.running = true; state.round = 1;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
-
             updateScores(); updateDots();
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('btnStart').disabled = true;
             gameActive = true;
-
             showTutorial(0, () => startRound());
         }
 
@@ -846,10 +1040,8 @@
             const game = games[state.round - 1];
             state.timeLeft = game.time;
             state.kingRoundScore = 0; state.challengerRoundScore = 0;
-
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">⏳...</div>';
             document.getElementById('challengerGame').innerHTML = '<div style="color:var(--blue);">⏳...</div>';
-
             game.init('king'); game.init('challenger');
             startTimer();
         }
@@ -858,40 +1050,29 @@
             clearInterval(state.timer);
             updateTimer();
             document.getElementById('timerDisplay').classList.remove('urgent');
-
             state.timer = setInterval(() => {
                 state.timeLeft--;
                 updateTimer();
-                if (state.timeLeft <= 5) {
-                    document.getElementById('timerDisplay').classList.add('urgent');
-                    Sound.tick();
-                }
-                if (state.timeLeft <= 0) {
-                    clearInterval(state.timer);
-                    Sound.wrong();
-                    handleTimeout();
-                }
+                if (state.timeLeft <= 5) { document.getElementById('timerDisplay').classList.add('urgent'); Sound.tick(); }
+                if (state.timeLeft <= 0) { clearInterval(state.timer); Sound.wrong(); handleTimeout(); }
             }, 1000);
         }
 
-        function updateTimer() {
-            document.getElementById('timerDisplay').textContent = `⏱️ ${state.timeLeft}`;
-        }
+        function updateTimer() { document.getElementById('timerDisplay').textContent = `⏱️ ${state.timeLeft}`; }
 
         function handleTimeout() {
             if (!state.kingDone) finishPlayer('king',
                 state['stroopking']?.score || state['dirking']?.score ||
-                state['tapking']?.clicks || state['tfking']?.score ||
+                state['codebreakking']?.score || state['tfking']?.score ||
                 state['sniperking']?.score || 0);
             if (!state.challengerDone) finishPlayer('challenger',
                 state['stroopchallenger']?.score || state['dirchallenger']?.score ||
-                state['tapchallenger']?.clicks || state['tfchallenger']?.score ||
+                state['codebreakchallenger']?.score || state['tfchallenger']?.score ||
                 state['sniperchallenger']?.score || 0);
         }
 
         function endGame() {
-            state.running = false;
-            gameActive = false;
+            state.running = false; gameActive = false;
             const kingWins = state.kingScore > state.challengerScore;
             document.getElementById('victoryMsg').textContent = kingWins ?
                 '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
@@ -902,8 +1083,6 @@
             Sound.victory();
 
             if (!kingWins) {
-                // الملك القديم يخسر
-                const oldKing = players.king.name;
                 players.king = { ...players.challenger, isKing: true, score: 0 };
                 currentKingName = players.challenger.name;
                 players.challenger = { name: waitingPlayers[0] || '@المتسابق', score: 0, isKing: false };
@@ -911,14 +1090,11 @@
                 document.getElementById('kingName').textContent = players.king.name;
                 document.getElementById('challengerName').textContent = players.challenger.name;
             }
-
             document.getElementById('btnStart').disabled = false;
-
-            // QR تلقائي بعد 3 ثواني
             setTimeout(() => showChallengeQR(), 3000);
         }
 
-        // ==================== QR Code للتحدي ====================
+        // ==================== QR Code ====================
         function showChallengeQR() {
             document.getElementById('qrOverlay').classList.remove('hidden');
             const qrDiv = document.getElementById('qrCodeDisplay');
@@ -928,44 +1104,31 @@
                 width: 200, height: 200,
                 colorDark: "#2c3e50", colorLight: "#ffffff"
             });
-
             state.qrSeconds = 30;
             document.getElementById('qrTimer').textContent = state.qrSeconds;
             clearInterval(state.qrTimer);
             state.qrTimer = setInterval(() => {
                 state.qrSeconds--;
                 document.getElementById('qrTimer').textContent = state.qrSeconds;
-                if (state.qrSeconds <= 0) {
-                    clearInterval(state.qrTimer);
-                    closeQR();
-                }
+                if (state.qrSeconds <= 0) { clearInterval(state.qrTimer); closeQR(); }
             }, 1000);
         }
 
-        function closeQR() {
-            clearInterval(state.qrTimer);
-            document.getElementById('qrOverlay').classList.add('hidden');
-        }
+        function closeQR() { clearInterval(state.qrTimer); document.getElementById('qrOverlay').classList.add('hidden'); }
 
-        // ==================== نظام المغادرة والعودة ====================
+        // ==================== مغادرة وعودة ====================
         function leaveThrone() {
             if (!confirm('هل أنت متأكد من مغادرة العرش؟')) return;
-            // للملك فقط
-            if (players.king.isKing) {
-                startReturnCountdown('king');
-            }
+            if (players.king.isKing) startReturnCountdown('king');
         }
 
         function startReturnCountdown(who) {
             document.getElementById('returnOverlay').classList.remove('hidden');
             document.getElementById('returnMessage').textContent =
-                who === 'king' ? `${players.king.name} غادر! لديك 3 دقائق للعودة` :
-                `${players.challenger.name} انقطع اتصاله!`;
-
+                who === 'king' ? `${players.king.name} غادر! لديك 3 دقائق للعودة` : `${players.challenger.name} انقطع اتصاله!`;
             state.returnSeconds = 180;
             document.getElementById('returnCountdown').textContent = state.returnSeconds;
             Sound.alarm();
-
             clearInterval(state.returnTimer);
             state.returnTimer = setInterval(() => {
                 state.returnSeconds--;
@@ -979,43 +1142,25 @@
             }, 1000);
         }
 
-        function attemptReconnect() {
-            clearInterval(state.returnTimer);
-            document.getElementById('returnOverlay').classList.add('hidden');
-            Sound.start();
-        }
+        function attemptReconnect() { clearInterval(state.returnTimer); document.getElementById('returnOverlay').classList.add('hidden'); Sound.start(); }
 
         function replacePlayer(who) {
-            if (who === 'king') {
-                if (waitingPlayers.length > 0) {
-                    players.king.name = waitingPlayers.shift();
-                    currentKingName = players.king.name;
-                    document.getElementById('kingName').textContent = players.king.name;
-                }
-            } else {
-                if (waitingPlayers.length > 0) {
-                    players.challenger.name = waitingPlayers.shift();
-                    document.getElementById('challengerName').textContent = players.challenger.name;
-                }
+            if (who === 'king' && waitingPlayers.length > 0) {
+                players.king.name = waitingPlayers.shift(); currentKingName = players.king.name;
+                document.getElementById('kingName').textContent = players.king.name;
+            } else if (who === 'challenger' && waitingPlayers.length > 0) {
+                players.challenger.name = waitingPlayers.shift();
+                document.getElementById('challengerName').textContent = players.challenger.name;
             }
             showChallengeQR();
         }
 
-        // ==================== مراقبة الاتصال ====================
         window.addEventListener('online', () => {
-            if (document.getElementById('returnOverlay').classList.contains('hidden') === false) {
-                attemptReconnect();
-            }
+            if (!document.getElementById('returnOverlay').classList.contains('hidden')) attemptReconnect();
         });
-
         window.addEventListener('offline', () => {
-            if (gameActive) {
-                startReturnCountdown(players.king.isKing ? 'king' : 'challenger');
-            }
+            if (gameActive) startReturnCountdown(players.king.isKing ? 'king' : 'challenger');
         });
-
-        // محاكاة قطع الاتصال (للاختبار)
-        // setTimeout(() => window.dispatchEvent(new Event('offline')), 10000);
 
         // ==================== دوال عامة ====================
         function updateScores() {
@@ -1037,22 +1182,17 @@
             state.running = false; state.round = 0; gameActive = false;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
-
             updateScores(); updateDots();
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">انتظر البدء...</div>';
             document.getElementById('challengerGame').innerHTML = '<div style="color:var(--blue);">انتظر البدء...</div>';
-            document.getElementById('timerDisplay').textContent = '⏱️ 45';
+            document.getElementById('timerDisplay').textContent = '⏱️ 50';
             document.getElementById('timerDisplay').classList.remove('urgent');
             document.getElementById('btnStart').disabled = false;
         }
 
-        function closeVictory() {
-            document.getElementById('victoryOverlay').classList.add('hidden');
-            resetGame();
-        }
+        function closeVictory() { document.getElementById('victoryOverlay').classList.add('hidden'); resetGame(); }
 
-        // ==================== البدء ====================
         document.getElementById('loginScreen').classList.add('active');
     </script>
 </body>
