@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏰 تحدي العرش - البث المباشر</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a35 100%);
+            font-family: 'Arial', sans-serif;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* تاج في الأعلى */
+        .crown-header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border-bottom: 3px solid #F1C40F;
+        }
+
+        .crown-emoji {
+            font-size: 60px;
+            animation: float 3s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #F1C40F;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
+            margin: 10px 0;
+        }
+
+        /* الحاوية الرئيسية */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* شاشة اللعبة الرئيسية */
+        .game-screen {
+            background: rgba(26, 26, 53, 0.9);
+            border: 2px solid #F1C40F;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .live-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #e74c3c;
+            padding: 8px 20px;
+            border-radius: 25px;
+            animation: pulse 2s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* منطقة اللاعبين */
+        .players-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .player-card {
+            text-align: center;
+            flex: 1;
+        }
+
+        .player-avatar {
+            font-size: 80px;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-size: 1.5em;
+            color: #F1C40F;
+            margin: 10px 0;
+        }
+
+        .player-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .vs-badge {
+            font-size: 3em;
+            animation: rotate 3s infinite;
+        }
+
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+        }
+
+        /* منطقة السؤال */
+        .question-box {
+            background: white;
+            color: #2c3e50;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* شريط الوقت */
+        .timer-bar {
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 4px;
+            transition: width 1s linear;
+            margin: 20px 0;
+        }
+
+        /* الجولات */
+        .rounds-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .round-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #34495e;
+            border: 2px solid #F1C40F;
+        }
+
+        .round-dot.active {
+            background: #F1C40F;
+            animation: glow 1s infinite;
+        }
+
+        .round-dot.completed {
+            background: #27ae60;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px #F1C40F; }
+            50% { box-shadow: 0 0 30px #F1C40F; }
+        }
+
+        /* اللوحة الجانبية */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .qr-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #F1C40F;
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            margin: 15px auto;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .champions-list {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #F1C40F;
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .champion-item {
+            background: rgba(241, 196, 15, 0.1);
+            border-right: 3px solid #F1C40F;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .champion-rank {
+            font-size: 1.5em;
+        }
+
+        /* أزرار التحكم */
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-start {
+            background: #27ae60;
+        }
+
+        .btn-start:hover {
+            background: #2ecc71;
+            transform: scale(1.05);
+        }
+
+        .btn-new-challenge {
+            background: #e67e22;
+        }
+
+        .btn-qr {
+            background: #8e44ad;
+        }
+
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* تأثيرات النصر */
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .victory-content {
+            text-align: center;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .victory-crown {
+            font-size: 120px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* للشاشات الصغيرة */
+        @media (max-width: 600px) {
+            .title {
+                font-size: 1.5em;
+            }
+            .player-avatar {
+                font-size: 40px;
+            }
+            .player-score {
+                font-size: 2em;
+            }
+            .question-box {
+                font-size: 1.2em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- تاج العنوان -->
+    <div class="crown-header">
+        <div class="crown-emoji">👑</div>
+        <h1 class="title">تحدي العرش</h1>
+        <p style="color: #F1C40F;">البطولة المباشرة للذكاء والسرعة</p>
+    </div>
+
+    <!-- الحاوية الرئيسية -->
+    <div class="container">
+        <!-- شاشة اللعبة -->
+        <div class="game-screen">
+            <div class="live-badge">🔴 مباشر</div>
+            
+            <!-- مؤشر الجولات -->
+            <div class="rounds-indicator" id="roundsIndicator">
+                <div class="round-dot active"></div>
+                <div class="round-dot"></div>
+                <div class="round-dot"></div>
+                <div class="round-dot"></div>
+                <div class="round-dot"></div>
+            </div>
+
+            <!-- اللاعبين -->
+            <div class="players-area">
+                <div class="player-card">
+                    <div class="player-avatar">🤴</div>
+                    <div class="player-name">الملك</div>
+                    <div class="player-score" id="kingScore">0</div>
+                </div>
+                
+                <div class="vs-badge">⚡</div>
+                
+                <div class="player-card">
+                    <div class="player-avatar">🗡️</div>
+                    <div class="player-name">المتحدي</div>
+                    <div class="player-score" id="challengerScore">0</div>
+                </div>
+            </div>
+
+            <!-- السؤال -->
+            <div class="question-box" id="questionDisplay">
+                في انتظار بدء التحدي...
+            </div>
+
+            <!-- شريط الوقت -->
+            <div class="timer-bar" id="timerBar" style="width: 100%;"></div>
+
+            <!-- أزرار التحكم -->
+            <div class="control-buttons">
+                <button class="btn btn-start" onclick="startGame()">🚀 بدء التحدي</button>
+                <button class="btn btn-qr" onclick="showQRCode()">📱 إظهار QR</button>
+                <button class="btn btn-new-challenge" onclick="resetGame()">🔄 تحدي جديد</button>
+            </div>
+        </div>
+
+        <!-- اللوحة الجانبية -->
+        <div class="sidebar">
+            <!-- QR Code -->
+            <div class="qr-section">
+                <h3 style="color: #2c3e50;">📱 امسح للتحدي</h3>
+                <div class="qr-code" id="qrCodeDisplay">
+                    <p>اضغط زر QR</p>
+                </div>
+                <small style="color: #7f8c8d;">ساري لمدة 30 ثانية</small>
+            </div>
+
+            <!-- سجل الأبطال -->
+            <div class="champions-list">
+                <h3 style="color: #F1C40F; text-align: center; margin-bottom: 15px;">🏆 سجل الأبطال</h3>
+                <div id="championsList">
+                    <div class="champion-item">
+                        <span>🥇</span>
+                        <span>في انتظار أول بطل</span>
+                        <span>--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة النصر -->
+    <div id="victoryOverlay" class="victory-overlay hidden">
+        <div class="victory-content">
+            <div class="victory-crown">👑</div>
+            <h2 style="color: #F1C40F; font-size: 2em;" id="victoryMessage">الملك الجديد!</h2>
+            <button class="btn btn-start" onclick="closeVictory()" style="margin-top: 20px;">
+                متابعة
+            </button>
+        </div>
+    </div>
+
+    <!-- السكريبت -->
+    <script>
+        // =============== البيانات الأساسية ===============
+        let gameState = {
+            isRunning: false,
+            currentRound: 0,
+            kingScore: 0,
+            challengerScore: 0,
+            timer: null,
+            questions: []
+        };
+
+        // قاعدة بيانات الأسئلة (غير قابلة للبحث)
+        const questionBank = {
+            math: [
+                {
+                    question: "احسب بسرعة: (15 × 4) + 32 - 17 = ؟",
+                    answer: 75,
+                    time: 8
+                },
+                {
+                    question: "ما هو 25% من 480؟",
+                    answer: 120,
+                    time: 8
+                },
+                {
+                    question: "كم يساوي: 7² + 3³ - 15؟",
+                    answer: 61,
+                    time: 10
+                },
+                {
+                    question: "أوجد الناتج: (99 ÷ 3) + (44 - 19)",
+                    answer: 58,
+                    time: 8
+                },
+                {
+                    question: "إذا كان س + 15 = 42، فما قيمة س؟",
+                    answer: 27,
+                    time: 7
+                }
+            ],
+            visual: [
+                {
+                    question: "إذا كان الشكل: ■●■●■ ، فما الشكل التالي؟",
+                    answer: "●",
+                    time: 5
+                },
+                {
+                    question: "تذكر الألوان: أحمر - أزرق - أخضر - أصفر. ما اللون الثالث؟",
+                    answer: "أخضر",
+                    time: 5
+                },
+                {
+                    question: "كم عدد المثلثات في النجمة الخماسية؟",
+                    answer: "10",
+                    time: 8
+                }
+            ],
+            words: [
+                {
+                    question: "كون كلمة من الحروف: م - س - ت - ش - ف - ى",
+                    answer: "مستشفى",
+                    time: 10
+                },
+                {
+                    question: "ما عكس كلمة 'مظلم'؟",
+                    answer: "مضيء",
+                    time: 5
+                },
+                {
+                    question: "أكمل المثل: 'رب ضارة ...'",
+                    answer: "نافعة",
+                    time: 7
+                }
+            ],
+            logic: [
+                {
+                    question: "إذا كان كل القطط حيوانات، وبعض الحيوانات أليفة. هل كل القطط أليفة؟",
+                    answer: "لا",
+                    time: 10
+                },
+                {
+                    question: "ما العدد الذي إذا ضربته في 3 وأضفت 5 يصبح 26؟",
+                    answer: "7",
+                    time: 8
+                },
+                {
+                    question: "إذا كان أحمد أطول من سامر، وسامر أطول من خالد. من الأطول؟",
+                    answer: "أحمد",
+                    time: 6
+                }
+            ],
+            combined: [
+                {
+                    question: "ما العدد الذي يمثل 50% من 200، ثم أضف عليه 25؟",
+                    answer: "125",
+                    time: 10
+                },
+                {
+                    question: "كون كلمة من 4 حروف من كلمة 'مدرسة'، ثم اذكر عدد حروفها",
+                    answer: "درس",
+                    time: 10
+                }
+            ]
+        };
+
+        // =============== دوال اللعبة الرئيسية ===============
+        
+        // بدء اللعبة
+        function startGame() {
+            if (gameState.isRunning) return;
+            
+            gameState.isRunning = true;
+            gameState.currentRound = 1;
+            gameState.kingScore = 0;
+            gameState.challengerScore = 0;
+            
+            updateScores();
+            loadQuestion();
+            updateRoundsIndicator();
+            
+            document.querySelector('.btn-start').disabled = true;
+        }
+
+        // تحميل سؤال عشوائي
+        function loadQuestion() {
+            const roundTypes = ['math', 'visual', 'words', 'logic', 'combined'];
+            const currentType = roundTypes[gameState.currentRound - 1];
+            
+            // اختيار سؤال عشوائي من النوع المناسب
+            const questions = questionBank[currentType];
+            const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+            
+            // إضافة تشفير بسيط للسؤال لمنع النسخ
+            const encodedQuestion = btoa(randomQuestion.question).substring(0, 20);
+            
+            // عرض السؤال
+            document.getElementById('questionDisplay').innerHTML = `
+                ${randomQuestion.question}
+                <br><small style="color: #7f8c8d; margin-top: 10px; display: block;">
+                    🔒 رمز السؤال: ${encodedQuestion}
+                </small>
+                <br><small style="color: #e74c3c;">
+                    ⏱️ الوقت المتبقي: ${randomQuestion.time} ثواني
+                </small>
+            `;
+            
+            // بدء المؤقت
+            startTimer(randomQuestion.time);
+            
+            // إخفاء السؤال بعد انتهاء الوقت
+            clearTimeout(gameState.hideQuestion);
+            gameState.hideQuestion = setTimeout(() => {
+                document.getElementById('questionDisplay').innerHTML = 
+                    '⏰ انتهى الوقت! <br>النتيجة تظهر الآن...';
+                setTimeout(nextRound, 2000);
+            }, randomQuestion.time * 1000);
+        }
+
+        // المؤقت الزمني
+        function startTimer(seconds) {
+            const timerBar = document.getElementById('timerBar');
+            let timeLeft = seconds;
+            
+            timerBar.style.width = '100%';
+            timerBar.style.background = '#2ecc71';
+            
+            clearInterval(gameState.timer);
+            
+            gameState.timer = setInterval(() => {
+                timeLeft -= 0.1;
+                const percentage = (timeLeft / seconds) * 100;
+                timerBar.style.width = percentage + '%';
+                
+                if (percentage < 30) {
+                    timerBar.style.background = '#e74c3c';
+                } else if (percentage < 60) {
+                    timerBar.style.background = '#f39c12';
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    timerBar.style.width = '0%';
+                }
+            }, 100);
+        }
+
+        // الانتقال للجولة التالية
+        function nextRound() {
+            gameState.currentRound++;
+            
+            if (gameState.currentRound > 5) {
+                endGame();
+                return;
+            }
+            
+            // إضافة نقاط عشوائية للتجربة
+            gameState.kingScore += Math.floor(Math.random() * 100);
+            gameState.challengerScore += Math.floor(Math.random() * 100);
+            
+            updateScores();
+            updateRoundsIndicator();
+            loadQuestion();
+        }
+
+        // إنهاء اللعبة
+        function endGame() {
+            gameState.isRunning = false;
+            clearInterval(gameState.timer);
+            clearTimeout(gameState.hideQuestion);
+            
+            const kingWins = gameState.kingScore > gameState.challengerScore;
+            const winner = kingWins ? 'الملك' : 'المتحدي';
+            
+            // عرض نافذة النصر
+            document.getElementById('victoryMessage').textContent = 
+                kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
+            document.getElementById('victoryOverlay').classList.remove('hidden');
+            
+            // تحديث سجل الأبطال
+            updateChampionsList(winner, Math.abs(gameState.kingScore - gameState.challengerScore));
+            
+            // إعادة تعيين الأزرار
+            document.querySelector('.btn-start').disabled = false;
+        }
+
+        // تحديث النقاط
+        function updateScores() {
+            document.getElementById('kingScore').textContent = gameState.kingScore;
+            document.getElementById('challengerScore').textContent = gameState.challengerScore;
+            
+            // تأثير حركي للنقاط
+            [document.getElementById('kingScore'), document.getElementById('challengerScore')]
+                .forEach(el => {
+                    el.style.transform = 'scale(1.2)';
+                    setTimeout(() => el.style.transform = 'scale(1)', 300);
+                });
+        }
+
+        // تحديث مؤشر الجولات
+        function updateRoundsIndicator() {
+            const dots = document.querySelectorAll('.round-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index + 1 === gameState.currentRound) {
+                    dot.classList.add('active');
+                } else if (index + 1 < gameState.currentRound) {
+                    dot.classList.add('completed');
+                }
+            });
+        }
+
+        // تحديث سجل الأبطال
+        function updateChampionsList(winner, margin) {
+            const championsList = document.getElementById('championsList');
+            const now = new Date();
+            const timeStr = now.getHours() + ':' + now.getMinutes();
+            
+            const newChampion = document.createElement('div');
+            newChampion.className = 'champion-item';
+            newChampion.innerHTML = `
+                <span class="champion-rank">👑</span>
+                <span>${winner}</span>
+                <span>${timeStr}</span>
+            `;
+            
+            championsList.insertBefore(newChampion, championsList.firstChild);
+            
+            // الاحتفاظ بآخر 10 أبطال فقط
+            const items = championsList.querySelectorAll('.champion-item');
+            if (items.length > 10) {
+                items[items.length - 1].remove();
+            }
+        }
+
+        // عرض QR Code
+        function showQRCode() {
+            const qrDisplay = document.getElementById('qrCodeDisplay');
+            const gameLink = window.location.href + '?join=' + Date.now();
+            
+            // استخدام مكتبة QR Code المجانية
+            if (typeof QRCode !== 'undefined') {
+                qrDisplay.innerHTML = '';
+                new QRCode(qrDisplay, {
+                    text: gameLink,
+                    width: 150,
+                    height: 150,
+                    colorDark: "#2c3e50",
+                    colorLight: "#ffffff"
+                });
+            } else {
+                // بديل بسيط في حالة عدم توفر المكتبة
+                qrDisplay.innerHTML = `
+                    <div style="padding: 20px; background: #2c3e50; color: white; border-radius: 10px;">
+                        <p>📱 رابط التحدي:</p>
+                        <small style="word-break: break-all;">${gameLink}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // إعادة تعيين اللعبة
+        function resetGame() {
+            clearInterval(gameState.timer);
+            clearTimeout(gameState.hideQuestion);
+            
+            gameState.isRunning = false;
+            gameState.currentRound = 0;
+            gameState.kingScore = 0;
+            gameState.challengerScore = 0;
+            
+            updateScores();
+            
+            document.getElementById('questionDisplay').innerHTML = 'في انتظار بدء التحدي...';
+            document.getElementById('timerBar').style.width = '100%';
+            document.getElementById('timerBar').style.background = '#2ecc71';
+            
+            document.querySelectorAll('.round-dot').forEach(dot => {
+                dot.classList.remove('active', 'completed');
+            });
+            document.querySelectorAll('.round-dot')[0].classList.add('active');
+            
+            document.querySelector('.btn-start').disabled = false;
+        }
+
+        // إغلاق نافذة النصر
+        function closeVictory() {
+            document.getElementById('victoryOverlay').classList.add('hidden');
+            resetGame();
+        }
+
+        // عند تحميل الصفحة
+        window.onload = function() {
+            // تحميل مكتبة QR Code
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+            script.onload = function() {
+                console.log('✅ مكتبة QR Code جاهزة');
+            };
+            document.head.appendChild(script);
+            
+            console.log('🎮 لعبة تحدي العرش جاهزة!');
+        };
+    </script>
+</body>
+</html>
