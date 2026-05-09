@@ -19,7 +19,6 @@
             overflow-x: hidden;
         }
 
-        /* تاج في الأعلى */
         .crown-header {
             text-align: center;
             padding: 20px;
@@ -44,7 +43,6 @@
             margin: 10px 0;
         }
 
-        /* الحاوية الرئيسية */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -60,7 +58,6 @@
             }
         }
 
-        /* شاشة اللعبة الرئيسية */
         .game-screen {
             background: rgba(26, 26, 53, 0.9);
             border: 2px solid #F1C40F;
@@ -86,7 +83,6 @@
             50% { opacity: 0.7; }
         }
 
-        /* منطقة اللاعبين */
         .players-area {
             display: flex;
             justify-content: space-between;
@@ -126,7 +122,6 @@
             50% { transform: rotate(15deg); }
         }
 
-        /* منطقة السؤال */
         .question-box {
             background: white;
             color: #2c3e50;
@@ -144,7 +139,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* شريط الوقت */
         .timer-bar {
             height: 8px;
             background: #2ecc71;
@@ -153,7 +147,6 @@
             margin: 20px 0;
         }
 
-        /* الجولات */
         .rounds-indicator {
             display: flex;
             justify-content: center;
@@ -183,7 +176,6 @@
             50% { box-shadow: 0 0 30px #F1C40F; }
         }
 
-        /* اللوحة الجانبية */
         .sidebar {
             display: flex;
             flex-direction: column;
@@ -233,7 +225,6 @@
             font-size: 1.5em;
         }
 
-        /* أزرار التحكم */
         .control-buttons {
             display: flex;
             gap: 10px;
@@ -275,7 +266,6 @@
             transform: none;
         }
 
-        /* تأثيرات النصر */
         .victory-overlay {
             position: fixed;
             top: 0;
@@ -319,7 +309,6 @@
             display: none;
         }
 
-        /* للشاشات الصغيرة */
         @media (max-width: 600px) {
             .title {
                 font-size: 1.5em;
@@ -338,20 +327,16 @@
     </style>
 </head>
 <body>
-    <!-- تاج العنوان -->
     <div class="crown-header">
         <div class="crown-emoji">👑</div>
         <h1 class="title">تحدي العرش</h1>
         <p style="color: #F1C40F;">البطولة المباشرة للذكاء والسرعة</p>
     </div>
 
-    <!-- الحاوية الرئيسية -->
     <div class="container">
-        <!-- شاشة اللعبة -->
         <div class="game-screen">
             <div class="live-badge">🔴 مباشر</div>
             
-            <!-- مؤشر الجولات -->
             <div class="rounds-indicator" id="roundsIndicator">
                 <div class="round-dot active"></div>
                 <div class="round-dot"></div>
@@ -360,7 +345,6 @@
                 <div class="round-dot"></div>
             </div>
 
-            <!-- اللاعبين -->
             <div class="players-area">
                 <div class="player-card">
                     <div class="player-avatar">🤴</div>
@@ -377,15 +361,12 @@
                 </div>
             </div>
 
-            <!-- السؤال -->
             <div class="question-box" id="questionDisplay">
                 في انتظار بدء التحدي...
             </div>
 
-            <!-- شريط الوقت -->
             <div class="timer-bar" id="timerBar" style="width: 100%;"></div>
 
-            <!-- أزرار التحكم -->
             <div class="control-buttons">
                 <button class="btn btn-start" onclick="startGame()">🚀 بدء التحدي</button>
                 <button class="btn btn-qr" onclick="showQRCode()">📱 إظهار QR</button>
@@ -393,9 +374,7 @@
             </div>
         </div>
 
-        <!-- اللوحة الجانبية -->
         <div class="sidebar">
-            <!-- QR Code -->
             <div class="qr-section">
                 <h3 style="color: #2c3e50;">📱 امسح للتحدي</h3>
                 <div class="qr-code" id="qrCodeDisplay">
@@ -404,7 +383,6 @@
                 <small style="color: #7f8c8d;">ساري لمدة 30 ثانية</small>
             </div>
 
-            <!-- سجل الأبطال -->
             <div class="champions-list">
                 <h3 style="color: #F1C40F; text-align: center; margin-bottom: 15px;">🏆 سجل الأبطال</h3>
                 <div id="championsList">
@@ -418,7 +396,6 @@
         </div>
     </div>
 
-    <!-- نافذة النصر -->
     <div id="victoryOverlay" class="victory-overlay hidden">
         <div class="victory-content">
             <div class="victory-crown">👑</div>
@@ -429,115 +406,433 @@
         </div>
     </div>
 
-    <!-- السكريبت -->
     <script>
-        // =============== البيانات الأساسية ===============
+        // =============== مولد أسئلة الذكاء وسرعة البديهة ===============
+        class SmartQuestionGenerator {
+            constructor() {
+                this.usedQuestions = new Set();
+                this.dailySeed = new Date().toISOString().split('T')[0];
+            }
+
+            generateUniqueQuestion(roundNumber) {
+                let question;
+                let attempts = 0;
+                
+                do {
+                    question = this.createQuestion(roundNumber);
+                    attempts++;
+                    if (attempts > 100) {
+                        this.usedQuestions.clear();
+                        attempts = 0;
+                    }
+                } while (this.usedQuestions.has(question.fingerprint));
+                
+                this.usedQuestions.add(question.fingerprint);
+                
+                if (this.usedQuestions.size > 2000) {
+                    const arr = Array.from(this.usedQuestions);
+                    this.usedQuestions = new Set(arr.slice(-1000));
+                }
+                
+                return question;
+            }
+
+            createQuestion(roundNumber) {
+                const generators = {
+                    1: [
+                        this.quickAssociation.bind(this),
+                        this.oddOneOut.bind(this),
+                        this.instantConnection.bind(this)
+                    ],
+                    2: [
+                        this.patternRecognition.bind(this),
+                        this.visualTrick.bind(this),
+                        this.mirrorThinking.bind(this)
+                    ],
+                    3: [
+                        this.wordPlay.bind(this),
+                        this.verbalReasoning.bind(this),
+                        this.languageTwist.bind(this)
+                    ],
+                    4: [
+                        this.situationPuzzle.bind(this),
+                        this.logicalDeduction.bind(this),
+                        this.brainTeaser.bind(this)
+                    ],
+                    5: [
+                        this.doubleThink.bind(this),
+                        this.speedWit.bind(this),
+                        this.mentalAgility.bind(this)
+                    ]
+                };
+
+                const roundGens = generators[roundNumber] || generators[1];
+                return this.randomFromArray(roundGens)();
+            }
+
+            quickAssociation() {
+                const associations = [
+                    { words: ['مفتاح', 'سيارة'], answer: 'باب' },
+                    { words: ['شجرة', 'ورق'], answer: 'كتاب' },
+                    { words: ['سحاب', 'عين'], answer: 'مطر/دمع' },
+                    { words: ['قلم', 'طبيب'], answer: 'وصفة' },
+                    { words: ['شمعة', 'كهرباء'], answer: 'ضوء' },
+                    { words: ['سمك', 'طائر'], answer: 'حرية' },
+                    { words: ['جبل', 'تحدي'], answer: 'قمة' },
+                    { words: ['بذرة', 'فكرة'], answer: 'نمو' },
+                    { words: ['نار', 'غضب'], answer: 'حرارة' },
+                    { words: ['طريق', 'حياة'], answer: 'مسار' },
+                    { words: ['مرآة', 'حقيقة'], answer: 'انعكاس' },
+                    { words: ['ساعة', 'عمر'], answer: 'وقت' },
+                    { words: ['بحر', 'علم'], answer: 'عمق' },
+                    { words: ['جسر', 'صداقة'], answer: 'تواصل' },
+                    { words: ['قفل', 'سر'], answer: 'أمان' }
+                ];
+                
+                const item = this.randomFromArray(associations);
+                const randomOrder = Math.random() > 0.5;
+                const display = randomOrder ? 
+                    `${item.words[0]} ➜ ${item.words[1]}` : 
+                    `${item.words[1]} ➜ ${item.words[0]}`;
+                
+                return {
+                    question: `⚡ ما الرابط بين: ${display}؟\n(كلمة واحدة)`,
+                    answer: item.answer.includes('/') ? item.answer.split('/')[0] : item.answer,
+                    time: 5,
+                    fingerprint: `assoc_${item.words.join('')}_${Date.now()}`
+                };
+            }
+
+            oddOneOut() {
+                const groups = [
+                    { items: ['تفاح', 'موز', 'جزر', 'برتقال'], answer: 'جزر', reason: 'الباقي فواكه' },
+                    { items: ['قلم', 'كتاب', 'مقص', 'دفتر'], answer: 'مقص', reason: 'الباقي للكتابة' },
+                    { items: ['أسد', 'نمر', 'ذئب', 'زرافة'], answer: 'زرافة', reason: 'الباقي مفترسات' },
+                    { items: ['مطر', 'ثلج', 'شمس', 'برد'], answer: 'شمس', reason: 'الباقي هطول' },
+                    { items: ['عين', 'أذن', 'فم', 'يد'], answer: 'يد', reason: 'الباقي في الوجه' },
+                    { items: ['سيارة', 'قطار', 'طائرة', 'سفينة'], answer: 'سيارة', reason: 'الباقي نقل عام' },
+                    { items: ['ذهب', 'فضة', 'حديد', 'ألماس'], answer: 'حديد', reason: 'الباقي ثمين' },
+                    { items: ['دجاج', 'بطة', 'نسر', 'ديك رومي'], answer: 'نسر', reason: 'الباقي دواجن' }
+                ];
+                
+                const group = this.randomFromArray(groups);
+                const shuffled = this.shuffleArray([...group.items]);
+                
+                return {
+                    question: `🔍 أيهم المختلفة؟ ${shuffled.join(' - ')}`,
+                    answer: group.answer,
+                    time: 4,
+                    fingerprint: `odd_${group.items.join('')}`
+                };
+            }
+
+            instantConnection() {
+                const connections = [
+                    { first: 'نهار', second: 'ليل', answer: 'مشترك: يوم' },
+                    { first: 'بداية', second: 'نهاية', answer: 'مشترك: رحلة' },
+                    { first: 'سؤال', second: 'جواب', answer: 'مشترك: معرفة' },
+                    { first: 'بذرة', second: 'ثمرة', answer: 'مشترك: شجرة' },
+                    { first: 'تعليم', second: 'نجاح', answer: 'مشترك: مستقبل' },
+                    { first: 'مشكلة', second: 'حل', answer: 'مشترك: تفكير' }
+                ];
+                
+                const conn = this.randomFromArray(connections);
+                return {
+                    question: `💡 أكمل: ${conn.first} ↔ ? ↔ ${conn.second}\n(ما الذي يجمعهما؟)`,
+                    answer: conn.answer.split(': ')[1],
+                    time: 5,
+                    fingerprint: `connect_${conn.first}_${conn.second}`
+                };
+            }
+
+            patternRecognition() {
+                const patterns = [
+                    {
+                        sequence: '■ ● ■ ■ ● ■ ■ ■ ●',
+                        question: 'ما الشكل التالي في التسلسل؟ ■ ● ■ ■ ● ■ ■ ■ ● ؟',
+                        answer: '■',
+                        analysis: 'النمط يزيد مكعباً واحداً بين الدوائر'
+                    },
+                    {
+                        sequence: '↑ → ↓ ←',
+                        question: 'ما الاتجاه التالي؟ ↑ → ↓ ← ؟',
+                        answer: '↑',
+                        analysis: 'دورة كاملة لليسار'
+                    },
+                    {
+                        sequence: '1 3 6 10',
+                        question: 'ما الرقم التالي؟ 1, 3, 6, 10, ؟',
+                        answer: '15',
+                        analysis: 'نضيف 2 ثم 3 ثم 4 ثم 5'
+                    },
+                    {
+                        sequence: 'أ ب ت ث',
+                        question: 'ما الحرف التالي حسب الترتيب الأبجدي؟ أ, ب, ت, ث, ؟',
+                        answer: 'ج',
+                        analysis: 'الترتيب الأبجدي العربي'
+                    }
+                ];
+                
+                const pattern = this.randomFromArray(patterns);
+                return {
+                    question: `👁️ ${pattern.question}`,
+                    answer: pattern.answer,
+                    time: 6,
+                    fingerprint: `pattern_${pattern.sequence}_${Date.now()}`
+                };
+            }
+
+            visualTrick() {
+                const tricks = [
+                    {
+                        scenario: 'في غرفة مظلمة تماماً، لديك عود ثقاب واحد ومصباح وشمعة',
+                        question: 'ماذا تشعل أولاً؟',
+                        answer: 'عود الثقاب',
+                        trick: 'لا يمكن إشعال شيء قبل عود الثقاب'
+                    },
+                    {
+                        scenario: 'كم شهراً في السنة فيه 28 يوماً؟',
+                        question: 'كم شهراً في السنة فيه 28 يوماً على الأقل؟',
+                        answer: '12',
+                        trick: 'كل الشهور فيها 28 يوماً على الأقل'
+                    },
+                    {
+                        scenario: 'أمامك 3 تفاحات، أخذت 2',
+                        question: 'كم تفاحة معك؟',
+                        answer: '2',
+                        trick: 'أخذت 2 إذاً معك 2'
+                    }
+                ];
+                
+                const trick = this.randomFromArray(tricks);
+                return {
+                    question: `🎭 ${trick.question}\n(فكر بسرعة!)`,
+                    answer: trick.answer,
+                    time: 5,
+                    fingerprint: `trick_${trick.scenario.substring(0, 20)}`
+                };
+            }
+
+            mirrorThinking() {
+                const mirrors = [
+                    { word: 'كلام', answer: 'مالك' },
+                    { word: 'سكر', answer: 'ركس' },
+                    { word: 'باب', answer: 'باب' },
+                    { word: 'مرآة', answer: 'ةآرم' },
+                    { word: 'نور', answer: 'رون' }
+                ];
+                
+                const mirror = this.randomFromArray(mirrors);
+                return {
+                    question: `🪞 اقرأ الكلمة بالعكس: "${mirror.word}"`,
+                    answer: mirror.answer,
+                    time: 4,
+                    fingerprint: `mirror_${mirror.word}`
+                };
+            }
+
+            wordPlay() {
+                const plays = [
+                    { letters: 'ب ح ر', hint: 'كلمة من 3 أحرف تعني مسطح مائي', answer: 'بحر' },
+                    { letters: 'ع ل م', hint: 'ضد الجهل', answer: 'علم' },
+                    { letters: 'ن و ر', hint: 'ما يشع من الشمس', answer: 'نور' },
+                    { letters: 'ح ب', hint: 'عاطفة إنسانية', answer: 'حب' },
+                    { letters: 'ص د ق', hint: 'ضد الكذب', answer: 'صدق' },
+                    { letters: 'ح ل م', hint: 'ما تراه في نومك', answer: 'حلم' }
+                ];
+                
+                const play = this.randomFromArray(plays);
+                const scrambled = this.shuffleArray(play.letters.split('')).join(' - ');
+                
+                return {
+                    question: `📝 كون كلمة: ${scrambled}\n${play.hint}`,
+                    answer: play.answer,
+                    time: 5,
+                    fingerprint: `play_${play.letters}`
+                };
+            }
+
+            verbalReasoning() {
+                const categories = [
+                    { category: 'فواكه', examples: 'تفاح، موز، برتقال، ...' },
+                    { category: 'ألوان', examples: 'أحمر، أزرق، أخضر، ...' },
+                    { category: 'حيوانات', examples: 'أسد، نمر، فيل، ...' },
+                    { category: 'مدن', examples: 'الرياض، دبي، القاهرة، ...' }
+                ];
+                
+                const cat = this.randomFromArray(categories);
+                return {
+                    question: `🗣️ اذكر 3 ${cat.category} في 5 ثوانٍ`,
+                    answer: cat.examples.split('، ')[0],
+                    time: 5,
+                    fingerprint: `verbal_${cat.category}`
+                };
+            }
+
+            languageTwist() {
+                const twists = [
+                    { word: 'فيل', question: 'احذف الحرف الأول، ماذا يبقى؟', answer: 'يل' },
+                    { word: 'كتاب', question: 'خذ الحرفين الأول والأخير', answer: 'كب' },
+                    { word: 'شجرة', question: 'الحرف الثالث؟', answer: 'ر' },
+                    { word: 'مدرسة', question: 'عدد الحروف؟', answer: '5' },
+                    { word: 'سماء', question: 'اقلبها، ماذا تصبح؟', answer: 'ءامس' }
+                ];
+                
+                const twist = this.randomFromArray(twists);
+                return {
+                    question: `🔄 "${twist.word}" - ${twist.question}`,
+                    answer: twist.answer,
+                    time: 4,
+                    fingerprint: `twist_${twist.word}_${twist.question}`
+                };
+            }
+
+            situationPuzzle() {
+                const situations = [
+                    {
+                        puzzle: 'شخص يمشي تحت المطر بدون مظلة، شعره لا يبتل. لماذا؟',
+                        answer: 'أصلع',
+                        insight: 'ليس لديه شعر ليبتل'
+                    },
+                    {
+                        puzzle: 'كلما أخذت منه كبر. ما هو؟',
+                        answer: 'الحفرة',
+                        insight: 'الحفر يزيدها اتساعاً'
+                    },
+                    {
+                        puzzle: 'يملك أسناناً ولا يأكل. ما هو؟',
+                        answer: 'المشط',
+                        insight: 'أسنان المشط'
+                    },
+                    {
+                        puzzle: 'له عين ولا يرى. ما هو؟',
+                        answer: 'الإبرة',
+                        insight: 'عين الإبرة'
+                    }
+                ];
+                
+                const situation = this.randomFromArray(situations);
+                return {
+                    question: `🤔 ${situation.puzzle}\n(فكر بذكاء!)`,
+                    answer: situation.answer,
+                    time: 7,
+                    fingerprint: `sit_${situation.puzzle.substring(0, 25)}`
+                };
+            }
+
+            logicalDeduction() {
+                const deductions = [
+                    { premise: 'أحمد أطول من خالد. خالد أطول من سامر.', question: 'من الأقصر؟', answer: 'سامر' },
+                    { premise: 'الكتاب على الطاولة. الطاولة في الغرفة.', question: 'أين الكتاب؟', answer: 'في الغرفة' },
+                    { premise: 'كل الطيور تطير. البطريق طائر.', question: 'هل يطير البطريق؟', answer: 'لا' }
+                ];
+                
+                const deduction = this.randomFromArray(deductions);
+                return {
+                    question: `🧠 ${deduction.premise}\n${deduction.question}`,
+                    answer: deduction.answer,
+                    time: 6,
+                    fingerprint: `logic_${deduction.premise.substring(0, 20)}`
+                };
+            }
+
+            brainTeaser() {
+                const teasers = [
+                    { question: 'ما الشيء الذي يمكنك كسره دون لمسه؟', answer: 'الوعد' },
+                    { question: 'ما الذي يزداد كلما شاركته مع الآخرين؟', answer: 'المعرفة' },
+                    { question: 'ما الشيء الذي يعود إليك دائماً مهما أبعدته؟', answer: 'الصدى' },
+                    { question: 'ما الشيء الذي يمكنه ملء غرفة كاملة دون أن يشغل مساحة؟', answer: 'الضوء' },
+                    { question: 'أنا دائماً أمامك لكنك لا تراني. من أنا؟', answer: 'المستقبل' }
+                ];
+                
+                const teaser = this.randomFromArray(teasers);
+                return {
+                    question: `💭 ${teaser.question}`,
+                    answer: teaser.answer,
+                    time: 6,
+                    fingerprint: `teaser_${teaser.question.substring(0, 25)}`
+                };
+            }
+
+            doubleThink() {
+                const challenges = [
+                    { task: 'اذكر اسماً يبدأ بحرف "م" وفي نفس الوقت فاكهة', answer: 'موز' },
+                    { task: 'اذكر شيئاً هو حيوان ومادة غذائية معاً', answer: 'عسل' },
+                    { task: 'اذكر شيئاً هو نبات واسم شخص معاً', answer: 'ورد' },
+                    { task: 'اذكر شيئاً هو معدن ولون معاً', answer: 'ذهب' }
+                ];
+                
+                const challenge = this.randomFromArray(challenges);
+                return {
+                    question: `🎯 ${challenge.task}`,
+                    answer: challenge.answer,
+                    time: 6,
+                    fingerprint: `double_${challenge.task.substring(0, 20)}`
+                };
+            }
+
+            speedWit() {
+                const currentSecond = new Date().getSeconds();
+                const wits = [
+                    { question: `في ثانية واحدة: كم حرفاً في كلمة "سرعة البديهة"؟`, answer: '11' },
+                    { question: `بسرعة: ما لون السماء في الليل؟`, answer: 'أسود' },
+                    { question: `بدون تفكير: 2+2×2 = ؟`, answer: '6' },
+                    { question: `بسرعة: ما عكس "ساخن"؟`, answer: 'بارد' }
+                ];
+                
+                const wit = this.randomFromArray(wits);
+                return {
+                    question: `⚡ ${wit.question}`,
+                    answer: wit.answer,
+                    time: 3,
+                    fingerprint: `wit_${currentSecond}_${Math.random()}`
+                };
+            }
+
+            mentalAgility() {
+                const agilityTests = [
+                    { instructions: 'انظر للمرآة: "باب" تبقى "باب". اذكر كلمة أخرى لا تتغير في المرآة', answer: 'ليبيا' },
+                    { instructions: 'فكر في رقم. ضاعفه. أضف 10. اقسم على 2. اطرح الرقم الأصلي.', answer: '5' },
+                    { instructions: 'أكمل: ذكاء، فطنة، ... (مرادف)', answer: 'نباهة' }
+                ];
+                
+                const test = this.randomFromArray(agilityTests);
+                return {
+                    question: `🔄 ${test.instructions}`,
+                    answer: test.answer,
+                    time: 7,
+                    fingerprint: `agile_${test.instructions.substring(0, 20)}`
+                };
+            }
+
+            randomFromArray(array) {
+                return array[Math.floor(Math.random() * array.length)];
+            }
+
+            shuffleArray(array) {
+                const newArr = [...array];
+                for (let i = newArr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+                }
+                return newArr;
+            }
+        }
+
+        // =============== متغيرات اللعبة ===============
+        const questionGenerator = new SmartQuestionGenerator();
+        
         let gameState = {
             isRunning: false,
             currentRound: 0,
             kingScore: 0,
             challengerScore: 0,
             timer: null,
-            questions: []
+            currentAnswer: '',
+            hideQuestion: null
         };
 
-        // قاعدة بيانات الأسئلة (غير قابلة للبحث)
-        const questionBank = {
-            math: [
-                {
-                    question: "احسب بسرعة: (15 × 4) + 32 - 17 = ؟",
-                    answer: 75,
-                    time: 8
-                },
-                {
-                    question: "ما هو 25% من 480؟",
-                    answer: 120,
-                    time: 8
-                },
-                {
-                    question: "كم يساوي: 7² + 3³ - 15؟",
-                    answer: 61,
-                    time: 10
-                },
-                {
-                    question: "أوجد الناتج: (99 ÷ 3) + (44 - 19)",
-                    answer: 58,
-                    time: 8
-                },
-                {
-                    question: "إذا كان س + 15 = 42، فما قيمة س؟",
-                    answer: 27,
-                    time: 7
-                }
-            ],
-            visual: [
-                {
-                    question: "إذا كان الشكل: ■●■●■ ، فما الشكل التالي؟",
-                    answer: "●",
-                    time: 5
-                },
-                {
-                    question: "تذكر الألوان: أحمر - أزرق - أخضر - أصفر. ما اللون الثالث؟",
-                    answer: "أخضر",
-                    time: 5
-                },
-                {
-                    question: "كم عدد المثلثات في النجمة الخماسية؟",
-                    answer: "10",
-                    time: 8
-                }
-            ],
-            words: [
-                {
-                    question: "كون كلمة من الحروف: م - س - ت - ش - ف - ى",
-                    answer: "مستشفى",
-                    time: 10
-                },
-                {
-                    question: "ما عكس كلمة 'مظلم'؟",
-                    answer: "مضيء",
-                    time: 5
-                },
-                {
-                    question: "أكمل المثل: 'رب ضارة ...'",
-                    answer: "نافعة",
-                    time: 7
-                }
-            ],
-            logic: [
-                {
-                    question: "إذا كان كل القطط حيوانات، وبعض الحيوانات أليفة. هل كل القطط أليفة؟",
-                    answer: "لا",
-                    time: 10
-                },
-                {
-                    question: "ما العدد الذي إذا ضربته في 3 وأضفت 5 يصبح 26؟",
-                    answer: "7",
-                    time: 8
-                },
-                {
-                    question: "إذا كان أحمد أطول من سامر، وسامر أطول من خالد. من الأطول؟",
-                    answer: "أحمد",
-                    time: 6
-                }
-            ],
-            combined: [
-                {
-                    question: "ما العدد الذي يمثل 50% من 200، ثم أضف عليه 25؟",
-                    answer: "125",
-                    time: 10
-                },
-                {
-                    question: "كون كلمة من 4 حروف من كلمة 'مدرسة'، ثم اذكر عدد حروفها",
-                    answer: "درس",
-                    time: 10
-                }
-            ]
-        };
-
-        // =============== دوال اللعبة الرئيسية ===============
-        
-        // بدء اللعبة
+        // =============== دوال اللعبة ===============
         function startGame() {
             if (gameState.isRunning) return;
             
@@ -547,48 +842,65 @@
             gameState.challengerScore = 0;
             
             updateScores();
-            loadQuestion();
             updateRoundsIndicator();
+            loadQuestion();
             
             document.querySelector('.btn-start').disabled = true;
         }
 
-        // تحميل سؤال عشوائي
         function loadQuestion() {
-            const roundTypes = ['math', 'visual', 'words', 'logic', 'combined'];
-            const currentType = roundTypes[gameState.currentRound - 1];
+            const questionTypes = {
+                1: ['سرعة البديهة', 'الرابط السريع', 'المختلف'],
+                2: ['ذكاء بصري', 'خدعة بصرية', 'تفكير معكوس'],
+                3: ['ذكاء لغوي', 'تلاعب بالكلمات', 'فطنة لفظية'],
+                4: ['ذكاء منطقي', 'ألغاز', 'استنتاج'],
+                5: ['تحدي مزدوج', 'سرعة خاطفة', 'مرونة ذهنية']
+            };
             
-            // اختيار سؤال عشوائي من النوع المناسب
-            const questions = questionBank[currentType];
-            const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+            const roundTypes = questionTypes[gameState.currentRound];
+            const selectedType = roundTypes[Math.floor(Math.random() * roundTypes.length)];
             
-            // إضافة تشفير بسيط للسؤال لمنع النسخ
-            const encodedQuestion = btoa(randomQuestion.question).substring(0, 20);
+            const generatedQuestion = questionGenerator.generateUniqueQuestion(gameState.currentRound);
             
-            // عرض السؤال
-            document.getElementById('questionDisplay').innerHTML = `
-                ${randomQuestion.question}
-                <br><small style="color: #7f8c8d; margin-top: 10px; display: block;">
-                    🔒 رمز السؤال: ${encodedQuestion}
+            const questionHTML = `
+                <div style="animation: slideIn 0.5s ease-out;">
+                    <div style="background: rgba(241, 196, 15, 0.1); padding: 10px; border-radius: 10px; margin-bottom: 15px;">
+                        <span style="color: #F1C40F;">🏷️ ${selectedType}</span>
+                        <span style="float: left; color: #e74c3c;">⚡ ${gameState.currentRound}/5</span>
+                    </div>
+                    <div style="font-size: 1.2em; line-height: 1.8; margin: 20px 0;">
+                        ${generatedQuestion.question}
+                    </div>
+                </div>
+                <br>
+                <small style="color: #95a5a6;">
+                    🔒 بصمة السؤال: ${generatedQuestion.fingerprint.substring(0, 10)}
                 </small>
-                <br><small style="color: #e74c3c;">
-                    ⏱️ الوقت المتبقي: ${randomQuestion.time} ثواني
+                <br>
+                <small style="color: #e74c3c; font-weight: bold;">
+                    ⏱️ الوقت المتبقي: ${generatedQuestion.time} ثواني
                 </small>
             `;
             
-            // بدء المؤقت
-            startTimer(randomQuestion.time);
+            document.getElementById('questionDisplay').innerHTML = questionHTML;
+            gameState.currentAnswer = generatedQuestion.answer;
+            startTimer(generatedQuestion.time);
             
-            // إخفاء السؤال بعد انتهاء الوقت
             clearTimeout(gameState.hideQuestion);
             gameState.hideQuestion = setTimeout(() => {
-                document.getElementById('questionDisplay').innerHTML = 
-                    '⏰ انتهى الوقت! <br>النتيجة تظهر الآن...';
+                document.getElementById('questionDisplay').innerHTML = `
+                    <div style="text-align: center; font-size: 1.5em; color: #e74c3c;">
+                        ⏰ انتهى الوقت!
+                        <br>
+                        <span style="font-size: 0.8em; color: #F1C40F;">
+                            الإجابة الصحيحة: ${generatedQuestion.answer}
+                        </span>
+                    </div>
+                `;
                 setTimeout(nextRound, 2000);
-            }, randomQuestion.time * 1000);
+            }, generatedQuestion.time * 1000);
         }
 
-        // المؤقت الزمني
         function startTimer(seconds) {
             const timerBar = document.getElementById('timerBar');
             let timeLeft = seconds;
@@ -616,7 +928,6 @@
             }, 100);
         }
 
-        // الانتقال للجولة التالية
         function nextRound() {
             gameState.currentRound++;
             
@@ -625,7 +936,6 @@
                 return;
             }
             
-            // إضافة نقاط عشوائية للتجربة
             gameState.kingScore += Math.floor(Math.random() * 100);
             gameState.challengerScore += Math.floor(Math.random() * 100);
             
@@ -634,7 +944,6 @@
             loadQuestion();
         }
 
-        // إنهاء اللعبة
         function endGame() {
             gameState.isRunning = false;
             clearInterval(gameState.timer);
@@ -643,24 +952,18 @@
             const kingWins = gameState.kingScore > gameState.challengerScore;
             const winner = kingWins ? 'الملك' : 'المتحدي';
             
-            // عرض نافذة النصر
             document.getElementById('victoryMessage').textContent = 
                 kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
             document.getElementById('victoryOverlay').classList.remove('hidden');
             
-            // تحديث سجل الأبطال
             updateChampionsList(winner, Math.abs(gameState.kingScore - gameState.challengerScore));
-            
-            // إعادة تعيين الأزرار
             document.querySelector('.btn-start').disabled = false;
         }
 
-        // تحديث النقاط
         function updateScores() {
             document.getElementById('kingScore').textContent = gameState.kingScore;
             document.getElementById('challengerScore').textContent = gameState.challengerScore;
             
-            // تأثير حركي للنقاط
             [document.getElementById('kingScore'), document.getElementById('challengerScore')]
                 .forEach(el => {
                     el.style.transform = 'scale(1.2)';
@@ -668,7 +971,6 @@
                 });
         }
 
-        // تحديث مؤشر الجولات
         function updateRoundsIndicator() {
             const dots = document.querySelectorAll('.round-dot');
             dots.forEach((dot, index) => {
@@ -681,7 +983,6 @@
             });
         }
 
-        // تحديث سجل الأبطال
         function updateChampionsList(winner, margin) {
             const championsList = document.getElementById('championsList');
             const now = new Date();
@@ -697,19 +998,16 @@
             
             championsList.insertBefore(newChampion, championsList.firstChild);
             
-            // الاحتفاظ بآخر 10 أبطال فقط
             const items = championsList.querySelectorAll('.champion-item');
             if (items.length > 10) {
                 items[items.length - 1].remove();
             }
         }
 
-        // عرض QR Code
         function showQRCode() {
             const qrDisplay = document.getElementById('qrCodeDisplay');
             const gameLink = window.location.href + '?join=' + Date.now();
             
-            // استخدام مكتبة QR Code المجانية
             if (typeof QRCode !== 'undefined') {
                 qrDisplay.innerHTML = '';
                 new QRCode(qrDisplay, {
@@ -720,7 +1018,6 @@
                     colorLight: "#ffffff"
                 });
             } else {
-                // بديل بسيط في حالة عدم توفر المكتبة
                 qrDisplay.innerHTML = `
                     <div style="padding: 20px; background: #2c3e50; color: white; border-radius: 10px;">
                         <p>📱 رابط التحدي:</p>
@@ -730,7 +1027,6 @@
             }
         }
 
-        // إعادة تعيين اللعبة
         function resetGame() {
             clearInterval(gameState.timer);
             clearTimeout(gameState.hideQuestion);
@@ -754,15 +1050,12 @@
             document.querySelector('.btn-start').disabled = false;
         }
 
-        // إغلاق نافذة النصر
         function closeVictory() {
             document.getElementById('victoryOverlay').classList.add('hidden');
             resetGame();
         }
 
-        // عند تحميل الصفحة
         window.onload = function() {
-            // تحميل مكتبة QR Code
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
             script.onload = function() {
@@ -770,7 +1063,7 @@
             };
             document.head.appendChild(script);
             
-            console.log('🎮 لعبة تحدي العرش جاهزة!');
+            console.log('🎮 لعبة تحدي العرش - نسخة الذكاء وسرعة البديهة جاهزة!');
         };
     </script>
 </body>
