@@ -6,11 +6,8 @@
     <title>🏰 تحدي العرش - البطولة المباشرة</title>
     <style>
         :root {
-            --gold: #F1C40F;
-            --blue: #3498db;
-            --red: #e74c3c;
-            --green: #2ecc71;
-            --bg: #0a0a1a;
+            --gold: #F1C40F; --blue: #3498db; --red: #e74c3c;
+            --green: #2ecc71; --bg: #0a0a1a; --card: #1a1a35;
         }
 
         * {
@@ -19,186 +16,246 @@
         }
 
         body {
-            background: var(--bg);
-            font-family: 'Arial', sans-serif; color: white;
-            min-height: 100vh; overflow-x: hidden;
+            background: var(--bg); font-family: 'Arial', sans-serif;
+            color: white; min-height: 100vh; overflow-x: hidden;
             touch-action: manipulation;
         }
 
-        /* ========= شريط العنوان ========= */
-        .header {
-            text-align: center; padding: 8px;
-            background: rgba(0,0,0,0.6); border-bottom: 2px solid var(--gold);
-            position: sticky; top: 0; z-index: 100;
+        /* ========= الشاشة الرئيسية ========= */
+        .screen {
+            display: none; min-height: 100vh;
         }
-        .header-crown { font-size: 30px; animation: float 2s infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
-        .header-title { font-size: 1.4em; color: var(--gold); font-weight: bold; }
-        .header-subtitle { font-size: 0.8em; color: #95a5a6; }
-        .live-dot {
-            display: inline-block; width: 10px; height: 10px;
-            background: var(--red); border-radius: 50%; animation: pulse 1.5s infinite;
-            margin-left: 5px;
-        }
-        @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 5px var(--red)}50%{opacity:0.5;box-shadow:0 0 15px var(--red)} }
+        .screen.active { display: block; }
 
-        /* ========= الشاشة المنقسمة للاعبين ========= */
-        .arena {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-            min-height: calc(100vh - 150px);
+        /* ========= تسجيل الدخول ========= */
+        .login-screen {
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #0a0a1a, #1a1a35);
         }
-
-        .player-zone {
-            position: relative;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 10px; min-height: 400px;
-            border: 3px solid transparent;
-            transition: all 0.4s;
+        .login-card {
+            background: var(--card); border: 3px solid var(--gold);
+            border-radius: 25px; padding: 40px; max-width: 450px; width: 90%;
+            text-align: center; animation: slideUp 0.6s ease-out;
         }
-
-        .king-zone {
-            background: linear-gradient(180deg, rgba(241,196,15,0.05) 0%, rgba(26,26,53,0.9) 100%);
-            border-right: 1px solid rgba(255,255,255,0.1);
+        @keyframes slideUp { from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1} }
+        .login-icon { font-size: 80px; animation: float 2s infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)} }
+        .login-title { font-size: 2em; color: var(--gold); margin: 15px 0; }
+        .login-input {
+            width: 100%; padding: 15px; border-radius: 15px;
+            border: 2px solid var(--gold); background: rgba(0,0,0,0.5);
+            color: white; font-size: 1.2em; text-align: center;
+            margin: 15px 0; outline: none;
         }
-
-        .challenger-zone {
-            background: linear-gradient(180deg, rgba(52,152,219,0.05) 0%, rgba(26,26,53,0.9) 100%);
-            border-left: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .player-zone.active-turn {
-            border-color: var(--gold) !important;
-            animation: zoneGlow 0.8s infinite;
-            z-index: 5;
-        }
-
-        @keyframes zoneGlow {
-            0%,100%{box-shadow:0 0 20px rgba(241,196,15,0.2)}
-            50%{box-shadow:0 0 50px rgba(241,196,15,0.5)}
-        }
-
-        .zone-label {
-            position: absolute; top: 8px; font-size: 1.1em; font-weight: bold;
-            padding: 4px 12px; border-radius: 15px; letter-spacing: 1px;
-        }
-        .king-zone .zone-label { background: rgba(241,196,15,0.2); color: var(--gold); left: 8px; }
-        .challenger-zone .zone-label { background: rgba(52,152,219,0.2); color: var(--blue); right: 8px; }
-
-        .zone-avatar { font-size: 60px; transition: all 0.3s; }
-        .player-zone.active-turn .zone-avatar {
-            animation: avatarBounce 0.5s infinite;
-            filter: drop-shadow(0 0 20px var(--gold));
-        }
-        @keyframes avatarBounce {
-            0%,100%{transform:scale(1)}50%{transform:scale(1.2)}
-        }
-
-        .zone-score {
-            font-size: 3em; font-weight: bold; margin: 8px 0;
+        .login-input::placeholder { color: #7f8c8d; }
+        .login-input:focus { border-color: var(--green); box-shadow: 0 0 20px rgba(46,204,113,0.3); }
+        .login-btn {
+            width: 100%; padding: 15px; border-radius: 15px;
+            border: none; background: var(--green); color: white;
+            font-size: 1.3em; font-weight: bold; cursor: pointer;
             transition: all 0.3s;
         }
+        .login-btn:active { transform: scale(0.95); }
+        .login-btn:disabled { background: #7f8c8d; }
+
+        /* ========= شاشة الانتظار ========= */
+        .wait-screen {
+            display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #0a0a1a, #1a1a35);
+        }
+        .wait-card {
+            background: var(--card); border: 3px solid var(--gold);
+            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            text-align: center;
+        }
+        .wait-icon { font-size: 100px; animation: float 2s infinite; }
+        .wait-title { font-size: 1.8em; color: var(--gold); margin: 15px 0; }
+        .wait-message { font-size: 1.2em; color: #ecf0f1; line-height: 1.8; }
+
+        /* ========= الساحة ========= */
+        .header {
+            text-align: center; padding: 10px;
+            background: rgba(0,0,0,0.6); border-bottom: 2px solid var(--gold);
+        }
+        .header-crown { font-size: 40px; animation: float 2s infinite; }
+        .header-title { font-size: 1.6em; color: var(--gold); font-weight: bold; }
+        .live-badge {
+            display: inline-block; background: var(--red); padding: 4px 12px;
+            border-radius: 15px; font-size: 0.8em; animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.6} }
+
+        .round-bar {
+            text-align: center; padding: 8px; font-size: 1.2em;
+            color: var(--gold); background: rgba(0,0,0,0.4);
+        }
+        .r-dots { display: flex; justify-content: center; gap: 8px; margin: 5px 0; }
+        .r-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #34495e; border: 2px solid var(--gold); transition: 0.3s;
+        }
+        .r-dot.active { background: var(--gold); animation: glow 0.8s infinite; }
+        .r-dot.done { background: var(--green); border-color: var(--green); }
+        @keyframes glow { 0%,100%{box-shadow:0 0 6px var(--gold)}50%{box-shadow:0 0 16px var(--gold)} }
+
+        .timer-big {
+            text-align: center; font-size: 3em; font-weight: bold;
+            color: var(--gold); padding: 5px;
+        }
+        .timer-big.urgent { color: var(--red); animation: blink 0.4s infinite; }
+        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+        /* الساحة المنقسمة */
+        .arena {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+            min-height: 55vh;
+        }
+        .player-zone {
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 15px; min-height: 350px;
+            border: 3px solid transparent; transition: 0.4s;
+        }
+        .king-zone {
+            background: linear-gradient(180deg, rgba(241,196,15,0.08) 0%, rgba(26,26,53,0.9) 100%);
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .challenger-zone {
+            background: linear-gradient(180deg, rgba(52,152,219,0.08) 0%, rgba(26,26,53,0.9) 100%);
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        .player-zone.active-turn {
+            border-color: var(--gold) !important;
+            animation: zoneGlow 0.8s infinite; z-index: 5;
+        }
+        @keyframes zoneGlow {
+            0%,100%{box-shadow:0 0 25px rgba(241,196,15,0.3)}
+            50%{box-shadow:0 0 60px rgba(241,196,15,0.6)}
+        }
+        .zone-label {
+            position: absolute; top: 10px; font-size: 1.2em;
+            font-weight: bold; padding: 5px 15px; border-radius: 20px;
+        }
+        .king-zone .zone-label { background: rgba(241,196,15,0.2); color: var(--gold); }
+        .challenger-zone .zone-label { background: rgba(52,152,219,0.2); color: var(--blue); }
+        .zone-avatar { font-size: 70px; transition: 0.3s; }
+        .player-zone.active-turn .zone-avatar {
+            animation: bounce 0.5s infinite;
+            filter: drop-shadow(0 0 25px var(--gold));
+        }
+        @keyframes bounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.2)} }
+        .zone-name { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
+        .king-zone .zone-name { color: var(--gold); }
+        .challenger-zone .zone-name { color: var(--blue); }
+        .zone-score { font-size: 3.5em; font-weight: bold; transition: 0.3s; }
         .king-zone .zone-score { color: var(--gold); }
         .challenger-zone .zone-score { color: var(--blue); }
 
-        .zone-score.pulse { animation: scorePop 0.4s ease-out; }
-        @keyframes scorePop {
-            0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}
-        }
-
-        /* منطقة اللعب داخل كل Zone */
         .mini-game {
-            width: 100%; max-width: 350px; min-height: 200px;
+            width: 100%; max-width: 380px; min-height: 180px;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 15px; background: rgba(0,0,0,0.3);
-            padding: 10px; margin: 5px 0;
+            border-radius: 15px; background: rgba(0,0,0,0.4);
+            padding: 12px; margin: 8px 0;
         }
 
         /* ========= عناصر الألعاب ========= */
-        .stroop-word {
-            font-size: 2.8em; font-weight: bold; margin: 10px 0; text-align: center;
-        }
-        .stroop-btns {
-            display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px;
-        }
+        .stroop-word { font-size: 3em; font-weight: bold; margin: 10px 0; text-align: center; }
+        .stroop-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
         .stroop-btn {
-            padding: 12px 18px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3);
-            font-size: 1.1em; font-weight: bold; cursor: pointer; color: white;
-            transition: all 0.15s; min-width: 70px;
+            padding: 14px 22px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.3);
+            font-size: 1.2em; font-weight: bold; cursor: pointer; color: white;
+            transition: 0.15s; min-width: 80px;
         }
         .stroop-btn:active { transform: scale(0.9); border-color: white; }
 
-        .dir-arrow { font-size: 5em; text-align: center; margin: 5px 0; }
-        .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; max-width: 200px; margin: 10px auto; }
+        .dir-arrow { font-size: 6em; text-align: center; margin: 5px 0; }
+        .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 220px; margin: 10px auto; }
         .dir-btn {
-            aspect-ratio: 1; border-radius: 12px; border: 2px solid var(--gold);
-            background: rgba(255,255,255,0.1); color: white; font-size: 2em; cursor: pointer;
+            aspect-ratio: 1; border-radius: 14px; border: 2px solid var(--gold);
+            background: rgba(255,255,255,0.1); color: white; font-size: 2.2em; cursor: pointer;
         }
         .dir-btn:active { background: var(--gold); color: var(--bg); transform: scale(0.9); }
 
         .tap-circle {
-            width: 140px; height: 140px; border-radius: 50%;
+            width: 150px; height: 150px; border-radius: 50%;
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             display: flex; align-items: center; justify-content: center;
-            font-size: 2em; cursor: pointer; box-shadow: 0 0 30px rgba(231,76,60,0.5);
-            transition: all 0.1s;
+            font-size: 2.2em; cursor: pointer; box-shadow: 0 0 35px rgba(231,76,60,0.6);
+            transition: 0.1s;
         }
-        .king-zone .tap-circle { background: linear-gradient(135deg, var(--gold), #f39c12); box-shadow: 0 0 30px rgba(241,196,15,0.5); }
+        .king-zone .tap-circle { background: linear-gradient(135deg, var(--gold), #f39c12); box-shadow: 0 0 35px rgba(241,196,15,0.6); }
         .tap-circle:active { transform: scale(0.85); }
-        .tap-counter { font-size: 2em; margin-top: 8px; font-weight: bold; }
+        .tap-counter { font-size: 2.5em; margin-top: 10px; font-weight: bold; }
 
         .tf-question {
-            font-size: 1.4em; text-align: center; margin: 8px 0;
-            background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; line-height: 1.5;
+            font-size: 1.6em; text-align: center; margin: 10px 0;
+            background: rgba(255,255,255,0.1); padding: 15px; border-radius: 14px; line-height: 1.6;
         }
-        .tf-btns { display: flex; gap: 20px; justify-content: center; margin-top: 12px; }
+        .tf-btns { display: flex; gap: 25px; justify-content: center; margin-top: 15px; }
         .tf-btn {
-            width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
-            font-size: 2.5em; cursor: pointer; color: white;
+            width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
+            font-size: 2.8em; cursor: pointer; color: white;
             display: flex; align-items: center; justify-content: center;
         }
         .tf-true { background: var(--green); } .tf-false { background: var(--red); }
         .tf-btn:active { transform: scale(0.85); }
 
-        /* ========= شريط التحكم السفلي ========= */
+        .sniper-area {
+            position: relative; width: 100%; height: 180px;
+            background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden;
+        }
+        .target {
+            position: absolute; border-radius: 50%; cursor: pointer;
+            background: radial-gradient(circle, var(--gold), var(--red));
+            transform: translate(-50%, -50%);
+            animation: targetPop 0.3s ease-out;
+            box-shadow: 0 0 35px rgba(241,196,15,0.8);
+        }
+        @keyframes targetPop { from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)} }
+
+        /* ========= الأزرار السفلية ========= */
         .controls {
-            display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-            padding: 10px; background: rgba(0,0,0,0.6);
+            display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+            padding: 12px; background: rgba(0,0,0,0.7);
             border-top: 2px solid var(--gold);
-            position: sticky; bottom: 0; z-index: 100;
         }
         .btn {
-            padding: 10px 22px; border: none; border-radius: 25px;
-            font-size: 1em; font-weight: bold; cursor: pointer;
-            transition: all 0.3s; color: white;
+            padding: 12px 25px; border: none; border-radius: 25px;
+            font-size: 1.1em; font-weight: bold; cursor: pointer;
+            transition: 0.3s; color: white;
         }
         .btn:active { transform: scale(0.95); }
-        .btn-start { background: var(--green); font-size: 1.2em; padding: 12px 30px; }
+        .btn-start { background: var(--green); font-size: 1.3em; }
         .btn-qr { background: #8e44ad; }
         .btn-reset { background: #e67e22; }
         .btn-sound { background: #2c3e50; }
+        .btn-leave { background: var(--red); }
 
-        .round-info {
-            text-align: center; padding: 6px; font-size: 1.1em; color: var(--gold);
-            background: rgba(0,0,0,0.5);
+        /* ========= QR للجمهور ========= */
+        .qr-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); display: flex;
+            justify-content: center; align-items: center; z-index: 300;
         }
-        .round-dots { display: flex; justify-content: center; gap: 6px; margin: 4px 0; }
-        .r-dot {
-            width: 12px; height: 12px; border-radius: 50%;
-            background: #34495e; border: 2px solid var(--gold); transition: all 0.3s;
+        .qr-card {
+            background: var(--card); border: 3px solid var(--gold);
+            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            text-align: center;
         }
-        .r-dot.active { background: var(--gold); animation: glow 0.8s infinite; }
-        .r-dot.done { background: var(--green); border-color: var(--green); }
-        @keyframes glow { 0%,100%{box-shadow:0 0 5px var(--gold)}50%{box-shadow:0 0 15px var(--gold)} }
+        .qr-timer { font-size: 3em; color: var(--red); font-weight: bold; margin: 15px 0; }
 
-        .timer-big {
-            text-align: center; font-size: 2.5em; font-weight: bold; color: var(--gold);
-            padding: 5px;
+        /* ========= العد التنازلي للعودة ========= */
+        .return-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); display: flex;
+            justify-content: center; align-items: center; z-index: 250;
         }
-        .timer-big.urgent { color: var(--red); animation: blink 0.4s infinite; }
-        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+        .return-card {
+            background: var(--card); border: 3px solid var(--red);
+            border-radius: 25px; padding: 30px; max-width: 450px; width: 90%;
+            text-align: center;
+        }
+        .return-countdown { font-size: 5em; color: var(--red); font-weight: bold; margin: 20px 0; }
 
         /* ========= التراكبات ========= */
         .overlay {
@@ -207,38 +264,30 @@
             justify-content: center; align-items: center; z-index: 200;
         }
         .hidden { display: none !important; }
-
         .card {
-            background: linear-gradient(135deg, #1a1a35, #2c2c54);
-            border: 3px solid var(--gold); border-radius: 25px; padding: 25px;
-            max-width: 500px; width: 92%; text-align: center;
-            animation: slideUp 0.5s ease-out;
+            background: var(--card); border: 3px solid var(--gold);
+            border-radius: 25px; padding: 25px; max-width: 500px; width: 92%;
+            text-align: center; animation: slideUp 0.5s ease-out;
         }
-        @keyframes slideUp { from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1} }
-
         .card-icon { font-size: 80px; animation: bounceIcon 0.8s infinite; }
         @keyframes bounceIcon { 0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)} }
         .card-title { font-size: 2em; color: var(--gold); margin: 12px 0; }
         .card-desc {
-            font-size: 1.1em; color: #ecf0f1; line-height: 1.8;
+            font-size: 1.2em; color: #ecf0f1; line-height: 2;
             margin: 12px 0; background: rgba(0,0,0,0.4); padding: 15px;
             border-radius: 15px; border-right: 4px solid var(--gold);
         }
-        .card-countdown {
-            font-size: 5em; font-weight: bold; color: var(--gold);
-            animation: countPulse 1s infinite; margin: 15px 0;
-        }
-        @keyframes countPulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.1)} }
+        .card-countdown { font-size: 5em; font-weight: bold; color: var(--gold); margin: 15px 0; }
 
-        .victory-emoji { font-size: 100px; animation: victoryBounce 0.5s infinite; }
-        @keyframes victoryBounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.15) rotate(10deg)} }
+        .victory-icon { font-size: 100px; animation: victoryBounce 0.5s infinite; }
+        @keyframes victoryBounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.2) rotate(10deg)} }
 
-        @media (max-width: 600px) {
-            .arena { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+        @media (max-width: 650px) {
+            .arena { grid-template-columns: 1fr; }
             .king-zone { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            .challenger-zone { border-left: none; border-top: 1px solid rgba(255,255,255,0.1); }
-            .zone-avatar { font-size: 40px; }
-            .zone-score { font-size: 2em; }
+            .zone-avatar { font-size: 45px; }
+            .zone-score { font-size: 2.2em; }
+            .zone-name { font-size: 1em; }
             .stroop-word { font-size: 2em; }
             .dir-arrow { font-size: 3.5em; }
             .btn { padding: 8px 16px; font-size: 0.9em; }
@@ -247,206 +296,244 @@
 </head>
 <body>
 
-    <!-- ==================== الصوتيات ==================== -->
-    <audio id="sndCorrect" preload="auto"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
-    <audio id="sndWrong" preload="auto"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
-    <audio id="sndStart" preload="auto"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
-    <audio id="sndVictory" preload="auto"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
-    <audio id="sndTick" preload="auto"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
-    <audio id="sndCrowd" preload="auto"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
-
-    <!-- ========= الرأس ========= -->
-    <div class="header">
-        <div class="header-crown">👑</div>
-        <div class="header-title">تحدي العرش</div>
-        <div class="header-subtitle"><span class="live-dot"></span> بث مباشر</div>
-    </div>
-
-    <!-- ========= معلومات الجولة ========= -->
-    <div class="round-info">
-        الجولة <span id="roundNum">1</span> من 5
-        <div class="round-dots" id="roundDots">
-            <div class="r-dot active"></div><div class="r-dot"></div>
-            <div class="r-dot"></div><div class="r-dot"></div><div class="r-dot"></div>
-        </div>
-    </div>
-
-    <div class="timer-big" id="timerDisplay">⏱️ 15</div>
-
-    <!-- ========= ساحة المنافسة ========= -->
-    <div class="arena">
-        <!-- الملك -->
-        <div class="player-zone king-zone active-turn" id="kingZone">
-            <div class="zone-label">🤴 الملك</div>
-            <div class="zone-avatar">🤴</div>
-            <div class="zone-score" id="kingScore">0</div>
-            <div class="mini-game" id="kingGame">
-                <div style="text-align:center;color:var(--gold);">انتظر البدء...</div>
-            </div>
-        </div>
-
-        <!-- المتحدي -->
-        <div class="player-zone challenger-zone" id="challengerZone">
-            <div class="zone-label">🗡️ المتحدي</div>
-            <div class="zone-avatar">🗡️</div>
-            <div class="zone-score" id="challengerScore">0</div>
-            <div class="mini-game" id="challengerGame">
-                <div style="text-align:center;color:var(--blue);">انتظر البدء...</div>
+    <!-- ==================== شاشة تسجيل الدخول ==================== -->
+    <div class="screen active" id="loginScreen">
+        <div class="login-screen">
+            <div class="login-card">
+                <div class="login-icon">👑</div>
+                <div class="login-title">تحدي العرش</div>
+                <p style="color:#ecf0f1;margin-bottom:15px;">أدخل اسمك للمشاركة في البطولة</p>
+                <input type="text" class="login-input" id="playerNameInput"
+                    placeholder="مثال: @username (اسم التيك توك)">
+                <button class="login-btn" id="loginBtn" onclick="joinGame()">
+                    🚀 انضم للتحدي
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- ========= أزرار التحكم ========= -->
-    <div class="controls">
-        <button class="btn btn-start" id="btnStart" onclick="startGame()">🚀 بدء التحدي</button>
-        <button class="btn btn-qr" onclick="showQR()">📱 QR</button>
-        <button class="btn btn-reset" onclick="resetGame()">🔄 جديد</button>
-        <button class="btn btn-sound" onclick="toggleSound()" id="btnSound">🔊 الصوت</button>
+    <!-- ==================== شاشة الانتظار ==================== -->
+    <div class="screen" id="waitScreen">
+        <div class="wait-screen">
+            <div class="wait-card">
+                <div class="wait-icon">⏳</div>
+                <div class="wait-title">في قائمة الانتظار</div>
+                <div class="wait-message" id="waitMessage">
+                    انتظر دورك للتحدي...
+                </div>
+                <div style="margin-top:20px;color:#95a5a6;">
+                    سيظهر إشعار عندما يحين دورك
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ========= شاشة الشرح ========= -->
+    <!-- ==================== الساحة الرئيسية ==================== -->
+    <div class="screen" id="arenaScreen">
+        <div class="header">
+            <div class="header-crown">👑</div>
+            <div class="header-title">تحدي العرش</div>
+            <span class="live-badge">🔴 بث مباشر</span>
+        </div>
+
+        <div class="round-bar">
+            الجولة <span id="roundNum">1</span> من 5
+            <div class="r-dots" id="roundDots">
+                <div class="r-dot active"></div><div class="r-dot"></div>
+                <div class="r-dot"></div><div class="r-dot"></div><div class="r-dot"></div>
+            </div>
+        </div>
+
+        <div class="timer-big" id="timerDisplay">⏱️ 45</div>
+
+        <div class="arena">
+            <!-- الملك -->
+            <div class="player-zone king-zone active-turn" id="kingZone">
+                <div class="zone-label">👑 الملك</div>
+                <div class="zone-avatar">🤴</div>
+                <div class="zone-name" id="kingName">@الملك</div>
+                <div class="zone-score" id="kingScore">0</div>
+                <div class="mini-game" id="kingGame">
+                    <div style="text-align:center;color:var(--gold);">انتظر البدء...</div>
+                </div>
+            </div>
+
+            <!-- المتحدي -->
+            <div class="player-zone challenger-zone active-turn" id="challengerZone">
+                <div class="zone-label">🗡️ المتحدي</div>
+                <div class="zone-avatar">🗡️</div>
+                <div class="zone-name" id="challengerName">@المتسابق</div>
+                <div class="zone-score" id="challengerScore">0</div>
+                <div class="mini-game" id="challengerGame">
+                    <div style="text-align:center;color:var(--blue);">انتظر البدء...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-start" id="btnStart" onclick="startGame()">🚀 بدء التحدي</button>
+            <button class="btn btn-qr" onclick="showChallengeQR()">📱 QR تحدي</button>
+            <button class="btn btn-reset" onclick="resetGame()">🔄 جديد</button>
+            <button class="btn btn-sound" onclick="toggleSound()" id="btnSound">🔊</button>
+            <button class="btn btn-leave" onclick="leaveThrone()">🚪 مغادرة</button>
+        </div>
+    </div>
+
+    <!-- ==================== شرح الجولة ==================== -->
     <div id="tutorialOverlay" class="overlay hidden">
         <div class="card">
             <div class="card-icon" id="tutIcon">🎮</div>
             <div class="card-title" id="tutTitle"></div>
             <div class="card-desc" id="tutDesc"></div>
-            <div class="card-countdown" id="tutCountdown">12</div>
+            <div class="card-countdown" id="tutCountdown">15</div>
             <button class="btn btn-start" onclick="skipTutorial()">⏭️ ابدأ الآن</button>
         </div>
     </div>
 
-    <!-- ========= شاشة النصر ========= -->
+    <!-- ==================== شاشة النصر ==================== -->
     <div id="victoryOverlay" class="overlay hidden">
         <div class="card">
-            <div class="victory-emoji">👑</div>
+            <div class="victory-icon">👑</div>
             <div class="card-title" id="victoryMsg">الملك يحافظ على عرشه!</div>
-            <div style="display:flex;justify-content:space-around;font-size:2em;margin:20px 0;">
-                <div>🤴 <span id="vKing" style="color:var(--gold);">0</span></div>
-                <div style="color:white;">-</div>
-                <div>🗡️ <span id="vChallenger" style="color:var(--blue);">0</span></div>
-            </div>
+            <div style="font-size:1.3em;margin:15px 0;" id="victoryDetail"></div>
             <button class="btn btn-start" onclick="closeVictory()">🏰 متابعة</button>
+        </div>
+    </div>
+
+    <!-- ==================== QR للتحدي ==================== -->
+    <div id="qrOverlay" class="qr-overlay hidden">
+        <div class="qr-card">
+            <h2 style="color:var(--gold);">📱 تحدي العرش!</h2>
+            <p style="color:#ecf0f1;margin:15px 0;">امسح الباركود للانضمام</p>
+            <div id="qrCodeDisplay" style="display:inline-block;background:white;padding:15px;border-radius:15px;"></div>
+            <div class="qr-timer" id="qrTimer">30</div>
+            <p style="color:#95a5a6;">ثانية متبقية</p>
+            <button class="btn btn-start" onclick="closeQR()">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- ==================== شاشة العودة ==================== -->
+    <div id="returnOverlay" class="return-overlay hidden">
+        <div class="return-card">
+            <div class="card-icon">⚠️</div>
+            <div class="card-title" style="color:var(--red);">انقطع الاتصال!</div>
+            <p style="color:#ecf0f1;font-size:1.2em;margin:15px 0;" id="returnMessage"></p>
+            <div class="return-countdown" id="returnCountdown">180</div>
+            <p style="color:#95a5a6;">ثانية متبقية للعودة</p>
+            <button class="btn btn-start" onclick="attemptReconnect()">🔄 إعادة الاتصال</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
-        // ==================== نظام الصوت القوي ====================
+        // ==================== نظام الصوت ====================
         const Sound = {
-            muted: false,
-            
-            // توليد أصوات حقيقية باستخدام Web Audio API
-            ctx: null,
-            
-            init: function() {
-                try {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                } catch(e) {
-                    console.log('صوت غير مدعوم');
-                }
+            ctx: null, muted: false,
+            init() {
+                try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+                catch(e) { console.log('صوت غير مدعوم'); }
             },
-            
-            playTone: function(freq, duration, type, vol) {
+            tone(freq, dur, type, vol) {
                 if (this.muted || !this.ctx) return;
                 try {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = type || 'square';
-                    osc.frequency.value = freq;
-                    gain.gain.value = vol || 0.3;
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + duration);
+                    const o = this.ctx.createOscillator();
+                    const g = this.ctx.createGain();
+                    o.type = type || 'square'; o.frequency.value = freq;
+                    g.gain.value = vol || 0.3;
+                    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+                    o.connect(g); g.connect(this.ctx.destination);
+                    o.start(); o.stop(this.ctx.currentTime + dur);
                 } catch(e) {}
             },
-            
-            correct: function() {
-                this.playTone(880, 0.15, 'square', 0.4);
-                setTimeout(() => this.playTone(1100, 0.2, 'square', 0.3), 150);
-            },
-            
-            wrong: function() {
-                this.playTone(200, 0.3, 'sawtooth', 0.5);
-                this.playTone(150, 0.4, 'sawtooth', 0.4);
-            },
-            
-            start: function() {
-                this.playTone(440, 0.1, 'square', 0.3);
-                setTimeout(() => this.playTone(660, 0.1, 'square', 0.3), 100);
-                setTimeout(() => this.playTone(880, 0.2, 'square', 0.4), 200);
-            },
-            
-            victory: function() {
-                const notes = [523, 659, 784, 1047];
-                notes.forEach((n, i) => {
-                    setTimeout(() => this.playTone(n, 0.3, 'square', 0.4), i * 200);
-                });
-            },
-            
-            tick: function() {
-                this.playTone(1000, 0.05, 'square', 0.2);
-            },
-            
-            crowd: function() {
-                // محاكاة تصفيق الجمهور
-                for (let i = 0; i < 10; i++) {
-                    setTimeout(() => {
-                        this.playTone(200 + Math.random() * 400, 0.1, 'triangle', 0.1);
-                    }, i * 50);
-                }
-            }
+            correct() { this.tone(880,0.15,'square',0.4); setTimeout(()=>this.tone(1100,0.2,'square',0.3),150); },
+            wrong() { this.tone(200,0.3,'sawtooth',0.5); this.tone(150,0.4,'sawtooth',0.4); },
+            start() { this.tone(440,0.1);setTimeout(()=>this.tone(660,0.1),100);setTimeout(()=>this.tone(880,0.2),200); },
+            victory() { [523,659,784,1047].forEach((n,i)=>setTimeout(()=>this.tone(n,0.3,'square',0.4),i*200)); },
+            tick() { this.tone(1000,0.05,'square',0.2); },
+            alarm() { for(let i=0;i<5;i++) setTimeout(()=>this.tone(800,0.15,'square',0.5),i*300); }
         };
-
-        // تهيئة الصوت عند أول لمسة
-        document.addEventListener('touchstart', function() {
-            Sound.init();
-        }, {once: true});
-        document.addEventListener('click', function() {
-            Sound.init();
-        }, {once: true});
-
-        function toggleSound() {
-            Sound.muted = !Sound.muted;
-            document.getElementById('btnSound').textContent = Sound.muted ? '🔇 صامت' : '🔊 الصوت';
-        }
+        document.addEventListener('touchstart', ()=>Sound.init(), {once:true});
+        document.addEventListener('click', ()=>Sound.init(), {once:true});
+        function toggleSound() { Sound.muted=!Sound.muted; document.getElementById('btnSound').textContent=Sound.muted?'🔇':'🔊'; }
 
         // ==================== دوال مساعدة ====================
-        function shuffle(a) { const arr = [...a]; for (let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+        function shuffle(a) { const arr=[...a]; for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
         function rand(min,max) { return Math.floor(Math.random()*(max-min+1))+min; }
 
-        // ==================== بيانات الألعاب ====================
+        // ==================== بيانات اللاعبين ====================
+        const players = {
+            king: { name: '@الملك', score: 0, isKing: true },
+            challenger: { name: '@المتسابق', score: 0, isKing: false }
+        };
+        let currentKingName = '@الملك';
+        let waitingPlayers = [];
+        let gameActive = false;
+
+        // ==================== الانضمام للعبة ====================
+        function joinGame() {
+            const nameInput = document.getElementById('playerNameInput');
+            const name = nameInput.value.trim();
+            if (!name) { nameInput.focus(); return; }
+
+            const finalName = name.startsWith('@') ? name : '@' + name;
+            
+            if (!players.king.name || players.king.name === '@الملك') {
+                // أول لاعب = الملك
+                players.king.name = finalName;
+                currentKingName = finalName;
+                document.getElementById('kingName').textContent = finalName;
+                showArena();
+            } else if (!players.challenger.name || players.challenger.name === '@المتسابق') {
+                // ثاني لاعب = المتحدي
+                players.challenger.name = finalName;
+                document.getElementById('challengerName').textContent = finalName;
+                showArena();
+            } else {
+                // في قائمة الانتظار
+                waitingPlayers.push(finalName);
+                document.getElementById('waitMessage').textContent = `أهلاً ${finalName}!\nأنت في قائمة الانتظار (${waitingPlayers.length})`;
+                document.getElementById('loginScreen').classList.remove('active');
+                document.getElementById('waitScreen').classList.add('active');
+            }
+        }
+
+        function showArena() {
+            document.getElementById('loginScreen').classList.remove('active');
+            document.getElementById('waitScreen').classList.remove('active');
+            document.getElementById('arenaScreen').classList.add('active');
+        }
+
+        // ==================== الألعاب (وقت أطول) ====================
         const games = [
             {
                 name: '🎨 لون الكلمة', icon: '🎨', title: 'تحدي ستروب',
-                desc: 'ستظهر كلمة لون مكتوبة بلون مختلف!<br><br>🎯 المس <b>اسم اللون</b> الذي تشاهده<br>وليس الكلمة المكتوبة.',
-                time: 10, rounds: 5,
-                init: function(zone) { initStroop(zone); }
+                desc: 'كلمة لون مكتوبة بلون مختلف!<br>المس <b>اسم اللون</b> الذي تشاهده بعينك.<br><br>⏱️ الوقت: <b>45 ثانية</b><br>📊 8 جولات لكل لاعب',
+                time: 45, rounds: 8,
+                init(zone) { initStroop(zone); }
             },
             {
                 name: '🧭 الاتجاه المعاكس', icon: '🧭', title: 'الاتجاه المعاكس',
-                desc: 'سيظهر سهم، المس <b>الاتجاه المعاكس</b> له!<br><br>⬆️ المس ⬇️<br>⬅️ المس ➡️',
-                time: 8, rounds: 5,
-                init: function(zone) { initDirection(zone); }
+                desc: 'سهم يظهر، المس <b>الاتجاه المعاكس</b>!<br>⬆️ المس ⬇️ | ⬅️ المس ➡️<br><br>⏱️ الوقت: <b>40 ثانية</b><br>📊 8 جولات لكل لاعب',
+                time: 40, rounds: 8,
+                init(zone) { initDirection(zone); }
             },
             {
                 name: '👆 النقر السريع', icon: '👆', title: 'تحدي النقر',
-                desc: 'انقر الدائرة بأقصى سرعة ممكنة!<br><br>🎯 أكبر عدد نقرات = فوز',
-                time: 10, rounds: 1,
-                init: function(zone) { initTapRace(zone); }
+                desc: 'انقر الدائرة بأقصى سرعة!<br>أكبر عدد نقرات = فوز<br><br>⏱️ الوقت: <b>35 ثانية</b>',
+                time: 35, rounds: 1,
+                init(zone) { initTapRace(zone); }
             },
             {
                 name: '✅ صح أو خطأ', icon: '✅', title: 'صح أم خطأ',
-                desc: 'جملة تظهر، حدد إن كانت صحيحة ✓<br>أم خاطئة ✗ بأسرع وقت!',
-                time: 6, rounds: 6,
-                init: function(zone) { initTrueFalse(zone); }
+                desc: 'جملة تظهر، هل هي صحيحة ✓ أم خاطئة ✗؟<br><br>⏱️ الوقت: <b>40 ثانية</b><br>📊 10 جمل لكل لاعب',
+                time: 40, rounds: 10,
+                init(zone) { initTrueFalse(zone); }
             },
             {
                 name: '🎯 القناص', icon: '🎯', title: 'تحدي القناص',
-                desc: 'هدف يظهر في مكان عشوائي!<br><br>🎯 المس الهدف بأسرع ما يمكن!<br>اللاعبان يتنافسان مباشرة.',
-                time: 12, rounds: 1,
-                init: function(zone) { initSniper(zone); }
+                desc: 'هدف يظهر عشوائياً! المسه بأسرع وقت!<br>اللاعبان يتنافسان مباشرة.<br><br>⏱️ الوقت: <b>45 ثانية</b>',
+                time: 45, rounds: 1,
+                init(zone) { initSniper(zone); }
             }
         ];
 
@@ -455,15 +542,14 @@
             running: false, round: 0,
             kingScore: 0, challengerScore: 0,
             kingRoundScore: 0, challengerRoundScore: 0,
-            timer: null, timeLeft: 15,
-            touchLocked: false,
-            tutInterval: null, tutSeconds: 12,
-            tutCallback: null,
-            kingRounds: 0, challengerRounds: 0,
-            kingDone: false, challengerDone: false
+            timer: null, timeLeft: 45,
+            tutInterval: null, tutSeconds: 15, tutCallback: null,
+            kingDone: false, challengerDone: false,
+            returnTimer: null, returnSeconds: 180,
+            qrTimer: null, qrSeconds: 30
         };
 
-        // ==================== شاشة الشرح ====================
+        // ==================== شرح الجولة ====================
         function showTutorial(roundIdx, callback) {
             state.tutCallback = callback;
             const g = games[roundIdx];
@@ -472,24 +558,19 @@
             document.getElementById('tutDesc').innerHTML = g.desc;
             document.getElementById('tutorialOverlay').classList.remove('hidden');
 
-            state.tutSeconds = 12;
+            state.tutSeconds = 15;
             const cd = document.getElementById('tutCountdown');
-            cd.textContent = state.tutSeconds;
-            cd.style.color = '#F1C40F';
+            cd.textContent = state.tutSeconds; cd.style.color = '#F1C40F';
 
             clearInterval(state.tutInterval);
             state.tutInterval = setInterval(() => {
                 state.tutSeconds--;
                 cd.textContent = state.tutSeconds;
                 if (state.tutSeconds <= 3) { cd.style.color = '#e74c3c'; Sound.tick(); }
-                else if (state.tutSeconds <= 5) cd.style.color = '#f39c12';
-                
                 if (state.tutSeconds <= 0) {
                     clearInterval(state.tutInterval);
-                    cd.textContent = '🚀';
-                    cd.style.color = '#2ecc71';
+                    cd.textContent = '🚀'; cd.style.color = '#2ecc71';
                     Sound.start();
-                    Sound.crowd();
                     setTimeout(() => {
                         document.getElementById('tutorialOverlay').classList.add('hidden');
                         if (state.tutCallback) { const cb = state.tutCallback; state.tutCallback = null; cb(); }
@@ -502,89 +583,69 @@
             clearInterval(state.tutInterval);
             document.getElementById('tutorialOverlay').classList.add('hidden');
             Sound.start();
-            Sound.crowd();
             if (state.tutCallback) { const cb = state.tutCallback; state.tutCallback = null; cb(); }
         }
 
-        // ==================== لعبة 1: ستروب (كل لاعب منفصل) ====================
+        // ==================== لعبة 1: ستروب ====================
         const colors = [
-            { name: 'أحمر', code: '#e74c3c' },
-            { name: 'أزرق', code: '#3498db' },
-            { name: 'أخضر', code: '#2ecc71' },
-            { name: 'أصفر', code: '#f1c40f' }
+            { name: 'أحمر', code: '#e74c3c' }, { name: 'أزرق', code: '#3498db' },
+            { name: 'أخضر', code: '#2ecc71' }, { name: 'أصفر', code: '#f1c40f' },
+            { name: 'بنفسجي', code: '#9b59b6' }, { name: 'برتقالي', code: '#f39c12' }
         ];
 
         function initStroop(zone) {
-            const gameId = zone + 'Game';
-            const data = state['stroopData' + zone] = { round: 0, score: 0, correct: null };
+            const data = state['stroop' + zone] = { round: 0, score: 0, correct: null };
             nextStroop(zone);
         }
 
         function nextStroop(zone) {
-            const data = state['stroopData' + zone];
+            const data = state['stroop' + zone];
             data.round++;
-            if (data.round > games[0].rounds) {
-                finishPlayerRound(zone, data.score);
-                return;
-            }
+            if (data.round > games[0].rounds) { finishPlayer(zone, data.score); return; }
 
-            const nameColor = colors[rand(0,3)];
+            const nameColor = colors[rand(0, colors.length-1)];
             let codeColor;
-            do { codeColor = colors[rand(0,3)]; } while (codeColor.name === nameColor.name);
+            do { codeColor = colors[rand(0, colors.length-1)]; } while (codeColor.name === nameColor.name);
             data.correct = codeColor.name;
 
-            const btns = shuffle([...colors]);
-            const gameDiv = document.getElementById(zone + 'Game');
-            gameDiv.innerHTML = `
+            const btns = shuffle([...colors]).slice(0, 4);
+            document.getElementById(zone + 'Game').innerHTML = `
                 <div style="text-align:center;">
                     <div class="stroop-word" style="color:${codeColor.code};">${nameColor.name}</div>
                     <div class="stroop-btns">
-                        ${btns.map(c => `
-                            <button class="stroop-btn" style="background:${c.code};"
-                                onclick="answerStroop('${zone}','${c.name}')">${c.name}</button>
-                        `).join('')}
+                        ${btns.map(c => `<button class="stroop-btn" style="background:${c.code};"
+                            onclick="ansStroop('${zone}','${c.name}')">${c.name}</button>`).join('')}
                     </div>
-                    <div style="color:#95a5a6;margin-top:8px;">${data.round}/${games[0].rounds}</div>
-                </div>
-            `;
+                    <div style="color:#95a5a6;margin-top:10px;">${data.round}/${games[0].rounds}</div>
+                </div>`;
         }
 
-        function answerStroop(zone, answer) {
-            if (state.touchLocked || !state.running) return;
-            const data = state['stroopData' + zone];
-            if (!data || data.correct === null) return;
-
-            if (answer === data.correct) {
-                data.score += 25;
-                Sound.correct();
-                flashZone(zone, true);
-            } else {
-                Sound.wrong();
-                flashZone(zone, false);
-            }
+        function ansStroop(zone, answer) {
+            if (!state.running) return;
+            const data = state['stroop' + zone];
+            if (!data || !data.correct) return;
+            if (answer === data.correct) { data.score += 25; Sound.correct(); flashZone(zone, true); }
+            else { Sound.wrong(); flashZone(zone, false); }
             nextStroop(zone);
         }
 
         // ==================== لعبة 2: اتجاهات ====================
         const dirs = [
-            { arrow: '⬆️', name: 'أعلى', opp: 'أسفل', oppArrow: '⬇️' },
-            { arrow: '⬇️', name: 'أسفل', opp: 'أعلى', oppArrow: '⬆️' },
-            { arrow: '⬅️', name: 'يسار', opp: 'يمين', oppArrow: '➡️' },
-            { arrow: '➡️', name: 'يمين', opp: 'يسار', oppArrow: '⬅️' }
+            { arrow: '⬆️', name: 'أعلى', opp: 'أسفل' },
+            { arrow: '⬇️', name: 'أسفل', opp: 'أعلى' },
+            { arrow: '⬅️', name: 'يسار', opp: 'يمين' },
+            { arrow: '➡️', name: 'يمين', opp: 'يسار' }
         ];
 
         function initDirection(zone) {
-            const data = state['dirData' + zone] = { round: 0, score: 0, correct: null };
+            const data = state['dir' + zone] = { round: 0, score: 0, correct: null };
             nextDir(zone);
         }
 
         function nextDir(zone) {
-            const data = state['dirData' + zone];
+            const data = state['dir' + zone];
             data.round++;
-            if (data.round > games[1].rounds) {
-                finishPlayerRound(zone, data.score);
-                return;
-            }
+            if (data.round > games[1].rounds) { finishPlayer(zone, data.score); return; }
 
             const d = dirs[rand(0,3)];
             data.correct = d.opp;
@@ -592,86 +653,62 @@
             document.getElementById(zone + 'Game').innerHTML = `
                 <div style="text-align:center;">
                     <div class="dir-arrow">${d.arrow}</div>
-                    <div style="font-size:1.2em;color:var(--gold);">عكس ⬇️</div>
+                    <div style="font-size:1.3em;color:var(--gold);">عكس ⬇️</div>
                     <div class="dir-btns">
-                        ${btns.map(dd => `
-                            <button class="dir-btn" onclick="answerDir('${zone}','${dd.name}')">${dd.arrow}</button>
-                        `).join('')}
+                        ${btns.map(dd => `<button class="dir-btn" onclick="ansDir('${zone}','${dd.name}')">${dd.arrow}</button>`).join('')}
                     </div>
-                    <div style="color:#95a5a6;margin-top:8px;">${data.round}/${games[1].rounds}</div>
-                </div>
-            `;
+                    <div style="color:#95a5a6;margin-top:10px;">${data.round}/${games[1].rounds}</div>
+                </div>`;
         }
 
-        function answerDir(zone, answer) {
-            if (state.touchLocked || !state.running) return;
-            const data = state['dirData' + zone];
+        function ansDir(zone, answer) {
+            if (!state.running) return;
+            const data = state['dir' + zone];
             if (!data || !data.correct) return;
-
-            if (answer === data.correct) {
-                data.score += 25;
-                Sound.correct();
-                flashZone(zone, true);
-            } else {
-                Sound.wrong();
-                flashZone(zone, false);
-            }
+            if (answer === data.correct) { data.score += 25; Sound.correct(); flashZone(zone, true); }
+            else { Sound.wrong(); flashZone(zone, false); }
             nextDir(zone);
         }
 
-        // ==================== لعبة 3: النقر السريع ====================
+        // ==================== لعبة 3: النقر ====================
         function initTapRace(zone) {
-            const data = state['tapData' + zone] = { clicks: 0, started: false };
+            state['tap' + zone] = { clicks: 0 };
             document.getElementById(zone + 'Game').innerHTML = `
                 <div style="text-align:center;">
-                    <div class="tap-counter" id="${zone}TapCount">0</div>
-                    <div class="tap-circle" id="${zone}TapBtn" onclick="tapClick('${zone}')">
-                        👆 المس!
-                    </div>
-                </div>
-            `;
+                    <div class="tap-counter" id="${zone}TapCnt">0</div>
+                    <div class="tap-circle" id="${zone}TapBtn" onclick="tapClick('${zone}')">👆 المس!</div>
+                </div>`;
         }
 
         function tapClick(zone) {
-            if (state.touchLocked || !state.running) return;
-            const data = state['tapData' + zone];
+            if (!state.running) return;
+            const data = state['tap' + zone];
             if (!data) return;
             data.clicks++;
-            document.getElementById(zone + 'TapCount').textContent = data.clicks;
+            document.getElementById(zone + 'TapCnt').textContent = data.clicks;
             Sound.tick();
-            const btn = document.getElementById(zone + 'TapBtn');
-            btn.style.transform = 'scale(0.85)';
-            setTimeout(() => btn.style.transform = 'scale(1)', 60);
         }
 
         // ==================== لعبة 4: صح وخطأ ====================
         const tfList = [
-            { q: 'الشمس تشرق من الشرق', a: true },
-            { q: 'السماء خضراء', a: false },
-            { q: 'الماء يغلي عند 100°', a: true },
-            { q: 'الأسماك تطير', a: false },
-            { q: '2+2=4', a: true },
-            { q: 'الزرافة حيوان بحري', a: false },
-            { q: 'الثلج بارد', a: true },
-            { q: '10×10=1000', a: false },
-            { q: 'الأسبوع 7 أيام', a: true },
-            { q: 'النار باردة', a: false },
-            { q: 'الذهب معدن', a: true },
-            { q: 'الفيل أصغر من نملة', a: false }
+            { q: 'الشمس تشرق من الشرق', a: true }, { q: 'السماء خضراء', a: false },
+            { q: 'الماء يغلي عند 100°', a: true }, { q: 'الأسماك تطير', a: false },
+            { q: '2+2=4', a: true }, { q: 'الزرافة حيوان بحري', a: false },
+            { q: 'الثلج بارد', a: true }, { q: '10×10=1000', a: false },
+            { q: 'الأسبوع 7 أيام', a: true }, { q: 'النار باردة', a: false },
+            { q: 'الذهب معدن', a: true }, { q: 'الفيل أصغر من نملة', a: false },
+            { q: 'السعودية في آسيا', a: true }, { q: 'البحر مالح', a: true }
         ];
 
         function initTrueFalse(zone) {
-            const data = state['tfData' + zone] = { round: 0, score: 0, used: [], correct: null };
+            const data = state['tf' + zone] = { round: 0, score: 0, used: [], correct: null };
             nextTF(zone);
         }
 
         function nextTF(zone) {
-            const data = state['tfData' + zone];
+            const data = state['tf' + zone];
             data.round++;
-            if (data.round > games[3].rounds) {
-                finishPlayerRound(zone, data.score);
-                return;
-            }
+            if (data.round > games[3].rounds) { finishPlayer(zone, data.score); return; }
 
             let q;
             do { q = tfList[rand(0, tfList.length-1)]; }
@@ -679,133 +716,94 @@
             data.used.push(q.q);
             data.correct = q.a;
 
-            const leftFirst = Math.random() > 0.5;
+            const left = Math.random() > 0.5;
             document.getElementById(zone + 'Game').innerHTML = `
                 <div style="text-align:center;">
                     <div class="tf-question">${q.q}</div>
                     <div class="tf-btns">
-                        ${leftFirst ? `
-                            <button class="tf-btn tf-true" onclick="answerTF('${zone}',true)">✓</button>
-                            <button class="tf-btn tf-false" onclick="answerTF('${zone}',false)">✗</button>
-                        ` : `
-                            <button class="tf-btn tf-false" onclick="answerTF('${zone}',false)">✗</button>
-                            <button class="tf-btn tf-true" onclick="answerTF('${zone}',true)">✓</button>
-                        `}
+                        ${left ? `<button class="tf-btn tf-true" onclick="ansTF('${zone}',true)">✓</button>
+                            <button class="tf-btn tf-false" onclick="ansTF('${zone}',false)">✗</button>` :
+                            `<button class="tf-btn tf-false" onclick="ansTF('${zone}',false)">✗</button>
+                            <button class="tf-btn tf-true" onclick="ansTF('${zone}',true)">✓</button>`}
                     </div>
-                    <div style="color:#95a5a6;margin-top:8px;">${data.round}/${games[3].rounds}</div>
-                </div>
-            `;
+                    <div style="color:#95a5a6;margin-top:10px;">${data.round}/${games[3].rounds}</div>
+                </div>`;
         }
 
-        function answerTF(zone, answer) {
-            if (state.touchLocked || !state.running) return;
-            const data = state['tfData' + zone];
+        function ansTF(zone, answer) {
+            if (!state.running) return;
+            const data = state['tf' + zone];
             if (!data || data.correct === null) return;
-
-            if (answer === data.correct) {
-                data.score += 25;
-                Sound.correct();
-                flashZone(zone, true);
-            } else {
-                Sound.wrong();
-                flashZone(zone, false);
-            }
+            if (answer === data.correct) { data.score += 25; Sound.correct(); flashZone(zone, true); }
+            else { Sound.wrong(); flashZone(zone, false); }
             nextTF(zone);
         }
 
-        // ==================== لعبة 5: القناص (بدل الأكواب) ====================
+        // ==================== لعبة 5: القناص ====================
         function initSniper(zone) {
-            const data = state['sniperData' + zone] = { score: 0, active: false, timeout: null };
+            state['sniper' + zone] = { score: 0, active: false, timeout: null };
             spawnTarget(zone);
         }
 
         function spawnTarget(zone) {
-            const data = state['sniperData' + zone];
+            const data = state['sniper' + zone];
             if (!data || !state.running) return;
 
-            const gameDiv = document.getElementById(zone + 'Game');
-            const x = rand(10, 85);
-            const y = rand(10, 70);
-            const size = rand(45, 75);
-
-            gameDiv.innerHTML = `
-                <div style="position:relative;width:100%;height:200px;background:rgba(0,0,0,0.2);border-radius:12px;overflow:hidden;">
-                    <div onclick="hitTarget('${zone}')"
-                        style="position:absolute;left:${x}%;top:${y}%;width:${size}px;height:${size}px;
-                            background:radial-gradient(circle,var(--gold),#e74c3c);border-radius:50%;
-                            transform:translate(-50%,-50%);cursor:pointer;
-                            animation:targetPop 0.3s ease-out;box-shadow:0 0 30px rgba(241,196,15,0.7);">
+            const x = rand(15, 85), y = rand(15, 70), size = rand(50, 80);
+            document.getElementById(zone + 'Game').innerHTML = `
+                <div class="sniper-area">
+                    <div class="target" onclick="hitTarget('${zone}')"
+                        style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;">
                         <div style="text-align:center;line-height:${size}px;font-size:${size*0.5}px;">🎯</div>
                     </div>
                 </div>
-                <div style="color:#95a5a6;margin-top:5px;">أهداف: ${data.score}</div>
-            `;
+                <div style="color:#95a5a6;margin-top:5px;">أهداف: ${data.score}</div>`;
 
             data.active = true;
             data.timeout = setTimeout(() => {
-                if (data.active) {
-                    data.active = false;
-                    Sound.wrong();
-                    spawnTarget(zone);
-                }
-            }, 1500);
+                if (data.active) { data.active = false; Sound.wrong(); spawnTarget(zone); }
+            }, 2000);
         }
 
         function hitTarget(zone) {
-            if (state.touchLocked || !state.running) return;
-            const data = state['sniperData' + zone];
+            if (!state.running) return;
+            const data = state['sniper' + zone];
             if (!data || !data.active) return;
-
             clearTimeout(data.timeout);
             data.active = false;
             data.score += 30;
             Sound.correct();
             flashZone(zone, true);
-
-            setTimeout(() => spawnTarget(zone), 400);
+            setTimeout(() => spawnTarget(zone), 500);
         }
 
         // ==================== تأثيرات ====================
         function flashZone(zone, good) {
             const el = document.getElementById(zone === 'king' ? 'kingZone' : 'challengerZone');
-            const color = good ? 'rgba(46,204,113,0.5)' : 'rgba(231,76,60,0.5)';
-            el.style.boxShadow = `inset 0 0 60px ${color}`;
-            setTimeout(() => el.style.boxShadow = '', 300);
+            el.style.boxShadow = `inset 0 0 80px ${good ? 'rgba(46,204,113,0.6)' : 'rgba(231,76,60,0.6)'}`;
+            setTimeout(() => el.style.boxShadow = '', 350);
         }
 
-        // ==================== إنهاء دور اللاعب ====================
-        function finishPlayerRound(zone, score) {
-            if (zone === 'king') {
-                state.kingRoundScore = score;
-                state.kingDone = true;
-            } else {
-                state.challengerRoundScore = score;
-                state.challengerDone = true;
-            }
+        // ==================== إنهاء اللاعب ====================
+        function finishPlayer(zone, score) {
+            if (zone === 'king') { state.kingRoundScore = score; state.kingDone = true; }
+            else { state.challengerRoundScore = score; state.challengerDone = true; }
 
-            document.getElementById(zone + 'Game').innerHTML = `
-                <div style="text-align:center;font-size:1.5em;color:var(--gold);">✅ تم!</div>
-            `;
+            document.getElementById(zone + 'Game').innerHTML =
+                '<div style="text-align:center;font-size:1.5em;color:var(--gold);">✅ تم!</div>';
 
-            // تحقق إذا كان الاثنان انتهيا
-            if (state.kingDone && state.challengerDone) {
-                endRound();
-            }
+            if (state.kingDone && state.challengerDone) endRound();
         }
 
         function endRound() {
             clearInterval(state.timer);
-            state.touchLocked = true;
-
             const points = [0, 50, 50, 40, 40, 60][state.round];
             let winner;
 
             if (state.kingRoundScore > state.challengerRoundScore) {
-                state.kingScore += points;
-                winner = 'king';
+                state.kingScore += points; winner = 'king';
             } else if (state.challengerRoundScore > state.kingRoundScore) {
-                state.challengerScore += points;
-                winner = 'challenger';
+                state.challengerScore += points; winner = 'challenger';
             } else {
                 state.kingScore += Math.floor(points/2);
                 state.challengerScore += Math.floor(points/2);
@@ -814,15 +812,13 @@
 
             updateScores();
             Sound.victory();
-            Sound.crowd();
 
             setTimeout(() => {
                 state.round++;
                 if (state.round > 5) {
                     endGame();
                 } else {
-                    state.kingDone = false;
-                    state.challengerDone = false;
+                    state.kingDone = false; state.challengerDone = false;
                     updateDots();
                     document.getElementById('roundNum').textContent = state.round;
                     showTutorial(state.round-1, () => startRound());
@@ -837,12 +833,11 @@
             state.running = true; state.round = 1;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
-            state.touchLocked = false;
 
-            updateScores();
-            updateDots();
+            updateScores(); updateDots();
             document.getElementById('roundNum').textContent = '1';
             document.getElementById('btnStart').disabled = true;
+            gameActive = true;
 
             showTutorial(0, () => startRound());
         }
@@ -850,22 +845,12 @@
         function startRound() {
             const game = games[state.round - 1];
             state.timeLeft = game.time;
-            state.kingRoundScore = 0;
-            state.challengerRoundScore = 0;
-            state.touchLocked = false;
+            state.kingRoundScore = 0; state.challengerRoundScore = 0;
 
-            // تنظيف
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">⏳...</div>';
             document.getElementById('challengerGame').innerHTML = '<div style="color:var(--blue);">⏳...</div>';
 
-            // بدء اللعبة للاعبين معاً
-            game.init('king');
-            game.init('challenger');
-
-            // تنشيط كلا المنطقتين
-            document.getElementById('kingZone').classList.add('active-turn');
-            document.getElementById('challengerZone').classList.add('active-turn');
-
+            game.init('king'); game.init('challenger');
             startTimer();
         }
 
@@ -877,7 +862,7 @@
             state.timer = setInterval(() => {
                 state.timeLeft--;
                 updateTimer();
-                if (state.timeLeft <= 3) {
+                if (state.timeLeft <= 5) {
                     document.getElementById('timerDisplay').classList.add('urgent');
                     Sound.tick();
                 }
@@ -894,23 +879,145 @@
         }
 
         function handleTimeout() {
-            // إنهاء الجولة بالنتائج الحالية
-            if (!state.kingDone) finishPlayerRound('king', state['stroopData' + 'king']?.score || state['dirData' + 'king']?.score || state['tapData' + 'king']?.clicks || state['tfData' + 'king']?.score || state['sniperData' + 'king']?.score || 0);
-            if (!state.challengerDone) finishPlayerRound('challenger', state['stroopData' + 'challenger']?.score || state['dirData' + 'challenger']?.score || state['tapData' + 'challenger']?.clicks || state['tfData' + 'challenger']?.score || state['sniperData' + 'challenger']?.score || 0);
+            if (!state.kingDone) finishPlayer('king',
+                state['stroopking']?.score || state['dirking']?.score ||
+                state['tapking']?.clicks || state['tfking']?.score ||
+                state['sniperking']?.score || 0);
+            if (!state.challengerDone) finishPlayer('challenger',
+                state['stroopchallenger']?.score || state['dirchallenger']?.score ||
+                state['tapchallenger']?.clicks || state['tfchallenger']?.score ||
+                state['sniperchallenger']?.score || 0);
         }
 
         function endGame() {
             state.running = false;
+            gameActive = false;
             const kingWins = state.kingScore > state.challengerScore;
-            document.getElementById('victoryMsg').textContent = kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
-            document.getElementById('vKing').textContent = state.kingScore;
-            document.getElementById('vChallenger').textContent = state.challengerScore;
+            document.getElementById('victoryMsg').textContent = kingWins ?
+                '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
+            document.getElementById('victoryDetail').innerHTML = `
+                🤴 ${players.king.name}: ${state.kingScore}<br>
+                🗡️ ${players.challenger.name}: ${state.challengerScore}`;
             document.getElementById('victoryOverlay').classList.remove('hidden');
             Sound.victory();
-            Sound.crowd();
+
+            if (!kingWins) {
+                // الملك القديم يخسر
+                const oldKing = players.king.name;
+                players.king = { ...players.challenger, isKing: true, score: 0 };
+                currentKingName = players.challenger.name;
+                players.challenger = { name: waitingPlayers[0] || '@المتسابق', score: 0, isKing: false };
+                if (waitingPlayers.length > 0) waitingPlayers.shift();
+                document.getElementById('kingName').textContent = players.king.name;
+                document.getElementById('challengerName').textContent = players.challenger.name;
+            }
+
             document.getElementById('btnStart').disabled = false;
+
+            // QR تلقائي بعد 3 ثواني
+            setTimeout(() => showChallengeQR(), 3000);
         }
 
+        // ==================== QR Code للتحدي ====================
+        function showChallengeQR() {
+            document.getElementById('qrOverlay').classList.remove('hidden');
+            const qrDiv = document.getElementById('qrCodeDisplay');
+            qrDiv.innerHTML = '';
+            new QRCode(qrDiv, {
+                text: window.location.href + '?challenge=' + Date.now(),
+                width: 200, height: 200,
+                colorDark: "#2c3e50", colorLight: "#ffffff"
+            });
+
+            state.qrSeconds = 30;
+            document.getElementById('qrTimer').textContent = state.qrSeconds;
+            clearInterval(state.qrTimer);
+            state.qrTimer = setInterval(() => {
+                state.qrSeconds--;
+                document.getElementById('qrTimer').textContent = state.qrSeconds;
+                if (state.qrSeconds <= 0) {
+                    clearInterval(state.qrTimer);
+                    closeQR();
+                }
+            }, 1000);
+        }
+
+        function closeQR() {
+            clearInterval(state.qrTimer);
+            document.getElementById('qrOverlay').classList.add('hidden');
+        }
+
+        // ==================== نظام المغادرة والعودة ====================
+        function leaveThrone() {
+            if (!confirm('هل أنت متأكد من مغادرة العرش؟')) return;
+            // للملك فقط
+            if (players.king.isKing) {
+                startReturnCountdown('king');
+            }
+        }
+
+        function startReturnCountdown(who) {
+            document.getElementById('returnOverlay').classList.remove('hidden');
+            document.getElementById('returnMessage').textContent =
+                who === 'king' ? `${players.king.name} غادر! لديك 3 دقائق للعودة` :
+                `${players.challenger.name} انقطع اتصاله!`;
+
+            state.returnSeconds = 180;
+            document.getElementById('returnCountdown').textContent = state.returnSeconds;
+            Sound.alarm();
+
+            clearInterval(state.returnTimer);
+            state.returnTimer = setInterval(() => {
+                state.returnSeconds--;
+                document.getElementById('returnCountdown').textContent = state.returnSeconds;
+                if (state.returnSeconds <= 10) Sound.tick();
+                if (state.returnSeconds <= 0) {
+                    clearInterval(state.returnTimer);
+                    document.getElementById('returnOverlay').classList.add('hidden');
+                    replacePlayer(who);
+                }
+            }, 1000);
+        }
+
+        function attemptReconnect() {
+            clearInterval(state.returnTimer);
+            document.getElementById('returnOverlay').classList.add('hidden');
+            Sound.start();
+        }
+
+        function replacePlayer(who) {
+            if (who === 'king') {
+                if (waitingPlayers.length > 0) {
+                    players.king.name = waitingPlayers.shift();
+                    currentKingName = players.king.name;
+                    document.getElementById('kingName').textContent = players.king.name;
+                }
+            } else {
+                if (waitingPlayers.length > 0) {
+                    players.challenger.name = waitingPlayers.shift();
+                    document.getElementById('challengerName').textContent = players.challenger.name;
+                }
+            }
+            showChallengeQR();
+        }
+
+        // ==================== مراقبة الاتصال ====================
+        window.addEventListener('online', () => {
+            if (document.getElementById('returnOverlay').classList.contains('hidden') === false) {
+                attemptReconnect();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            if (gameActive) {
+                startReturnCountdown(players.king.isKing ? 'king' : 'challenger');
+            }
+        });
+
+        // محاكاة قطع الاتصال (للاختبار)
+        // setTimeout(() => window.dispatchEvent(new Event('offline')), 10000);
+
+        // ==================== دوال عامة ====================
         function updateScores() {
             document.getElementById('kingScore').textContent = state.kingScore;
             document.getElementById('challengerScore').textContent = state.challengerScore;
@@ -925,23 +1032,18 @@
         }
 
         function resetGame() {
-            clearInterval(state.timer);
-            clearInterval(state.tutInterval);
-            state.running = false; state.round = 0;
+            clearInterval(state.timer); clearInterval(state.tutInterval);
+            clearInterval(state.returnTimer); clearInterval(state.qrTimer);
+            state.running = false; state.round = 0; gameActive = false;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
-            state.touchLocked = false;
 
-            updateScores();
-            document.querySelectorAll('.r-dot').forEach((d,i) => {
-                d.classList.remove('done','active');
-                if (i===0) d.classList.add('active');
-            });
+            updateScores(); updateDots();
+            document.getElementById('roundNum').textContent = '1';
             document.getElementById('kingGame').innerHTML = '<div style="color:var(--gold);">انتظر البدء...</div>';
             document.getElementById('challengerGame').innerHTML = '<div style="color:var(--blue);">انتظر البدء...</div>';
-            document.getElementById('timerDisplay').textContent = '⏱️ 15';
+            document.getElementById('timerDisplay').textContent = '⏱️ 45';
             document.getElementById('timerDisplay').classList.remove('urgent');
-            document.getElementById('roundNum').textContent = '1';
             document.getElementById('btnStart').disabled = false;
         }
 
@@ -950,25 +1052,8 @@
             resetGame();
         }
 
-        function showQR() {
-            const link = window.location.href;
-            document.getElementById('kingGame').innerHTML = `
-                <div style="text-align:center;">
-                    <div id="qrHere" style="display:inline-block;background:white;padding:8px;border-radius:8px;"></div>
-                    <p style="color:var(--gold);margin-top:8px;">📱 امسح للمشاركة</p>
-                </div>
-            `;
-            document.getElementById('challengerGame').innerHTML = `
-                <div style="text-align:center;color:var(--blue);font-size:1.2em;">
-                    🏰 تحدي العرش<br>بث مباشر
-                </div>
-            `;
-            new QRCode(document.getElementById('qrHere'), {
-                text: link + '?join=' + Date.now(),
-                width: 120, height: 120,
-                colorDark: "#2c3e50", colorLight: "#ffffff"
-            });
-        }
+        // ==================== البدء ====================
+        document.getElementById('loginScreen').classList.add('active');
     </script>
 </body>
 </html>
