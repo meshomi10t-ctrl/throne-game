@@ -8,273 +8,191 @@
         :root {
             --gold: #F1C40F; --blue: #3498db; --red: #e74c3c;
             --green: #2ecc71; --bg: #0a0a1a; --card: #1a1a35;
-            --surface: rgba(255,255,255,0.06);
         }
-
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            user-select: none; -webkit-tap-highlight-color: transparent;
-        }
-
+        * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
         body {
             background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%);
             font-family: 'Segoe UI', 'Arial', sans-serif; color: white;
-            min-height: 100vh; overflow-x: hidden;
-            touch-action: manipulation;
+            min-height: 100vh; overflow-x: hidden; touch-action: manipulation;
         }
+        .screen { display:none; min-height:100vh; }
+        .screen.active { display:block; }
 
-        .screen { display: none; min-height: 100vh; }
-        .screen.active { display: block; }
-
-        /* تسجيل الدخول */
-        .login-screen {
-            display: flex; justify-content: center; align-items: center;
-            background: radial-gradient(ellipse at center, #1a1a35 0%, #0a0a1a 100%);
-        }
+        /* Login */
+        .login-screen { display:flex; justify-content:center; align-items:center; background: radial-gradient(ellipse at center, #1a1a35 0%, #0a0a1a 100%); }
         .login-card {
-            background: rgba(26,26,53,0.9); border: 2px solid var(--gold);
-            border-radius: 30px; padding: 3rem 2rem; max-width: 450px; width: 90%;
-            text-align: center; animation: slideUp 0.6s ease-out;
-            backdrop-filter: blur(10px);
+            background: rgba(26,26,53,0.9); border:2px solid var(--gold); border-radius:30px;
+            padding:3rem 2rem; max-width:450px; width:90%; text-align:center;
+            animation: slideUp 0.6s ease-out; backdrop-filter:blur(10px);
             box-shadow: 0 0 40px rgba(241,196,15,0.2);
         }
         @keyframes slideUp { from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1} }
-        .login-icon { font-size: 5rem; animation: float 2s infinite; }
+        .login-icon { font-size:5rem; animation:float 2s infinite; }
         @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)} }
-        .login-title { font-size: 2.5rem; color: var(--gold); margin: 1rem 0; }
+        .login-title { font-size:2.5rem; color:var(--gold); margin:1rem 0; }
         .login-input {
-            width: 100%; padding: 1rem; border-radius: 15px;
-            border: 2px solid rgba(241,196,15,0.5); background: rgba(0,0,0,0.5);
-            color: white; font-size: 1.2em; text-align: center;
-            margin: 1rem 0; outline: none;
+            width:100%; padding:1rem; border-radius:15px; border:2px solid rgba(241,196,15,0.5);
+            background:rgba(0,0,0,0.5); color:white; font-size:1.2em; text-align:center;
+            margin:1rem 0; outline:none;
         }
-        .login-input::placeholder { color: #7f8c8d; }
-        .login-input:focus { border-color: var(--green); box-shadow: 0 0 25px rgba(46,204,113,0.3); }
+        .login-input:focus { border-color:var(--green); box-shadow:0 0 25px rgba(46,204,113,0.3); }
         .login-btn {
-            width: 100%; padding: 1rem; border-radius: 15px;
-            border: none; background: var(--green); color: white;
-            font-size: 1.3em; font-weight: bold; cursor: pointer;
-            transition: all 0.3s; text-transform: uppercase;
+            width:100%; padding:1rem; border-radius:15px; border:none; background:var(--green);
+            color:white; font-size:1.3em; font-weight:bold; cursor:pointer; transition:0.3s; text-transform:uppercase;
         }
-        .login-btn:active { transform: scale(0.95); }
+        .login-btn:active { transform:scale(0.95); }
 
-        /* الساحة */
-        .header {
-            text-align: center; padding: 1rem;
-            background: rgba(0,0,0,0.7); border-bottom: 2px solid var(--gold);
-            backdrop-filter: blur(5px);
-        }
-        .header-crown { font-size: 2.5rem; animation: float 2s infinite; }
-        .header-title { font-size: 1.8rem; color: var(--gold); font-weight: bold; }
-        .live-badge {
-            display: inline-block; background: var(--red); padding: 0.3rem 1rem;
-            border-radius: 20px; font-size: 0.8rem; animation: pulse 1.5s infinite;
-        }
+        /* Arena */
+        .header { text-align:center; padding:1rem; background:rgba(0,0,0,0.7); border-bottom:2px solid var(--gold); backdrop-filter:blur(5px); }
+        .header-crown { font-size:2.5rem; animation:float 2s infinite; }
+        .header-title { font-size:1.8rem; color:var(--gold); font-weight:bold; }
+        .live-badge { display:inline-block; background:var(--red); padding:0.3rem 1rem; border-radius:20px; font-size:0.8rem; animation:pulse 1.5s infinite; }
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.6} }
 
-        .round-bar {
-            text-align: center; padding: 0.8rem; font-size: 1.1rem;
-            color: var(--gold); background: rgba(0,0,0,0.5);
-        }
-        .r-dots { display: flex; justify-content: center; gap: 10px; margin: 8px 0; }
+        .round-bar { text-align:center; padding:0.8rem; font-size:1.1rem; color:var(--gold); background:rgba(0,0,0,0.5); }
+        .r-dots { display:flex; justify-content:center; gap:10px; margin:8px 0; }
         .r-dot {
-            width: 14px; height: 14px; border-radius: 50%;
-            background: #34495e; border: 2px solid var(--gold); transition: 0.3s;
+            width:14px; height:14px; border-radius:50%; background:#34495e;
+            border:2px solid var(--gold); transition:0.3s;
         }
-        .r-dot.active { background: var(--gold); animation: glow 0.8s infinite; }
-        .r-dot.done { background: var(--green); border-color: var(--green); }
+        .r-dot.active { background:var(--gold); animation:glow 0.8s infinite; }
+        .r-dot.done { background:var(--green); border-color:var(--green); }
         @keyframes glow { 0%,100%{box-shadow:0 0 8px var(--gold)}50%{box-shadow:0 0 20px var(--gold)} }
 
-        .timer-big {
-            text-align: center; font-size: 2.8rem; font-weight: bold;
-            color: var(--gold); padding: 0.5rem;
-        }
-        .timer-big.urgent { color: var(--red); animation: blink 0.4s infinite; }
+        .timer-big { text-align:center; font-size:2.8rem; font-weight:bold; color:var(--gold); padding:0.5rem; }
+        .timer-big.urgent { color:var(--red); animation:blink 0.4s infinite; }
         @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
 
-        .arena {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-            min-height: 60vh;
-        }
+        .arena { display:grid; grid-template-columns:1fr 1fr; gap:0; min-height:60vh; }
         .player-zone {
-            position: relative; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 1.5rem; min-height: 380px;
-            border: 3px solid transparent; transition: 0.4s;
-            background: rgba(0,0,0,0.2);
+            position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding:1.5rem; min-height:380px; border:3px solid transparent; transition:0.4s; background:rgba(0,0,0,0.2);
         }
-        .king-zone { border-right: 1px solid rgba(255,255,255,0.1); }
-        .challenger-zone { border-left: 1px solid rgba(255,255,255,0.1); }
+        .king-zone { border-right:1px solid rgba(255,255,255,0.1); }
+        .challenger-zone { border-left:1px solid rgba(255,255,255,0.1); }
         .player-zone.active-turn {
-            border-color: var(--gold) !important;
-            animation: zoneGlow 0.8s infinite; z-index: 5;
-            background: rgba(241,196,15,0.05);
+            border-color:var(--gold) !important; animation:zoneGlow 0.8s infinite; z-index:5; background:rgba(241,196,15,0.05);
         }
-        @keyframes zoneGlow {
-            0%,100%{box-shadow:0 0 30px rgba(241,196,15,0.3)}
-            50%{box-shadow:0 0 70px rgba(241,196,15,0.6)}
-        }
-        .zone-label {
-            position: absolute; top: 15px; font-size: 1.1rem;
-            font-weight: bold; padding: 6px 18px; border-radius: 25px;
-            backdrop-filter: blur(5px);
-        }
-        .king-zone .zone-label { background: rgba(241,196,15,0.2); color: var(--gold); }
-        .challenger-zone .zone-label { background: rgba(52,152,219,0.2); color: var(--blue); }
-        .zone-avatar { font-size: 4rem; transition: 0.3s; }
-        .player-zone.active-turn .zone-avatar {
-            animation: bounce 0.5s infinite;
-            filter: drop-shadow(0 0 25px var(--gold));
-        }
+        @keyframes zoneGlow { 0%,100%{box-shadow:0 0 30px rgba(241,196,15,0.3)}50%{box-shadow:0 0 70px rgba(241,196,15,0.6)} }
+        .zone-label { position:absolute; top:15px; font-size:1.1rem; font-weight:bold; padding:6px 18px; border-radius:25px; backdrop-filter:blur(5px); }
+        .king-zone .zone-label { background:rgba(241,196,15,0.2); color:var(--gold); }
+        .challenger-zone .zone-label { background:rgba(52,152,219,0.2); color:var(--blue); }
+        .zone-avatar { font-size:4rem; transition:0.3s; }
+        .player-zone.active-turn .zone-avatar { animation:bounce 0.5s infinite; filter:drop-shadow(0 0 25px var(--gold)); }
         @keyframes bounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.2)} }
-        .zone-name { font-size: 1.3rem; font-weight: bold; margin: 8px 0; }
-        .king-zone .zone-name { color: var(--gold); }
-        .challenger-zone .zone-name { color: var(--blue); }
-        .zone-score { font-size: 3.2rem; font-weight: bold; transition: 0.3s; }
-        .king-zone .zone-score { color: var(--gold); }
-        .challenger-zone .zone-score { color: var(--blue); }
+        .zone-name { font-size:1.3rem; font-weight:bold; margin:8px 0; }
+        .king-zone .zone-name { color:var(--gold); } .challenger-zone .zone-name { color:var(--blue); }
+        .zone-score { font-size:3.2rem; font-weight:bold; transition:0.3s; }
+        .king-zone .zone-score { color:var(--gold); } .challenger-zone .zone-score { color:var(--blue); }
 
         .mini-game {
-            width: 100%; max-width: 400px; min-height: 200px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 20px; background: rgba(0,0,0,0.3);
-            padding: 1rem; margin: 10px 0;
+            width:100%; max-width:400px; min-height:200px; display:flex; align-items:center; justify-content:center;
+            border-radius:20px; background:rgba(0,0,0,0.3); padding:1rem; margin:10px 0;
         }
 
-        /* ألعاب مشتركة */
-        .stroop-word { font-size: 3rem; font-weight: bold; margin: 10px 0; text-align: center; }
-        .stroop-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 15px; }
+        /* games */
+        .stroop-word { font-size:3rem; font-weight:bold; margin:10px 0; text-align:center; }
+        .stroop-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:15px; }
         .stroop-btn {
-            padding: 14px 24px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.3);
-            font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white;
-            transition: 0.15s; min-width: 80px;
+            padding:14px 24px; border-radius:14px; border:2px solid rgba(255,255,255,0.3);
+            font-size:1.2rem; font-weight:bold; cursor:pointer; color:white; transition:0.15s; min-width:80px;
         }
-        .stroop-btn:active { transform: scale(0.9); border-color: white; }
+        .stroop-btn:active { transform:scale(0.9); border-color:white; }
 
-        .dir-arrow {
-            font-size: 7rem; text-align: center; margin: 10px 0;
-            filter: drop-shadow(0 0 25px rgba(255,255,255,0.6));
-            animation: arrowPulse 1.5s infinite;
-        }
+        .dir-arrow { font-size:7rem; text-align:center; margin:10px 0; filter:drop-shadow(0 0 25px rgba(255,255,255,0.6)); animation:arrowPulse 1.5s infinite; }
         @keyframes arrowPulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.15)} }
-        .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 240px; margin: 15px auto; }
+        .dir-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:240px; margin:15px auto; }
         .dir-btn {
-            aspect-ratio: 1; border-radius: 15px; border: 2px solid var(--gold);
-            background: rgba(255,255,255,0.1); color: white; font-size: 2.2rem; cursor: pointer;
+            aspect-ratio:1; border-radius:15px; border:2px solid var(--gold); background:rgba(255,255,255,0.1);
+            color:white; font-size:2.2rem; cursor:pointer;
         }
-        .dir-btn:active { background: var(--gold); color: var(--bg); }
+        .dir-btn:active { background:var(--gold); color:var(--bg); }
 
-        .tf-question {
-            font-size: 1.6rem; text-align: center; margin: 12px 0;
-            background: rgba(255,255,255,0.1); padding: 1.2rem; border-radius: 14px;
+        .tf-question { font-size:1.6rem; text-align:center; margin:12px 0; background:rgba(255,255,255,0.1); padding:1.2rem; border-radius:14px; }
+        .tf-btns { display:flex; gap:30px; justify-content:center; margin-top:15px; }
+        .tf-btn {
+            width:90px; height:90px; border-radius:50%; border:3px solid rgba(255,255,255,0.3);
+            font-size:2.5rem; cursor:pointer; color:white; display:flex; align-items:center; justify-content:center;
         }
-        .tf-btns { display: flex; gap: 30px; justify-content: center; margin-top: 15px; }
-        .tf-btn {م
-            width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);
-            font-size: 2.5rem; cursor: pointer; color: white;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .tf-true { background: var(--green); } .tf-false { background: var(--red); }
+        .tf-true { background:var(--green); } .tf-false { background:var(--red); }
 
-        .sniper-area {
-            position: relative; width: 100%; height: 200px;
-            background: rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden;
-        }
+        .sniper-area { position:relative; width:100%; height:200px; background:rgba(0,0,0,0.3); border-radius:15px; overflow:hidden; }
         .target {
-            position: absolute; border-radius: 50%; cursor: pointer;
-            background: radial-gradient(circle, var(--gold), var(--red));
-            transform: translate(-50%, -50%);
-            animation: targetPop 0.3s ease-out;
-            box-shadow: 0 0 40px rgba(241,196,15,0.8);
+            position:absolute; border-radius:50%; cursor:pointer;
+            background:radial-gradient(circle, var(--gold), var(--red));
+            transform:translate(-50%,-50%); animation:targetPop 0.3s ease-out;
+            box-shadow:0 0 40px rgba(241,196,15,0.8);
         }
         @keyframes targetPop { from{transform:translate(-50%,-50%) scale(0)}to{transform:translate(-50%,-50%) scale(1)} }
 
         /* Code Break */
-        .codebreak-area {
-            display: flex; flex-direction: column; align-items: center; gap: 15px;
-            width: 100%; max-width: 400px;
-        }
-        .digit-row { display: flex; gap: 12px; justify-content: center; }
+        .codebreak-area { display:flex; flex-direction:column; align-items:center; gap:15px; width:100%; max-width:400px; }
+        .digit-row { display:flex; gap:12px; justify-content:center; }
         .digit-slot {
-            width: 70px; height: 80px; border-radius: 12px;
-            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: bold; color: white;
-            cursor: pointer; transition: all 0.2s;
+            width:70px; height:80px; border-radius:12px; background:rgba(255,255,255,0.1);
+            border:2px solid rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center;
+            font-size:2.5rem; font-weight:bold; color:white; cursor:pointer; transition:0.2s;
         }
-        .digit-slot.locked { background: var(--green); border-color: var(--green); cursor: default; }
-        .digit-slot.yellow { background: #f39c12; border-color: #f39c12; }
-        .digit-slot.red { background: var(--red); border-color: var(--red); }
-        .digit-picker { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .digit-slot.locked { background:var(--green); border-color:var(--green); cursor:default; }
+        .digit-slot.yellow { background:#f39c12; border-color:#f39c12; }
+        .digit-slot.red { background:var(--red); border-color:var(--red); }
+        .digit-picker { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
         .digit-btn {
-            width: 50px; height: 50px; border-radius: 10px;
-            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-            color: white; font-size: 1.5rem; cursor: pointer; transition: 0.2s;
+            width:50px; height:50px; border-radius:10px; background:rgba(255,255,255,0.15);
+            border:1px solid rgba(255,255,255,0.3); color:white; font-size:1.5rem; cursor:pointer; transition:0.2s;
         }
-        .digit-btn:active { background: var(--gold); color: black; }
+        .digit-btn:active { background:var(--gold); color:black; }
 
-        .controls {
-            display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-            padding: 14px; background: rgba(0,0,0,0.8);
-            border-top: 2px solid var(--gold); backdrop-filter: blur(5px);
-        }
+        .controls { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; padding:14px; background:rgba(0,0,0,0.8); border-top:2px solid var(--gold); backdrop-filter:blur(5px); }
         .btn {
-            padding: 12px 28px; border: none; border-radius: 30px;
-            font-size: 1rem; font-weight: bold; cursor: pointer;
-            transition: all 0.3s; color: white; letter-spacing: 1px;
+            padding:12px 28px; border:none; border-radius:30px; font-size:1rem; font-weight:bold;
+            cursor:pointer; transition:0.3s; color:white; letter-spacing:1px;
         }
-        .btn:active { transform: scale(0.95); }
-        .btn-start { background: var(--green); }
-        .btn-qr { background: #8e44ad; }
-        .btn-reset { background: #e67e22; }
-        .btn-sound { background: #2c3e50; }
-        .btn-leave { background: var(--red); }
+        .btn:active { transform:scale(0.95); }
+        .btn-start { background:var(--green); }
+        .btn-qr { background:#8e44ad; }
+        .btn-reset { background:#e67e22; }
+        .btn-sound { background:#2c3e50; }
+        .btn-leave { background:var(--red); }
 
-        .hidden { display: none !important; }
+        .hidden { display:none !important; }
         .overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.95); display: flex;
-            justify-content: center; align-items: center; z-index: 200;
+            position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95);
+            display:flex; justify-content:center; align-items:center; z-index:200;
         }
         .card {
-            background: rgba(26,26,53,0.95); border: 2px solid var(--gold);
-            border-radius: 25px; padding: 2rem; max-width: 480px; width: 92%;
-            text-align: center; animation: slideUp 0.5s ease-out;
-            backdrop-filter: blur(10px);
+            background:rgba(26,26,53,0.95); border:2px solid var(--gold); border-radius:25px;
+            padding:2rem; max-width:480px; width:92%; text-align:center; animation:slideUp 0.5s ease-out; backdrop-filter:blur(10px);
         }
-        .card-icon { font-size: 5rem; animation: bounceIcon 0.8s infinite; }
+        .card-icon { font-size:5rem; animation:bounceIcon 0.8s infinite; }
         @keyframes bounceIcon { 0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)} }
-        .card-title { font-size: 2rem; color: var(--gold); margin: 15px 0; }
-        .card-desc {
-            font-size: 1.1rem; color: #ecf0f1; line-height: 1.8;
-            margin: 15px 0; background: rgba(0,0,0,0.3); padding: 15px;
-            border-radius: 15px; border-right: 4px solid var(--gold);
-        }
-        .card-countdown { font-size: 5rem; font-weight: bold; color: var(--gold); margin: 15px 0; }
+        .card-title { font-size:2rem; color:var(--gold); margin:15px 0; }
+        .card-desc { font-size:1.1rem; color:#ecf0f1; line-height:1.8; margin:15px 0; background:rgba(0,0,0,0.3); padding:15px; border-radius:15px; border-right:4px solid var(--gold); }
+        .card-countdown { font-size:5rem; font-weight:bold; color:var(--gold); margin:15px 0; }
 
-        @media (max-width: 700px) {
-            .arena { grid-template-columns: 1fr; }
-            .king-zone { border-right: none; }
-            .challenger-zone { border-left: none; }
-            .zone-avatar { font-size: 3rem; }
-            .digit-slot { width: 55px; height: 65px; font-size: 2rem; }
+        @media (max-width:700px) {
+            .arena { grid-template-columns:1fr; }
+            .king-zone { border-right:none; } .challenger-zone { border-left:none; }
+            .zone-avatar { font-size:3rem; } .digit-slot { width:55px; height:65px; font-size:2rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- شاشات -->
+    <!-- Login -->
     <div class="screen active" id="loginScreen"><div class="login-screen"><div class="login-card">
         <div class="login-icon">👑</div><div class="login-title">تحدي العرش</div>
         <input class="login-input" id="playerNameInput" placeholder="@username">
         <button class="login-btn" onclick="joinGame()">🚀 انضم للتحدي</button>
     </div></div></div>
 
+    <!-- Waiting -->
     <div class="screen" id="waitScreen"><div class="login-screen"><div class="card">
         <div class="card-icon">⏳</div><div class="card-title">قائمة الانتظار</div>
         <div id="waitMessage">انتظر دورك...</div>
     </div></div></div>
 
+    <!-- Arena -->
     <div class="screen" id="arenaScreen">
         <div class="header"><div class="header-crown">👑</div><div class="header-title">تحدي العرش</div><span class="live-badge">🔴 مباشر</span></div>
         <div class="round-bar">الجولة <span id="roundNum">1</span>/5 <div class="r-dots" id="roundDots"><div class="r-dot active"></div><div class="r-dot"></div><div class="r-dot"></div><div class="r-dot"></div><div class="r-dot"></div></div></div>
@@ -325,7 +243,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
-        // ==================== نظام الصوت ====================
+        // ==================== Sound System ====================
         const Sound = {
             ctx: null, muted: false,
             init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
@@ -354,11 +272,11 @@
         document.addEventListener('click', ()=>Sound.init(), {once:true});
         function toggleSound() { Sound.muted=!Sound.muted; document.getElementById('btnSound').textContent=Sound.muted?'🔇':'🔊'; }
 
-        // ==================== دوال مساعدة ====================
+        // ==================== Helpers ====================
         const shuffle = arr => arr.sort(()=>Math.random()-0.5);
         const rand = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
 
-        // ==================== بيانات اللاعبين ====================
+        // ==================== Players ====================
         const players = {
             king: { name: '@الملك', score: 0 },
             challenger: { name: '@المتسابق', score: 0 }
@@ -373,13 +291,11 @@
             if (players.king.name === '@الملك') {
                 players.king.name = finalName;
                 document.getElementById('kingName').textContent = finalName;
-                document.getElementById('loginScreen').classList.remove('active');
-                document.getElementById('arenaScreen').classList.add('active');
+                switchToArena();
             } else if (players.challenger.name === '@المتسابق') {
                 players.challenger.name = finalName;
                 document.getElementById('challengerName').textContent = finalName;
-                document.getElementById('loginScreen').classList.remove('active');
-                document.getElementById('arenaScreen').classList.add('active');
+                switchToArena();
             } else {
                 waitingPlayers.push(finalName);
                 document.getElementById('waitMessage').textContent = `مرحباً ${finalName}، أنت في قائمة الانتظار (${waitingPlayers.length})`;
@@ -387,8 +303,12 @@
                 document.getElementById('waitScreen').classList.add('active');
             }
         }
+        function switchToArena() {
+            document.getElementById('loginScreen').classList.remove('active');
+            document.getElementById('arenaScreen').classList.add('active');
+        }
 
-        // ==================== الألعاب ====================
+        // ==================== Games Definition ====================
         const colorList = [
             { name: 'أحمر', code: '#e74c3c' }, { name: 'أزرق', code: '#3498db' },
             { name: 'أخضر', code: '#2ecc71' }, { name: 'أصفر', code: '#f1c40f' },
@@ -396,27 +316,31 @@
         ];
 
         const games = [
-            { name: '🎨 لون الكلمة', icon:'🎨', title:'تحدي ستروب', desc:'كلمة لون مكتوبة بلون مختلف! المس <b>اسم اللون</b> الذي تشاهده.', time:45, rounds:8, init(zone){ initStroop(zone); } },
-            { name: '🧭 الاتجاه المعاكس', icon:'🧭', title:'الاتجاه المعاكس', desc:'سهم يظهر، المس <b>الاتجاه المعاكس</b>.', time:40, rounds:8, init(zone){ initDirection(zone); } },
-            { name: '🧩 كسر الشيفرة', icon:'🧩', title:'Code Break', desc:'خمّن الشيفرة المكونة من <b>4 أرقام</b>. الأخضر = صحيح ويثبت، الأصفر = موجود في مكان آخر، الأحمر = خطأ. ⏱️ دقيقتان', time:120, rounds:1, init(zone){ initCodeBreak(zone); } },
-            { name: '✅ صح أو خطأ', icon:'✅', title:'صح أم خطأ', desc:'جملة تظهر، حدد إن كانت صحيحة ✓ أم خاطئة ✗.', time:40, rounds:10, init(zone){ initTrueFalse(zone); } },
-            { name: '🎯 القناص', icon:'🎯', title:'تحدي القناص', desc:'هدف يظهر عشوائياً، المسه بأسرع وقت.', time:45, rounds:1, init(zone){ initSniper(zone); } }
+            { name:'🎨 لون الكلمة', icon:'🎨', title:'تحدي ستروب', desc:'كلمة لون مكتوبة بلون مختلف! المس <b>اسم اللون</b> الذي تشاهده.', time:45, rounds:8, init(zone){ initStroop(zone); } },
+            { name:'🧭 الاتجاه المعاكس', icon:'🧭', title:'الاتجاه المعاكس', desc:'سهم يظهر، المس <b>الاتجاه المعاكس</b>.', time:40, rounds:8, init(zone){ initDirection(zone); } },
+            { name:'🧩 كسر الشيفرة', icon:'🧩', title:'Code Break', desc:'خمّن الشيفرة المكونة من <b>4 أرقام</b>.<br>🟢 تثبيت للصحيح | 🟡 موجود في مكان آخر | 🔴 خطأ<br>⏱️ دقيقتان', time:120, rounds:1, init(zone){ initCodeBreak(zone); } },
+            { name:'✅ صح أو خطأ', icon:'✅', title:'صح أم خطأ', desc:'جملة تظهر، حدد ✓ أو ✗.', time:40, rounds:10, init(zone){ initTrueFalse(zone); } },
+            { name:'🎯 القناص', icon:'🎯', title:'تحدي القناص', desc:'هدف يظهر عشوائياً، المسه بأسرع وقت.', time:45, rounds:1, init(zone){ initSniper(zone); } }
         ];
 
+        // ==================== State ====================
         const state = {
-            running: false, round: 0, kingScore: 0, challengerScore: 0,
-            kingRoundScore: 0, challengerRoundScore: 0, timer: null, timeLeft: 50,
-            tutInterval: null, tutSeconds: 15, kingDone: false, challengerDone: false,
-            returnTimer: null, returnSeconds: 180, qrTimer: null, qrSeconds: 30, suddenDeath: false
+            running: false, round: 0, kingScore:0, challengerScore:0,
+            kingRoundScore:0, challengerRoundScore:0, timer:null, timeLeft:50,
+            tutInterval:null, tutSeconds:15, _tutCb:null,
+            kingDone:false, challengerDone:false,
+            returnTimer:null, returnSeconds:180, qrTimer:null, qrSeconds:30,
+            suddenDeath:false
         };
 
-        // ==================== شرح الجولة ====================
+        // ==================== Tutorial ====================
         function showTutorial(idx, cb) {
             const g = games[idx];
             document.getElementById('tutIcon').textContent = g.icon;
             document.getElementById('tutTitle').textContent = g.title;
             document.getElementById('tutDesc').innerHTML = g.desc;
             document.getElementById('tutorialOverlay').classList.remove('hidden');
+            state._tutCb = cb;
             state.tutSeconds = 15;
             const cd = document.getElementById('tutCountdown'); cd.textContent = state.tutSeconds; cd.style.color = '#F1C40F';
             clearInterval(state.tutInterval);
@@ -424,14 +348,26 @@
                 state.tutSeconds--;
                 cd.textContent = state.tutSeconds;
                 if (state.tutSeconds <= 3) { cd.style.color = '#e74c3c'; Sound.tick(); }
-                if (state.tutSeconds <= 0) { clearInterval(state.tutInterval); cd.textContent = '🚀'; Sound.start(); setTimeout(()=>{ document.getElementById('tutorialOverlay').classList.add('hidden'); cb(); },500); }
+                if (state.tutSeconds <= 0) {
+                    clearInterval(state.tutInterval);
+                    cd.textContent = '🚀'; Sound.start();
+                    setTimeout(()=>{
+                        document.getElementById('tutorialOverlay').classList.add('hidden');
+                        if (state._tutCb) { const f = state._tutCb; state._tutCb=null; f(); }
+                    }, 500);
+                }
             }, 1000);
         }
-        function skipTutorial() { clearInterval(state.tutInterval); document.getElementById('tutorialOverlay').classList.add('hidden'); Sound.start(); if (state._tutCb) state._tutCb(); }
+        function skipTutorial() {
+            clearInterval(state.tutInterval);
+            document.getElementById('tutorialOverlay').classList.add('hidden');
+            Sound.start();
+            if (state._tutCb) { const f = state._tutCb; state._tutCb=null; f(); }
+        }
 
-        // ==================== ستوب ====================
+        // ==================== Game 1: Stroop ====================
         function initStroop(zone) {
-            const data = state['stroop'+zone] = { round:0, score:0 };
+            state['stroop'+zone] = { round:0, score:0 };
             nextStroop(zone);
         }
         function nextStroop(zone) {
@@ -456,7 +392,7 @@
             nextStroop(zone);
         }
 
-        // ==================== اتجاهات ====================
+        // ==================== Game 2: Direction ====================
         const dirs = [
             { arrow:'⬆️', name:'أعلى', opp:'أسفل' }, { arrow:'⬇️', name:'أسفل', opp:'أعلى' },
             { arrow:'⬅️', name:'يسار', opp:'يمين' }, { arrow:'➡️', name:'يمين', opp:'يسار' }
@@ -476,10 +412,10 @@
             nextDir(zone);
         }
 
-        // ==================== Code Break (أرقام) ====================
+        // ==================== Game 3: Code Break (Numbers) ====================
         function initCodeBreak(zone) {
             const secret = [rand(0,9), rand(0,9), rand(0,9), rand(0,9)];
-            state['code'+zone] = { secret, attempts: [], current: [null,null,null,null], locked: [false,false,false,false], score:0 };
+            state['code'+zone] = { secret, attempts:[], current:[null,null,null,null], locked:[false,false,false,false], score:0 };
             renderCodeBreak(zone);
         }
         function renderCodeBreak(zone) {
@@ -519,9 +455,7 @@
             const guess = [...data.current];
             const fb = ['red','red','red','red'];
             const usedSecret = [...data.secret];
-            // green
             for (let i=0;i<4;i++) { if (guess[i]===data.secret[i]) { fb[i]='green'; usedSecret[i]=-1; guess[i]=-1; } }
-            // yellow
             for (let i=0;i<4;i++) { if (guess[i]===-1) continue; const idx = usedSecret.indexOf(guess[i]); if (idx!==-1) { fb[i]='yellow'; usedSecret[idx]=-1; } }
             data.attempts.push({ guess: [...data.current], fb });
             for (let i=0;i<4;i++) { if (fb[i]==='green') data.locked[i]=true; else data.current[i]=null; }
@@ -530,7 +464,7 @@
             renderCodeBreak(zone); Sound.correct();
         }
 
-        // ==================== صح وخطأ ====================
+        // ==================== Game 4: True/False ====================
         const tfQuestions = [
             { q:'الشمس تشرق من الشرق', a:true },{ q:'السماء خضراء', a:false },{ q:'الماء يغلي عند 100°', a:true },
             { q:'الأسماك تطير', a:false },{ q:'2+2=4', a:true },{ q:'الزرافة حيوان بحري', a:false },
@@ -553,7 +487,7 @@
             nextTF(zone);
         }
 
-        // ==================== قناص ====================
+        // ==================== Game 5: Sniper ====================
         function initSniper(zone) { state['sniper'+zone] = { score:0, active:false, timeout:null }; spawnTarget(zone); }
         function spawnTarget(zone) {
             const data = state['sniper'+zone]; if (!data||!state.running) return;
@@ -568,14 +502,14 @@
             data.score+=30; Sound.correct(); flashZone(zone,true); setTimeout(()=>spawnTarget(zone),500);
         }
 
-        // ==================== تأثيرات ====================
+        // ==================== Effects ====================
         function flashZone(zone, good) {
             const el = document.getElementById(zone==='king'?'kingZone':'challengerZone');
             el.style.boxShadow = `inset 0 0 80px ${good?'rgba(46,204,113,0.6)':'rgba(231,76,60,0.6)'}`;
             setTimeout(()=>el.style.boxShadow='',350);
         }
 
-        // ==================== إنهاء اللاعب ====================
+        // ==================== End Player / Round ====================
         function finishPlayer(zone, score) {
             if (zone==='king') { state.kingRoundScore = score; state.kingDone = true; }
             else { state.challengerRoundScore = score; state.challengerDone = true; }
@@ -606,7 +540,7 @@
             showTutorial(state.round-1, ()=> startRound());
         }
 
-        // ==================== إدارة اللعبة ====================
+        // ==================== Game Flow ====================
         function startGame() {
             if (state.running) return;
             Sound.init(); state.running = true; state.round = 1;
@@ -691,7 +625,8 @@
         }
 
         function resetGame() {
-            clearInterval(state.timer); clearInterval(state.tutInterval); clearInterval(state.returnTimer); clearInterval(state.qrTimer);
+            clearInterval(state.timer); clearInterval(state.tutInterval);
+            clearInterval(state.returnTimer); clearInterval(state.qrTimer);
             state.running = false; state.round = 0; gameActive = false;
             state.kingScore = 0; state.challengerScore = 0;
             state.kingDone = false; state.challengerDone = false;
@@ -705,38 +640,60 @@
 
         function closeVictory() { document.getElementById('victoryOverlay').classList.add('hidden'); resetGame(); }
 
-        // QR
+        // ==================== QR & Return ====================
         function showChallengeQR() {
             document.getElementById('qrOverlay').classList.remove('hidden');
             document.getElementById('qrCodeDisplay').innerHTML = '';
-            new QRCode(document.getElementById('qrCodeDisplay'), { text: window.location.href+'?challenge='+Date.now(), width:180, height:180, colorDark:"#2c3e50", colorLight:"#ffffff" });
+            new QRCode(document.getElementById('qrCodeDisplay'), {
+                text: window.location.href+'?challenge='+Date.now(),
+                width:180, height:180, colorDark:"#2c3e50", colorLight:"#ffffff"
+            });
             state.qrSeconds = 30; document.getElementById('qrTimer').textContent = state.qrSeconds;
             clearInterval(state.qrTimer);
-            state.qrTimer = setInterval(()=>{ state.qrSeconds--; document.getElementById('qrTimer').textContent = state.qrSeconds; if (state.qrSeconds<=0) closeQR(); },1000);
+            state.qrTimer = setInterval(()=>{
+                state.qrSeconds--;
+                document.getElementById('qrTimer').textContent = state.qrSeconds;
+                if (state.qrSeconds<=0) closeQR();
+            }, 1000);
         }
         function closeQR() { clearInterval(state.qrTimer); document.getElementById('qrOverlay').classList.add('hidden'); }
 
-        // مغادرة وعودة
-        function leaveThrone() { if (confirm('مغادرة العرش؟')) startReturnCountdown('king'); }
-        function startReturnCountdown(who) {
+        function leaveThrone() { if (confirm('مغادرة العرش؟')) startReturnCountdown(); }
+        function startReturnCountdown() {
             document.getElementById('returnOverlay').classList.remove('hidden');
             state.returnSeconds = 180; document.getElementById('returnCountdown').textContent = state.returnSeconds;
             Sound.alarm();
             clearInterval(state.returnTimer);
             state.returnTimer = setInterval(()=>{
-                state.returnSeconds--; document.getElementById('returnCountdown').textContent = state.returnSeconds;
+                state.returnSeconds--;
+                document.getElementById('returnCountdown').textContent = state.returnSeconds;
                 if (state.returnSeconds<=10) Sound.tick();
-                if (state.returnSeconds<=0) { clearInterval(state.returnTimer); document.getElementById('returnOverlay').classList.add('hidden'); replacePlayer(who); }
+                if (state.returnSeconds<=0) {
+                    clearInterval(state.returnTimer);
+                    document.getElementById('returnOverlay').classList.add('hidden');
+                    replacePlayer();
+                }
             },1000);
         }
-        function attemptReconnect() { clearInterval(state.returnTimer); document.getElementById('returnOverlay').classList.add('hidden'); Sound.start(); }
-        function replacePlayer(who) {
-            if (who==='king' && waitingPlayers.length) { players.king.name = waitingPlayers.shift(); document.getElementById('kingName').textContent = players.king.name; }
-            else if (who==='challenger' && waitingPlayers.length) { players.challenger.name = waitingPlayers.shift(); document.getElementById('challengerName').textContent = players.challenger.name; }
+        function attemptReconnect() {
+            clearInterval(state.returnTimer);
+            document.getElementById('returnOverlay').classList.add('hidden');
+            Sound.start();
+        }
+        function replacePlayer() {
+            if (waitingPlayers.length) {
+                players.king.name = waitingPlayers.shift();
+                document.getElementById('kingName').textContent = players.king.name;
+            }
             showChallengeQR();
         }
-        window.addEventListener('online', ()=>{ if (!document.getElementById('returnOverlay').classList.contains('hidden')) attemptReconnect(); });
-        window.addEventListener('offline', ()=>{ if (gameActive) startReturnCountdown('king'); });
+
+        window.addEventListener('online', ()=>{
+            if (!document.getElementById('returnOverlay').classList.contains('hidden')) attemptReconnect();
+        });
+        window.addEventListener('offline', ()=>{
+            if (gameActive) startReturnCountdown();
+        });
     </script>
 </body>
 </html>
