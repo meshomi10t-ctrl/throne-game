@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏰 تحدي العرش - البث المباشر</title>
+    <title>🏰 تحدي العرش - ألعاب تفاعلية</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -17,52 +19,43 @@
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
+            touch-action: manipulation;
         }
 
         .crown-header {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             background: rgba(0,0,0,0.5);
             border-bottom: 3px solid #F1C40F;
         }
 
         .crown-emoji {
-            font-size: 60px;
-            animation: float 3s infinite;
+            font-size: 50px;
+            animation: float 2s infinite;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
         }
 
         .title {
-            font-size: 2.5em;
+            font-size: 2em;
             color: #F1C40F;
-            text-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
-            margin: 10px 0;
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
+            padding: 15px;
         }
 
         .game-screen {
-            background: rgba(26, 26, 53, 0.9);
+            background: rgba(26, 26, 53, 0.95);
             border: 2px solid #F1C40F;
             border-radius: 20px;
-            padding: 30px;
+            padding: 15px;
             min-height: 500px;
             position: relative;
         }
@@ -72,10 +65,11 @@
             top: 10px;
             left: 10px;
             background: #e74c3c;
-            padding: 8px 20px;
-            border-radius: 25px;
+            padding: 6px 15px;
+            border-radius: 20px;
             animation: pulse 2s infinite;
-            font-weight: bold;
+            font-size: 0.9em;
+            z-index: 10;
         }
 
         @keyframes pulse {
@@ -87,7 +81,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 40px 0;
+            margin: 10px 0;
         }
 
         .player-card {
@@ -96,174 +90,130 @@
         }
 
         .player-avatar {
-            font-size: 80px;
-            margin-bottom: 10px;
+            font-size: 50px;
+            transition: transform 0.3s;
+        }
+
+        .player-card.active .player-avatar {
+            transform: scale(1.2);
+            animation: bounce 0.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1.2) translateY(0); }
+            50% { transform: scale(1.2) translateY(-10px); }
         }
 
         .player-name {
-            font-size: 1.5em;
+            font-size: 1.2em;
             color: #F1C40F;
-            margin: 10px 0;
+            font-weight: bold;
         }
 
         .player-score {
-            font-size: 3em;
+            font-size: 2.5em;
             font-weight: bold;
-            color: #3498db;
         }
+
+        .king-score { color: #F1C40F; }
+        .challenger-score { color: #3498db; }
 
         .vs-badge {
-            font-size: 3em;
-            animation: rotate 3s infinite;
+            font-size: 2em;
+            margin: 0 20px;
         }
 
-        @keyframes rotate {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(15deg); }
-        }
-
-        .question-box {
-            background: white;
-            color: #2c3e50;
-            padding: 30px;
+        /* منطقة اللعبة */
+        .game-area {
+            background: rgba(0,0,0,0.3);
             border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            min-height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .round-indicator {
             text-align: center;
-            font-size: 1.8em;
-            font-weight: bold;
-            margin: 20px 0;
-            animation: slideIn 0.5s ease-out;
+            margin: 10px 0;
+            font-size: 1.2em;
+            color: #F1C40F;
         }
 
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .timer-bar {
-            height: 8px;
-            background: #2ecc71;
-            border-radius: 4px;
-            transition: width 1s linear;
-            margin: 20px 0;
-        }
-
-        .rounds-indicator {
+        .dots {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
+            gap: 8px;
+            margin: 10px 0;
         }
 
-        .round-dot {
-            width: 20px;
-            height: 20px;
+        .dot {
+            width: 15px;
+            height: 15px;
             border-radius: 50%;
             background: #34495e;
             border: 2px solid #F1C40F;
         }
 
-        .round-dot.active {
+        .dot.active {
             background: #F1C40F;
-            animation: glow 1s infinite;
+            animation: glow 0.8s infinite;
         }
 
-        .round-dot.completed {
+        .dot.done {
             background: #27ae60;
         }
 
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 10px #F1C40F; }
-            50% { box-shadow: 0 0 30px #F1C40F; }
+            0%, 100% { box-shadow: 0 0 8px #F1C40F; }
+            50% { box-shadow: 0 0 20px #F1C40F; }
         }
 
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .qr-section {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
+        .timer-display {
             text-align: center;
-            border: 2px solid #F1C40F;
+            font-size: 3em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 10px 0;
         }
 
-        .qr-code {
-            width: 180px;
-            height: 180px;
-            margin: 15px auto;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
+        .timer-display.urgent {
+            animation: blink 0.5s infinite;
         }
 
-        .champions-list {
-            background: rgba(0,0,0,0.8);
-            border: 2px solid #F1C40F;
-            border-radius: 15px;
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
-        .champion-item {
-            background: rgba(241, 196, 15, 0.1);
-            border-right: 3px solid #F1C40F;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            touch-action: manipulation;
         }
 
-        .champion-rank {
-            font-size: 1.5em;
+        .btn:active {
+            transform: scale(0.95);
         }
+
+        .btn-start { background: #27ae60; }
+        .btn-qr { background: #8e44ad; }
+        .btn-reset { background: #e67e22; }
 
         .control-buttons {
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin: 20px 0;
-        }
-
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-        }
-
-        .btn-start {
-            background: #27ae60;
-        }
-
-        .btn-start:hover {
-            background: #2ecc71;
-            transform: scale(1.05);
-        }
-
-        .btn-new-challenge {
-            background: #e67e22;
-        }
-
-        .btn-qr {
-            background: #8e44ad;
-        }
-
-        .btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
+            flex-wrap: wrap;
+            margin: 10px 0;
         }
 
         .victory-overlay {
@@ -277,52 +227,216 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            animation: fadeIn 0.5s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .hidden { display: none !important; }
+
+        /* ===== ألعاب XO ===== */
+        .xo-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 250px;
+            margin: 0 auto;
         }
 
-        .victory-content {
+        .xo-cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .xo-cell:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.9);
+        }
+
+        .xo-cell.x { color: #F1C40F; }
+        .xo-cell.o { color: #3498db; }
+        .xo-cell.winner {
+            animation: winPulse 0.5s infinite;
+            background: rgba(39, 174, 96, 0.3);
+        }
+
+        @keyframes winPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* ===== لعبة السرعة ===== */
+        .tap-area {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            margin: 0 auto;
+            transition: all 0.1s;
+            box-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+            touch-action: manipulation;
+        }
+
+        .tap-area:active {
+            transform: scale(0.9);
+            box-shadow: 0 0 50px rgba(231, 76, 60, 0.8);
+        }
+
+        .tap-area.king-turn {
+            background: linear-gradient(135deg, #F1C40F, #f39c12);
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.5);
+        }
+
+        .tap-counter {
             text-align: center;
-            animation: scaleIn 0.5s ease-out;
+            font-size: 2em;
+            margin: 10px 0;
         }
 
-        @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
+        /* ===== لعبة الذاكرة ===== */
+        .memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 350px;
+            margin: 0 auto;
         }
 
-        .victory-crown {
-            font-size: 120px;
-            animation: bounce 1s infinite;
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            touch-action: manipulation;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-30px); }
+        .memory-card.flipped {
+            background: #F1C40F;
+            transform: rotateY(180deg);
         }
 
-        .hidden {
-            display: none;
+        .memory-card.matched {
+            background: #27ae60;
+            opacity: 0.6;
         }
 
-        @media (max-width: 600px) {
-            .title {
-                font-size: 1.5em;
-            }
-            .player-avatar {
-                font-size: 40px;
-            }
-            .player-score {
-                font-size: 2em;
-            }
-            .question-box {
-                font-size: 1.2em;
-                padding: 15px;
-            }
+        /* ===== لعبة رد الفعل ===== */
+        .reaction-area {
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 2em;
+            touch-action: manipulation;
+        }
+
+        .reaction-area.waiting {
+            background: #e74c3c;
+        }
+
+        .reaction-area.ready {
+            background: #2ecc71;
+        }
+
+        .reaction-area.too-early {
+            background: #e74c3c;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* ===== لعبة الأرقام ===== */
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .number-btn {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 2px solid #F1C40F;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .number-btn:active {
+            background: #F1C40F;
+            color: #1a1a35;
+            transform: scale(0.9);
+        }
+
+        .number-btn.wrong {
+            background: #e74c3c;
+            animation: shake 0.5s;
+        }
+
+        .number-btn.correct {
+            background: #27ae60;
+        }
+
+        .sidebar {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #F1C40F;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .champions-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .champion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid rgba(241, 196, 15, 0.2);
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 500px) {
+            .title { font-size: 1.5em; }
+            .player-avatar { font-size: 35px; }
+            .player-score { font-size: 1.8em; }
+            .xo-board { width: 200px; }
+            .xo-cell { font-size: 2em; }
+            .memory-board { max-width: 280px; }
+            .memory-card { font-size: 1.8em; }
+            .number-grid { max-width: 280px; }
+            .number-btn { font-size: 1.2em; }
         }
     </style>
 </head>
@@ -330,723 +444,697 @@
     <div class="crown-header">
         <div class="crown-emoji">👑</div>
         <h1 class="title">تحدي العرش</h1>
-        <p style="color: #F1C40F;">البطولة المباشرة للذكاء والسرعة</p>
     </div>
 
     <div class="container">
         <div class="game-screen">
             <div class="live-badge">🔴 مباشر</div>
             
-            <div class="rounds-indicator" id="roundsIndicator">
-                <div class="round-dot active"></div>
-                <div class="round-dot"></div>
-                <div class="round-dot"></div>
-                <div class="round-dot"></div>
-                <div class="round-dot"></div>
+            <div class="round-indicator">
+                الجولة <span id="roundNum">1</span> من 5
+            </div>
+            <div class="dots" id="dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
             </div>
 
             <div class="players-area">
-                <div class="player-card">
+                <div class="player-card" id="kingCard">
                     <div class="player-avatar">🤴</div>
                     <div class="player-name">الملك</div>
-                    <div class="player-score" id="kingScore">0</div>
+                    <div class="player-score king-score" id="kingScore">0</div>
                 </div>
                 
                 <div class="vs-badge">⚡</div>
                 
-                <div class="player-card">
+                <div class="player-card" id="challengerCard">
                     <div class="player-avatar">🗡️</div>
                     <div class="player-name">المتحدي</div>
-                    <div class="player-score" id="challengerScore">0</div>
+                    <div class="player-score challenger-score" id="challengerScore">0</div>
                 </div>
             </div>
 
-            <div class="question-box" id="questionDisplay">
-                في انتظار بدء التحدي...
+            <div class="timer-display" id="timerDisplay">⏱️ 10</div>
+            
+            <div class="game-area" id="gameArea">
+                <div style="text-align: center; color: #F1C40F; font-size: 1.5em;">
+                    🎮 اضغط "بدء التحدي"<br>لبدء المنافسة
+                </div>
             </div>
-
-            <div class="timer-bar" id="timerBar" style="width: 100%;"></div>
 
             <div class="control-buttons">
                 <button class="btn btn-start" onclick="startGame()">🚀 بدء التحدي</button>
-                <button class="btn btn-qr" onclick="showQRCode()">📱 إظهار QR</button>
-                <button class="btn btn-new-challenge" onclick="resetGame()">🔄 تحدي جديد</button>
+                <button class="btn btn-qr" onclick="showQRCode()">📱 QR</button>
+                <button class="btn btn-reset" onclick="resetGame()">🔄 جديد</button>
             </div>
         </div>
 
         <div class="sidebar">
-            <div class="qr-section">
-                <h3 style="color: #2c3e50;">📱 امسح للتحدي</h3>
-                <div class="qr-code" id="qrCodeDisplay">
-                    <p>اضغط زر QR</p>
-                </div>
-                <small style="color: #7f8c8d;">ساري لمدة 30 ثانية</small>
-            </div>
-
-            <div class="champions-list">
-                <h3 style="color: #F1C40F; text-align: center; margin-bottom: 15px;">🏆 سجل الأبطال</h3>
-                <div id="championsList">
-                    <div class="champion-item">
-                        <span>🥇</span>
-                        <span>في انتظار أول بطل</span>
-                        <span>--:--</span>
-                    </div>
+            <h3 style="color: #F1C40F; text-align: center;">🏆 سجل الأبطال</h3>
+            <div class="champions-list" id="championsList">
+                <div class="champion-item">
+                    <span>👑</span><span>في انتظار أول بطل</span><span>--:--</span>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="victoryOverlay" class="victory-overlay hidden">
-        <div class="victory-content">
-            <div class="victory-crown">👑</div>
-            <h2 style="color: #F1C40F; font-size: 2em;" id="victoryMessage">الملك الجديد!</h2>
+        <div style="text-align: center;">
+            <div style="font-size: 100px; animation: bounce 0.5s infinite;">👑</div>
+            <h2 style="color: #F1C40F; font-size: 2em;" id="victoryMessage">الملك يحافظ على عرشه!</h2>
             <button class="btn btn-start" onclick="closeVictory()" style="margin-top: 20px;">
-                متابعة
+                🏰 متابعة
             </button>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
-        // =============== مولد أسئلة الذكاء وسرعة البديهة ===============
-        class SmartQuestionGenerator {
-            constructor() {
-                this.usedQuestions = new Set();
-                this.dailySeed = new Date().toISOString().split('T')[0];
-            }
+        // =============== حالة اللعبة ===============
+        const state = {
+            running: false,
+            round: 0,
+            kingScore: 0,
+            challengerScore: 0,
+            currentPlayer: 'king', // 'king' or 'challenger'
+            timer: null,
+            timeLeft: 10,
+            gameData: {}, // بيانات خاصة بكل لعبة
+            touchLocked: false // قفل اللمس أثناء تبديل الأدوار
+        };
 
-            generateUniqueQuestion(roundNumber) {
-                let question;
-                let attempts = 0;
-                
-                do {
-                    question = this.createQuestion(roundNumber);
-                    attempts++;
-                    if (attempts > 100) {
-                        this.usedQuestions.clear();
-                        attempts = 0;
-                    }
-                } while (this.usedQuestions.has(question.fingerprint));
-                
-                this.usedQuestions.add(question.fingerprint);
-                
-                if (this.usedQuestions.size > 2000) {
-                    const arr = Array.from(this.usedQuestions);
-                    this.usedQuestions = new Set(arr.slice(-1000));
+        // =============== الألعاب التفاعلية ===============
+        const games = [
+            { name: '❌⭕ XO السرعة', init: initXO, cleanup: cleanupXO },
+            { name: '👆 اضغط بسرعة', init: initTapRace, cleanup: cleanupTapRace },
+            { name: '🧠 تطابق الذاكرة', init: initMemory, cleanup: cleanupMemory },
+            { name: '⚡ سرعة الرد', init: initReaction, cleanup: cleanupReaction },
+            { name: '🔢 ترتيب الأرقام', init: initNumberSort, cleanup: cleanupNumberSort }
+        ];
+
+        // ===== لعبة 1: XO السرعة =====
+        function initXO() {
+            state.gameData = { board: Array(9).fill(''), turn: 'X', winner: null };
+            state.currentPlayer = 'king';
+            state.timeLeft = 15;
+            
+            const area = document.getElementById('gameArea');
+            area.innerHTML = '<div class="xo-board" id="xoBoard"></div>';
+            
+            const board = document.getElementById('xoBoard');
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'xo-cell';
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => xoClick(i, cell));
+                board.appendChild(cell);
+            }
+            
+            updateActivePlayer();
+        }
+
+        function xoClick(index, cell) {
+            if (state.touchLocked || !state.running) return;
+            if (state.gameData.board[index] !== '') return;
+            if (state.gameData.winner) return;
+            
+            const symbol = state.currentPlayer === 'king' ? '❌' : '⭕';
+            state.gameData.board[index] = symbol;
+            cell.textContent = symbol;
+            cell.classList.add(symbol === '❌' ? 'x' : 'o');
+            
+            // تحقق من الفوز
+            const winner = checkXOWinner(state.gameData.board);
+            if (winner) {
+                state.gameData.winner = winner;
+                endMiniGame(winner === '❌' ? 'king' : 'challenger');
+                return;
+            }
+            
+            if (!state.gameData.board.includes('')) {
+                // تعادل - نقطة للاعب الأسرع
+                endMiniGame('draw');
+                return;
+            }
+            
+            // تبديل اللاعب
+            state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
+            updateActivePlayer();
+            resetTimer();
+        }
+
+        function checkXOWinner(board) {
+            const lines = [
+                [0,1,2],[3,4,5],[6,7,8],
+                [0,3,6],[1,4,7],[2,5,8],
+                [0,4,8],[2,4,6]
+            ];
+            for (const [a,b,c] of lines) {
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    // تمييز الخلايا الفائزة
+                    [a,b,c].forEach(i => {
+                        document.querySelectorAll('.xo-cell')[i].classList.add('winner');
+                    });
+                    return board[a];
                 }
-                
-                return question;
             }
+            return null;
+        }
 
-            createQuestion(roundNumber) {
-                const generators = {
-                    1: [
-                        this.quickAssociation.bind(this),
-                        this.oddOneOut.bind(this),
-                        this.instantConnection.bind(this)
-                    ],
-                    2: [
-                        this.patternRecognition.bind(this),
-                        this.visualTrick.bind(this),
-                        this.mirrorThinking.bind(this)
-                    ],
-                    3: [
-                        this.wordPlay.bind(this),
-                        this.verbalReasoning.bind(this),
-                        this.languageTwist.bind(this)
-                    ],
-                    4: [
-                        this.situationPuzzle.bind(this),
-                        this.logicalDeduction.bind(this),
-                        this.brainTeaser.bind(this)
-                    ],
-                    5: [
-                        this.doubleThink.bind(this),
-                        this.speedWit.bind(this),
-                        this.mentalAgility.bind(this)
-                    ]
-                };
+        function cleanupXO() {
+            // تنظيف
+        }
 
-                const roundGens = generators[roundNumber] || generators[1];
-                return this.randomFromArray(roundGens)();
+        // ===== لعبة 2: اضغط بسرعة =====
+        function initTapRace() {
+            state.gameData = { kingTaps: 0, challengerTaps: 0 };
+            state.currentPlayer = 'king';
+            state.timeLeft = 8;
+            
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="tap-counter" id="tapCount">0</div>
+                    <div class="tap-area king-turn" id="tapBtn">👆 اضغط!</div>
+                    <p style="margin-top: 10px; color: #F1C40F;">دور: <span id="tapPlayer">الملك 🤴</span></p>
+                </div>
+            `;
+            
+            document.getElementById('tapBtn').addEventListener('click', tapRaceClick);
+            updateActivePlayer();
+        }
+
+        function tapRaceClick() {
+            if (state.touchLocked || !state.running) return;
+            
+            if (state.currentPlayer === 'king') {
+                state.gameData.kingTaps++;
+            } else {
+                state.gameData.challengerTaps++;
             }
+            
+            document.getElementById('tapCount').textContent = 
+                state.currentPlayer === 'king' ? state.gameData.kingTaps : state.gameData.challengerTaps;
+            
+            // تأثير الضغط
+            const btn = document.getElementById('tapBtn');
+            btn.style.transform = 'scale(0.85)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 50);
+        }
 
-            quickAssociation() {
-                const associations = [
-                    { words: ['مفتاح', 'سيارة'], answer: 'باب' },
-                    { words: ['شجرة', 'ورق'], answer: 'كتاب' },
-                    { words: ['سحاب', 'عين'], answer: 'مطر/دمع' },
-                    { words: ['قلم', 'طبيب'], answer: 'وصفة' },
-                    { words: ['شمعة', 'كهرباء'], answer: 'ضوء' },
-                    { words: ['سمك', 'طائر'], answer: 'حرية' },
-                    { words: ['جبل', 'تحدي'], answer: 'قمة' },
-                    { words: ['بذرة', 'فكرة'], answer: 'نمو' },
-                    { words: ['نار', 'غضب'], answer: 'حرارة' },
-                    { words: ['طريق', 'حياة'], answer: 'مسار' },
-                    { words: ['مرآة', 'حقيقة'], answer: 'انعكاس' },
-                    { words: ['ساعة', 'عمر'], answer: 'وقت' },
-                    { words: ['بحر', 'علم'], answer: 'عمق' },
-                    { words: ['جسر', 'صداقة'], answer: 'تواصل' },
-                    { words: ['قفل', 'سر'], answer: 'أمان' }
-                ];
-                
-                const item = this.randomFromArray(associations);
-                const randomOrder = Math.random() > 0.5;
-                const display = randomOrder ? 
-                    `${item.words[0]} ➜ ${item.words[1]}` : 
-                    `${item.words[1]} ➜ ${item.words[0]}`;
-                
-                return {
-                    question: `⚡ ما الرابط بين: ${display}؟\n(كلمة واحدة)`,
-                    answer: item.answer.includes('/') ? item.answer.split('/')[0] : item.answer,
-                    time: 5,
-                    fingerprint: `assoc_${item.words.join('')}_${Date.now()}`
-                };
-            }
-
-            oddOneOut() {
-                const groups = [
-                    { items: ['تفاح', 'موز', 'جزر', 'برتقال'], answer: 'جزر', reason: 'الباقي فواكه' },
-                    { items: ['قلم', 'كتاب', 'مقص', 'دفتر'], answer: 'مقص', reason: 'الباقي للكتابة' },
-                    { items: ['أسد', 'نمر', 'ذئب', 'زرافة'], answer: 'زرافة', reason: 'الباقي مفترسات' },
-                    { items: ['مطر', 'ثلج', 'شمس', 'برد'], answer: 'شمس', reason: 'الباقي هطول' },
-                    { items: ['عين', 'أذن', 'فم', 'يد'], answer: 'يد', reason: 'الباقي في الوجه' },
-                    { items: ['سيارة', 'قطار', 'طائرة', 'سفينة'], answer: 'سيارة', reason: 'الباقي نقل عام' },
-                    { items: ['ذهب', 'فضة', 'حديد', 'ألماس'], answer: 'حديد', reason: 'الباقي ثمين' },
-                    { items: ['دجاج', 'بطة', 'نسر', 'ديك رومي'], answer: 'نسر', reason: 'الباقي دواجن' }
-                ];
-                
-                const group = this.randomFromArray(groups);
-                const shuffled = this.shuffleArray([...group.items]);
-                
-                return {
-                    question: `🔍 أيهم المختلفة؟ ${shuffled.join(' - ')}`,
-                    answer: group.answer,
-                    time: 4,
-                    fingerprint: `odd_${group.items.join('')}`
-                };
-            }
-
-            instantConnection() {
-                const connections = [
-                    { first: 'نهار', second: 'ليل', answer: 'مشترك: يوم' },
-                    { first: 'بداية', second: 'نهاية', answer: 'مشترك: رحلة' },
-                    { first: 'سؤال', second: 'جواب', answer: 'مشترك: معرفة' },
-                    { first: 'بذرة', second: 'ثمرة', answer: 'مشترك: شجرة' },
-                    { first: 'تعليم', second: 'نجاح', answer: 'مشترك: مستقبل' },
-                    { first: 'مشكلة', second: 'حل', answer: 'مشترك: تفكير' }
-                ];
-                
-                const conn = this.randomFromArray(connections);
-                return {
-                    question: `💡 أكمل: ${conn.first} ↔ ? ↔ ${conn.second}\n(ما الذي يجمعهما؟)`,
-                    answer: conn.answer.split(': ')[1],
-                    time: 5,
-                    fingerprint: `connect_${conn.first}_${conn.second}`
-                };
-            }
-
-            patternRecognition() {
-                const patterns = [
-                    {
-                        sequence: '■ ● ■ ■ ● ■ ■ ■ ●',
-                        question: 'ما الشكل التالي في التسلسل؟ ■ ● ■ ■ ● ■ ■ ■ ● ؟',
-                        answer: '■',
-                        analysis: 'النمط يزيد مكعباً واحداً بين الدوائر'
-                    },
-                    {
-                        sequence: '↑ → ↓ ←',
-                        question: 'ما الاتجاه التالي؟ ↑ → ↓ ← ؟',
-                        answer: '↑',
-                        analysis: 'دورة كاملة لليسار'
-                    },
-                    {
-                        sequence: '1 3 6 10',
-                        question: 'ما الرقم التالي؟ 1, 3, 6, 10, ؟',
-                        answer: '15',
-                        analysis: 'نضيف 2 ثم 3 ثم 4 ثم 5'
-                    },
-                    {
-                        sequence: 'أ ب ت ث',
-                        question: 'ما الحرف التالي حسب الترتيب الأبجدي؟ أ, ب, ت, ث, ؟',
-                        answer: 'ج',
-                        analysis: 'الترتيب الأبجدي العربي'
-                    }
-                ];
-                
-                const pattern = this.randomFromArray(patterns);
-                return {
-                    question: `👁️ ${pattern.question}`,
-                    answer: pattern.answer,
-                    time: 6,
-                    fingerprint: `pattern_${pattern.sequence}_${Date.now()}`
-                };
-            }
-
-            visualTrick() {
-                const tricks = [
-                    {
-                        scenario: 'في غرفة مظلمة تماماً، لديك عود ثقاب واحد ومصباح وشمعة',
-                        question: 'ماذا تشعل أولاً؟',
-                        answer: 'عود الثقاب',
-                        trick: 'لا يمكن إشعال شيء قبل عود الثقاب'
-                    },
-                    {
-                        scenario: 'كم شهراً في السنة فيه 28 يوماً؟',
-                        question: 'كم شهراً في السنة فيه 28 يوماً على الأقل؟',
-                        answer: '12',
-                        trick: 'كل الشهور فيها 28 يوماً على الأقل'
-                    },
-                    {
-                        scenario: 'أمامك 3 تفاحات، أخذت 2',
-                        question: 'كم تفاحة معك؟',
-                        answer: '2',
-                        trick: 'أخذت 2 إذاً معك 2'
-                    }
-                ];
-                
-                const trick = this.randomFromArray(tricks);
-                return {
-                    question: `🎭 ${trick.question}\n(فكر بسرعة!)`,
-                    answer: trick.answer,
-                    time: 5,
-                    fingerprint: `trick_${trick.scenario.substring(0, 20)}`
-                };
-            }
-
-            mirrorThinking() {
-                const mirrors = [
-                    { word: 'كلام', answer: 'مالك' },
-                    { word: 'سكر', answer: 'ركس' },
-                    { word: 'باب', answer: 'باب' },
-                    { word: 'مرآة', answer: 'ةآرم' },
-                    { word: 'نور', answer: 'رون' }
-                ];
-                
-                const mirror = this.randomFromArray(mirrors);
-                return {
-                    question: `🪞 اقرأ الكلمة بالعكس: "${mirror.word}"`,
-                    answer: mirror.answer,
-                    time: 4,
-                    fingerprint: `mirror_${mirror.word}`
-                };
-            }
-
-            wordPlay() {
-                const plays = [
-                    { letters: 'ب ح ر', hint: 'كلمة من 3 أحرف تعني مسطح مائي', answer: 'بحر' },
-                    { letters: 'ع ل م', hint: 'ضد الجهل', answer: 'علم' },
-                    { letters: 'ن و ر', hint: 'ما يشع من الشمس', answer: 'نور' },
-                    { letters: 'ح ب', hint: 'عاطفة إنسانية', answer: 'حب' },
-                    { letters: 'ص د ق', hint: 'ضد الكذب', answer: 'صدق' },
-                    { letters: 'ح ل م', hint: 'ما تراه في نومك', answer: 'حلم' }
-                ];
-                
-                const play = this.randomFromArray(plays);
-                const scrambled = this.shuffleArray(play.letters.split('')).join(' - ');
-                
-                return {
-                    question: `📝 كون كلمة: ${scrambled}\n${play.hint}`,
-                    answer: play.answer,
-                    time: 5,
-                    fingerprint: `play_${play.letters}`
-                };
-            }
-
-            verbalReasoning() {
-                const categories = [
-                    { category: 'فواكه', examples: 'تفاح، موز، برتقال، ...' },
-                    { category: 'ألوان', examples: 'أحمر، أزرق، أخضر، ...' },
-                    { category: 'حيوانات', examples: 'أسد، نمر، فيل، ...' },
-                    { category: 'مدن', examples: 'الرياض، دبي، القاهرة، ...' }
-                ];
-                
-                const cat = this.randomFromArray(categories);
-                return {
-                    question: `🗣️ اذكر 3 ${cat.category} في 5 ثوانٍ`,
-                    answer: cat.examples.split('، ')[0],
-                    time: 5,
-                    fingerprint: `verbal_${cat.category}`
-                };
-            }
-
-            languageTwist() {
-                const twists = [
-                    { word: 'فيل', question: 'احذف الحرف الأول، ماذا يبقى؟', answer: 'يل' },
-                    { word: 'كتاب', question: 'خذ الحرفين الأول والأخير', answer: 'كب' },
-                    { word: 'شجرة', question: 'الحرف الثالث؟', answer: 'ر' },
-                    { word: 'مدرسة', question: 'عدد الحروف؟', answer: '5' },
-                    { word: 'سماء', question: 'اقلبها، ماذا تصبح؟', answer: 'ءامس' }
-                ];
-                
-                const twist = this.randomFromArray(twists);
-                return {
-                    question: `🔄 "${twist.word}" - ${twist.question}`,
-                    answer: twist.answer,
-                    time: 4,
-                    fingerprint: `twist_${twist.word}_${twist.question}`
-                };
-            }
-
-            situationPuzzle() {
-                const situations = [
-                    {
-                        puzzle: 'شخص يمشي تحت المطر بدون مظلة، شعره لا يبتل. لماذا؟',
-                        answer: 'أصلع',
-                        insight: 'ليس لديه شعر ليبتل'
-                    },
-                    {
-                        puzzle: 'كلما أخذت منه كبر. ما هو؟',
-                        answer: 'الحفرة',
-                        insight: 'الحفر يزيدها اتساعاً'
-                    },
-                    {
-                        puzzle: 'يملك أسناناً ولا يأكل. ما هو؟',
-                        answer: 'المشط',
-                        insight: 'أسنان المشط'
-                    },
-                    {
-                        puzzle: 'له عين ولا يرى. ما هو؟',
-                        answer: 'الإبرة',
-                        insight: 'عين الإبرة'
-                    }
-                ];
-                
-                const situation = this.randomFromArray(situations);
-                return {
-                    question: `🤔 ${situation.puzzle}\n(فكر بذكاء!)`,
-                    answer: situation.answer,
-                    time: 7,
-                    fingerprint: `sit_${situation.puzzle.substring(0, 25)}`
-                };
-            }
-
-            logicalDeduction() {
-                const deductions = [
-                    { premise: 'أحمد أطول من خالد. خالد أطول من سامر.', question: 'من الأقصر؟', answer: 'سامر' },
-                    { premise: 'الكتاب على الطاولة. الطاولة في الغرفة.', question: 'أين الكتاب؟', answer: 'في الغرفة' },
-                    { premise: 'كل الطيور تطير. البطريق طائر.', question: 'هل يطير البطريق؟', answer: 'لا' }
-                ];
-                
-                const deduction = this.randomFromArray(deductions);
-                return {
-                    question: `🧠 ${deduction.premise}\n${deduction.question}`,
-                    answer: deduction.answer,
-                    time: 6,
-                    fingerprint: `logic_${deduction.premise.substring(0, 20)}`
-                };
-            }
-
-            brainTeaser() {
-                const teasers = [
-                    { question: 'ما الشيء الذي يمكنك كسره دون لمسه؟', answer: 'الوعد' },
-                    { question: 'ما الذي يزداد كلما شاركته مع الآخرين؟', answer: 'المعرفة' },
-                    { question: 'ما الشيء الذي يعود إليك دائماً مهما أبعدته؟', answer: 'الصدى' },
-                    { question: 'ما الشيء الذي يمكنه ملء غرفة كاملة دون أن يشغل مساحة؟', answer: 'الضوء' },
-                    { question: 'أنا دائماً أمامك لكنك لا تراني. من أنا؟', answer: 'المستقبل' }
-                ];
-                
-                const teaser = this.randomFromArray(teasers);
-                return {
-                    question: `💭 ${teaser.question}`,
-                    answer: teaser.answer,
-                    time: 6,
-                    fingerprint: `teaser_${teaser.question.substring(0, 25)}`
-                };
-            }
-
-            doubleThink() {
-                const challenges = [
-                    { task: 'اذكر اسماً يبدأ بحرف "م" وفي نفس الوقت فاكهة', answer: 'موز' },
-                    { task: 'اذكر شيئاً هو حيوان ومادة غذائية معاً', answer: 'عسل' },
-                    { task: 'اذكر شيئاً هو نبات واسم شخص معاً', answer: 'ورد' },
-                    { task: 'اذكر شيئاً هو معدن ولون معاً', answer: 'ذهب' }
-                ];
-                
-                const challenge = this.randomFromArray(challenges);
-                return {
-                    question: `🎯 ${challenge.task}`,
-                    answer: challenge.answer,
-                    time: 6,
-                    fingerprint: `double_${challenge.task.substring(0, 20)}`
-                };
-            }
-
-            speedWit() {
-                const currentSecond = new Date().getSeconds();
-                const wits = [
-                    { question: `في ثانية واحدة: كم حرفاً في كلمة "سرعة البديهة"؟`, answer: '11' },
-                    { question: `بسرعة: ما لون السماء في الليل؟`, answer: 'أسود' },
-                    { question: `بدون تفكير: 2+2×2 = ؟`, answer: '6' },
-                    { question: `بسرعة: ما عكس "ساخن"؟`, answer: 'بارد' }
-                ];
-                
-                const wit = this.randomFromArray(wits);
-                return {
-                    question: `⚡ ${wit.question}`,
-                    answer: wit.answer,
-                    time: 3,
-                    fingerprint: `wit_${currentSecond}_${Math.random()}`
-                };
-            }
-
-            mentalAgility() {
-                const agilityTests = [
-                    { instructions: 'انظر للمرآة: "باب" تبقى "باب". اذكر كلمة أخرى لا تتغير في المرآة', answer: 'ليبيا' },
-                    { instructions: 'فكر في رقم. ضاعفه. أضف 10. اقسم على 2. اطرح الرقم الأصلي.', answer: '5' },
-                    { instructions: 'أكمل: ذكاء، فطنة، ... (مرادف)', answer: 'نباهة' }
-                ];
-                
-                const test = this.randomFromArray(agilityTests);
-                return {
-                    question: `🔄 ${test.instructions}`,
-                    answer: test.answer,
-                    time: 7,
-                    fingerprint: `agile_${test.instructions.substring(0, 20)}`
-                };
-            }
-
-            randomFromArray(array) {
-                return array[Math.floor(Math.random() * array.length)];
-            }
-
-            shuffleArray(array) {
-                const newArr = [...array];
-                for (let i = newArr.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-                }
-                return newArr;
+        function cleanupTapRace() {
+            // تبديل اللاعب عند انتهاء الوقت
+            if (state.currentPlayer === 'king') {
+                state.currentPlayer = 'challenger';
+                document.getElementById('tapBtn').classList.remove('king-turn');
+                document.getElementById('tapPlayer').textContent = 'المتحدي 🗡️';
+                document.getElementById('tapCount').textContent = '0';
+                state.timeLeft = 8;
+                resetTimer();
+                updateActivePlayer();
+                return false; // لا تنهي اللعبة
+            } else {
+                // انتهى الدوران
+                const winner = state.gameData.kingTaps > state.gameData.challengerTaps ? 'king' : 
+                              state.gameData.challengerTaps > state.gameData.kingTaps ? 'challenger' : 'draw';
+                endMiniGame(winner);
+                return true;
             }
         }
 
-        // =============== متغيرات اللعبة ===============
-        const questionGenerator = new SmartQuestionGenerator();
-        
-        let gameState = {
-            isRunning: false,
-            currentRound: 0,
-            kingScore: 0,
-            challengerScore: 0,
-            timer: null,
-            currentAnswer: '',
-            hideQuestion: null
-        };
-
-        // =============== دوال اللعبة ===============
-        function startGame() {
-            if (gameState.isRunning) return;
+        // ===== لعبة 3: تطابق الذاكرة =====
+        function initMemory() {
+            const emojis = ['🌟','🔥','💎','🎯','🚀','⭐','🎪','🎨'];
+            const pairs = [...emojis, ...emojis];
+            // خلط عشوائي
+            for (let i = pairs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+            }
             
-            gameState.isRunning = true;
-            gameState.currentRound = 1;
-            gameState.kingScore = 0;
-            gameState.challengerScore = 0;
+            state.gameData = {
+                cards: pairs,
+                flipped: [],
+                matched: [],
+                kingMatches: 0,
+                challengerMatches: 0,
+                lockBoard: false
+            };
+            state.currentPlayer = 'king';
+            state.timeLeft = 20;
+            
+            const area = document.getElementById('gameArea');
+            area.innerHTML = '<div class="memory-board" id="memoryBoard"></div>';
+            
+            const board = document.getElementById('memoryBoard');
+            pairs.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.index = index;
+                card.dataset.emoji = emoji;
+                card.textContent = '❓';
+                card.addEventListener('click', () => memoryClick(index, card));
+                board.appendChild(card);
+            });
+            
+            updateActivePlayer();
+        }
+
+        function memoryClick(index, card) {
+            if (state.touchLocked || !state.running || state.gameData.lockBoard) return;
+            if (state.gameData.matched.includes(index)) return;
+            if (state.gameData.flipped.includes(index)) return;
+            
+            // قلب البطاقة
+            card.textContent = state.gameData.cards[index];
+            card.classList.add('flipped');
+            state.gameData.flipped.push(index);
+            
+            if (state.gameData.flipped.length === 2) {
+                state.gameData.lockBoard = true;
+                const [i1, i2] = state.gameData.flipped;
+                
+                if (state.gameData.cards[i1] === state.gameData.cards[i2]) {
+                    // تطابق
+                    state.gameData.matched.push(i1, i2);
+                    document.querySelectorAll('.memory-card')[i1].classList.add('matched');
+                    document.querySelectorAll('.memory-card')[i2].classList.add('matched');
+                    
+                    if (state.currentPlayer === 'king') {
+                        state.gameData.kingMatches++;
+                    } else {
+                        state.gameData.challengerMatches++;
+                    }
+                    
+                    state.gameData.flipped = [];
+                    state.gameData.lockBoard = false;
+                    
+                    // تحقق من انتهاء كل البطاقات
+                    if (state.gameData.matched.length === state.gameData.cards.length) {
+                        const winner = state.gameData.kingMatches > state.gameData.challengerMatches ? 'king' :
+                                      state.gameData.challengerMatches > state.gameData.kingMatches ? 'challenger' : 'draw';
+                        endMiniGame(winner);
+                    }
+                } else {
+                    // لا تطابق - أعد القلب بعد ثانية
+                    setTimeout(() => {
+                        document.querySelectorAll('.memory-card')[i1].classList.remove('flipped');
+                        document.querySelectorAll('.memory-card')[i1].textContent = '❓';
+                        document.querySelectorAll('.memory-card')[i2].classList.remove('flipped');
+                        document.querySelectorAll('.memory-card')[i2].textContent = '❓';
+                        state.gameData.flipped = [];
+                        state.gameData.lockBoard = false;
+                        
+                        // تبديل اللاعب
+                        state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
+                        updateActivePlayer();
+                    }, 800);
+                }
+            }
+        }
+
+        function cleanupMemory() {}
+
+        // ===== لعبة 4: سرعة الرد =====
+        function initReaction() {
+            state.gameData = { 
+                phase: 'waiting',
+                kingTime: null,
+                challengerTime: null,
+                startTime: null,
+                timeoutId: null
+            };
+            state.currentPlayer = 'king';
+            state.timeLeft = 10;
+            
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="reaction-area waiting" id="reactionArea">
+                        انتظر اللون الأخضر...
+                    </div>
+                    <p style="margin-top: 10px;" id="reactionPlayer">دور الملك 🤴</p>
+                </div>
+            `;
+            
+            const reactArea = document.getElementById('reactionArea');
+            reactArea.addEventListener('click', reactionClick);
+            
+            // بدء مرحلة الانتظار العشوائي
+            scheduleReaction();
+            updateActivePlayer();
+        }
+
+        function scheduleReaction() {
+            const delay = 1000 + Math.random() * 3000; // 1-4 ثوانٍ
+            state.gameData.timeoutId = setTimeout(() => {
+                if (!state.running) return;
+                const reactArea = document.getElementById('reactionArea');
+                if (reactArea) {
+                    reactArea.classList.remove('waiting');
+                    reactArea.classList.add('ready');
+                    reactArea.textContent = '👆 الآن!';
+                    state.gameData.phase = 'ready';
+                    state.gameData.startTime = Date.now();
+                }
+            }, delay);
+        }
+
+        function reactionClick() {
+            if (state.touchLocked || !state.running) return;
+            
+            const reactArea = document.getElementById('reactionArea');
+            
+            if (state.gameData.phase === 'waiting') {
+                // ضغط مبكر جداً
+                clearTimeout(state.gameData.timeoutId);
+                reactArea.classList.add('too-early');
+                reactArea.textContent = '❌ مبكر جداً! 0 نقطة';
+                recordReactionTime(9999);
+                setTimeout(prepareNextReactionPlayer, 1500);
+                return;
+            }
+            
+            if (state.gameData.phase === 'ready') {
+                // ضغط صحيح
+                const reactionTime = Date.now() - state.gameData.startTime;
+                reactArea.classList.remove('ready');
+                reactArea.classList.add('matched');
+                reactArea.textContent = `⚡ ${reactionTime}ms`;
+                recordReactionTime(reactionTime);
+                setTimeout(prepareNextReactionPlayer, 1000);
+                return;
+            }
+        }
+
+        function recordReactionTime(time) {
+            if (state.currentPlayer === 'king') {
+                state.gameData.kingTime = time;
+            } else {
+                state.gameData.challengerTime = time;
+            }
+        }
+
+        function prepareNextReactionPlayer() {
+            if (state.currentPlayer === 'king') {
+                // دور المتحدي
+                state.currentPlayer = 'challenger';
+                const reactArea = document.getElementById('reactionArea');
+                if (reactArea) {
+                    reactArea.className = 'reaction-area waiting';
+                    reactArea.textContent = 'انتظر اللون الأخضر...';
+                }
+                document.getElementById('reactionPlayer').textContent = 'دور المتحدي 🗡️';
+                state.gameData.phase = 'waiting';
+                updateActivePlayer();
+                scheduleReaction();
+                return false;
+            } else {
+                // انتهى الدوران
+                const winner = state.gameData.kingTime < state.gameData.challengerTime ? 'king' : 'challenger';
+                endMiniGame(winner);
+                return true;
+            }
+        }
+
+        function cleanupReaction() {
+            clearTimeout(state.gameData.timeoutId);
+        }
+
+        // ===== لعبة 5: ترتيب الأرقام =====
+        function initNumberSort() {
+            const numbers = [];
+            for (let i = 1; i <= 20; i++) numbers.push(i);
+            // خلط واختيار 8 أرقام
+            const shuffled = numbers.sort(() => Math.random() - 0.5).slice(0, 8);
+            
+            state.gameData = {
+                numbers: shuffled,
+                sorted: [...shuffled].sort((a,b) => a-b),
+                nextIndex: 0,
+                kingCorrect: 0,
+                challengerCorrect: 0
+            };
+            state.currentPlayer = 'king';
+            state.timeLeft = 15;
+            
+            const area = document.getElementById('gameArea');
+            let gridHTML = '<div class="number-grid" id="numberGrid">';
+            shuffled.forEach(n => {
+                gridHTML += `<button class="number-btn" data-num="${n}">${n}</button>`;
+            });
+            gridHTML += '</div>';
+            area.innerHTML = gridHTML;
+            
+            document.querySelectorAll('.number-btn').forEach(btn => {
+                btn.addEventListener('click', () => numberClick(btn));
+            });
+            
+            updateActivePlayer();
+        }
+
+        function numberClick(btn) {
+            if (state.touchLocked || !state.running) return;
+            
+            const num = parseInt(btn.dataset.num);
+            
+            if (num === state.gameData.sorted[state.gameData.nextIndex]) {
+                // صحيح
+                btn.classList.add('correct');
+                btn.disabled = true;
+                state.gameData.nextIndex++;
+                
+                if (state.currentPlayer === 'king') {
+                    state.gameData.kingCorrect++;
+                } else {
+                    state.gameData.challengerCorrect++;
+                }
+                
+                // تحقق من الانتهاء
+                if (state.gameData.nextIndex >= state.gameData.sorted.length) {
+                    const winner = state.gameData.kingCorrect > state.gameData.challengerCorrect ? 'king' :
+                                  state.gameData.challengerCorrect > state.gameData.kingCorrect ? 'challenger' : 'draw';
+                    endMiniGame(winner);
+                } else {
+                    // تبديل اللاعب بعد كل إجابة صحيحة
+                    state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
+                    updateActivePlayer();
+                }
+            } else {
+                // خطأ
+                btn.classList.add('wrong');
+                setTimeout(() => btn.classList.remove('wrong'), 300);
+            }
+        }
+
+        function cleanupNumberSort() {}
+
+        // =============== إدارة اللعبة العامة ===============
+        function startGame() {
+            if (state.running) return;
+            
+            state.running = true;
+            state.round = 1;
+            state.kingScore = 0;
+            state.challengerScore = 0;
             
             updateScores();
-            updateRoundsIndicator();
-            loadQuestion();
+            updateDots();
+            loadRound();
             
             document.querySelector('.btn-start').disabled = true;
         }
 
-        function loadQuestion() {
-            const questionTypes = {
-                1: ['سرعة البديهة', 'الرابط السريع', 'المختلف'],
-                2: ['ذكاء بصري', 'خدعة بصرية', 'تفكير معكوس'],
-                3: ['ذكاء لغوي', 'تلاعب بالكلمات', 'فطنة لفظية'],
-                4: ['ذكاء منطقي', 'ألغاز', 'استنتاج'],
-                5: ['تحدي مزدوج', 'سرعة خاطفة', 'مرونة ذهنية']
-            };
+        function loadRound() {
+            document.getElementById('roundNum').textContent = state.round;
+            document.getElementById('gameArea').innerHTML = '<div style="text-align:center;color:#F1C40F;">⏳ تجهيز...</div>';
             
-            const roundTypes = questionTypes[gameState.currentRound];
-            const selectedType = roundTypes[Math.floor(Math.random() * roundTypes.length)];
+            // تنظيف اللعبة السابقة
+            const prevGame = games[state.round - 2];
+            if (prevGame && prevGame.cleanup) prevGame.cleanup();
             
-            const generatedQuestion = questionGenerator.generateUniqueQuestion(gameState.currentRound);
+            // بدء اللعبة الجديدة
+            const game = games[state.round - 1];
+            game.init();
             
-            const questionHTML = `
-                <div style="animation: slideIn 0.5s ease-out;">
-                    <div style="background: rgba(241, 196, 15, 0.1); padding: 10px; border-radius: 10px; margin-bottom: 15px;">
-                        <span style="color: #F1C40F;">🏷️ ${selectedType}</span>
-                        <span style="float: left; color: #e74c3c;">⚡ ${gameState.currentRound}/5</span>
-                    </div>
-                    <div style="font-size: 1.2em; line-height: 1.8; margin: 20px 0;">
-                        ${generatedQuestion.question}
-                    </div>
-                </div>
-                <br>
-                <small style="color: #95a5a6;">
-                    🔒 بصمة السؤال: ${generatedQuestion.fingerprint.substring(0, 10)}
-                </small>
-                <br>
-                <small style="color: #e74c3c; font-weight: bold;">
-                    ⏱️ الوقت المتبقي: ${generatedQuestion.time} ثواني
-                </small>
-            `;
+            document.getElementById('gameArea').previousElementSibling.textContent = 
+                `⏱️ ${game.name}`;
             
-            document.getElementById('questionDisplay').innerHTML = questionHTML;
-            gameState.currentAnswer = generatedQuestion.answer;
-            startTimer(generatedQuestion.time);
-            
-            clearTimeout(gameState.hideQuestion);
-            gameState.hideQuestion = setTimeout(() => {
-                document.getElementById('questionDisplay').innerHTML = `
-                    <div style="text-align: center; font-size: 1.5em; color: #e74c3c;">
-                        ⏰ انتهى الوقت!
-                        <br>
-                        <span style="font-size: 0.8em; color: #F1C40F;">
-                            الإجابة الصحيحة: ${generatedQuestion.answer}
-                        </span>
-                    </div>
-                `;
-                setTimeout(nextRound, 2000);
-            }, generatedQuestion.time * 1000);
+            updateActivePlayer();
+            startTimer();
         }
 
-        function startTimer(seconds) {
-            const timerBar = document.getElementById('timerBar');
-            let timeLeft = seconds;
+        function startTimer() {
+            clearInterval(state.timer);
+            state.timeLeft = state.timeLeft || 10;
+            updateTimerDisplay();
             
-            timerBar.style.width = '100%';
-            timerBar.style.background = '#2ecc71';
-            
-            clearInterval(gameState.timer);
-            
-            gameState.timer = setInterval(() => {
-                timeLeft -= 0.1;
-                const percentage = (timeLeft / seconds) * 100;
-                timerBar.style.width = percentage + '%';
+            state.timer = setInterval(() => {
+                state.timeLeft--;
+                updateTimerDisplay();
                 
-                if (percentage < 30) {
-                    timerBar.style.background = '#e74c3c';
-                } else if (percentage < 60) {
-                    timerBar.style.background = '#f39c12';
+                if (state.timeLeft <= 3) {
+                    document.getElementById('timerDisplay').classList.add('urgent');
                 }
                 
-                if (timeLeft <= 0) {
-                    clearInterval(gameState.timer);
-                    timerBar.style.width = '0%';
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timer);
+                    handleTimeout();
                 }
-            }, 100);
+            }, 1000);
         }
 
-        function nextRound() {
-            gameState.currentRound++;
+        function resetTimer() {
+            clearInterval(state.timer);
+            state.timeLeft = state.timeLeft || 10;
+            updateTimerDisplay();
+            document.getElementById('timerDisplay').classList.remove('urgent');
+            startTimer();
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timerDisplay').textContent = `⏱️ ${state.timeLeft}`;
+        }
+
+        function handleTimeout() {
+            document.getElementById('timerDisplay').classList.remove('urgent');
             
-            if (gameState.currentRound > 5) {
-                endGame();
-                return;
+            // للعبة النقر السريع ورد الفعل - تبديل اللاعب
+            if (state.round === 2) {
+                const ended = cleanupTapRace();
+                if (!ended) return; // لم تنته، استمر مع اللاعب الثاني
+            }
+            if (state.round === 4) {
+                const ended = prepareNextReactionPlayer();
+                if (!ended) return;
             }
             
-            gameState.kingScore += Math.floor(Math.random() * 100);
-            gameState.challengerScore += Math.floor(Math.random() * 100);
+            // الوقت انتهى - اللاعب الحالي يخسر هذه الجولة
+            const loser = state.currentPlayer;
+            const winner = loser === 'king' ? 'challenger' : 'king';
+            endMiniGame(winner);
+        }
+
+        function endMiniGame(winner) {
+            clearInterval(state.timer);
+            document.getElementById('timerDisplay').classList.remove('urgent');
+            state.touchLocked = true;
+            
+            // توزيع النقاط
+            const points = [0, 30, 50, 40, 60, 80][state.round]; // نقاط مختلفة لكل جولة
+            if (winner === 'king') {
+                state.kingScore += points;
+            } else if (winner === 'challenger') {
+                state.challengerScore += points;
+            } else {
+                // تعادل
+                state.kingScore += Math.floor(points / 2);
+                state.challengerScore += Math.floor(points / 2);
+            }
             
             updateScores();
-            updateRoundsIndicator();
-            loadQuestion();
+            
+            // تأثير بصري
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align: center; animation: slideIn 0.5s ease-out;">
+                    <div style="font-size: 4em;">
+                        ${winner === 'king' ? '🤴' : winner === 'challenger' ? '🗡️' : '🤝'}
+                    </div>
+                    <div style="font-size: 1.5em; color: #F1C40F; margin: 10px 0;">
+                        ${winner === 'draw' ? 'تعادل!' : (winner === 'king' ? 'الملك يفوز بالجولة!' : 'المتحدي يفوز بالجولة!')}
+                    </div>
+                    <div style="color: #95a5a6;">
+                        +${points} نقطة
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                state.round++;
+                state.touchLocked = false;
+                
+                if (state.round > 5) {
+                    endGame();
+                } else {
+                    updateDots();
+                    document.getElementById('roundNum').textContent = state.round;
+                    loadRound();
+                }
+            }, 2000);
         }
 
         function endGame() {
-            gameState.isRunning = false;
-            clearInterval(gameState.timer);
-            clearTimeout(gameState.hideQuestion);
+            state.running = false;
             
-            const kingWins = gameState.kingScore > gameState.challengerScore;
-            const winner = kingWins ? 'الملك' : 'المتحدي';
-            
+            const kingWins = state.kingScore > state.challengerScore;
             document.getElementById('victoryMessage').textContent = 
                 kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
             document.getElementById('victoryOverlay').classList.remove('hidden');
             
-            updateChampionsList(winner, Math.abs(gameState.kingScore - gameState.challengerScore));
+            updateChampions(kingWins ? 'الملك' : 'المتحدي');
             document.querySelector('.btn-start').disabled = false;
         }
 
-        function updateScores() {
-            document.getElementById('kingScore').textContent = gameState.kingScore;
-            document.getElementById('challengerScore').textContent = gameState.challengerScore;
+        function updateActivePlayer() {
+            const kingCard = document.getElementById('kingCard');
+            const challengerCard = document.getElementById('challengerCard');
             
-            [document.getElementById('kingScore'), document.getElementById('challengerScore')]
-                .forEach(el => {
-                    el.style.transform = 'scale(1.2)';
-                    setTimeout(() => el.style.transform = 'scale(1)', 300);
-                });
+            kingCard.classList.remove('active');
+            challengerCard.classList.remove('active');
+            
+            if (state.currentPlayer === 'king') {
+                kingCard.classList.add('active');
+            } else {
+                challengerCard.classList.add('active');
+            }
         }
 
-        function updateRoundsIndicator() {
-            const dots = document.querySelectorAll('.round-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.remove('active', 'completed');
-                if (index + 1 === gameState.currentRound) {
-                    dot.classList.add('active');
-                } else if (index + 1 < gameState.currentRound) {
-                    dot.classList.add('completed');
-                }
+        function updateScores() {
+            document.getElementById('kingScore').textContent = state.kingScore;
+            document.getElementById('challengerScore').textContent = state.challengerScore;
+        }
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'done');
+                if (i + 1 === state.round) dot.classList.add('active');
+                else if (i + 1 < state.round) dot.classList.add('done');
             });
         }
 
-        function updateChampionsList(winner, margin) {
-            const championsList = document.getElementById('championsList');
-            const now = new Date();
-            const timeStr = now.getHours() + ':' + now.getMinutes();
-            
-            const newChampion = document.createElement('div');
-            newChampion.className = 'champion-item';
-            newChampion.innerHTML = `
-                <span class="champion-rank">👑</span>
-                <span>${winner}</span>
-                <span>${timeStr}</span>
-            `;
-            
-            championsList.insertBefore(newChampion, championsList.firstChild);
-            
-            const items = championsList.querySelectorAll('.champion-item');
-            if (items.length > 10) {
-                items[items.length - 1].remove();
-            }
-        }
-
-        function showQRCode() {
-            const qrDisplay = document.getElementById('qrCodeDisplay');
-            const gameLink = window.location.href + '?join=' + Date.now();
-            
-            if (typeof QRCode !== 'undefined') {
-                qrDisplay.innerHTML = '';
-                new QRCode(qrDisplay, {
-                    text: gameLink,
-                    width: 150,
-                    height: 150,
-                    colorDark: "#2c3e50",
-                    colorLight: "#ffffff"
-                });
-            } else {
-                qrDisplay.innerHTML = `
-                    <div style="padding: 20px; background: #2c3e50; color: white; border-radius: 10px;">
-                        <p>📱 رابط التحدي:</p>
-                        <small style="word-break: break-all;">${gameLink}</small>
-                    </div>
-                `;
-            }
+        function updateChampions(winner) {
+            const list = document.getElementById('championsList');
+            const time = new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'});
+            const item = document.createElement('div');
+            item.className = 'champion-item';
+            item.innerHTML = `<span>👑</span><span>${winner}</span><span>${time}</span>`;
+            list.insertBefore(item, list.firstChild);
+            if (list.children.length > 10) list.lastChild.remove();
         }
 
         function resetGame() {
-            clearInterval(gameState.timer);
-            clearTimeout(gameState.hideQuestion);
-            
-            gameState.isRunning = false;
-            gameState.currentRound = 0;
-            gameState.kingScore = 0;
-            gameState.challengerScore = 0;
+            clearInterval(state.timer);
+            state.running = false;
+            state.round = 0;
+            state.kingScore = 0;
+            state.challengerScore = 0;
+            state.touchLocked = false;
             
             updateScores();
-            
-            document.getElementById('questionDisplay').innerHTML = 'في انتظار بدء التحدي...';
-            document.getElementById('timerBar').style.width = '100%';
-            document.getElementById('timerBar').style.background = '#2ecc71';
-            
-            document.querySelectorAll('.round-dot').forEach(dot => {
-                dot.classList.remove('active', 'completed');
+            document.querySelectorAll('.dot').forEach((d,i) => {
+                d.classList.remove('done', 'active');
+                if (i === 0) d.classList.add('active');
             });
-            document.querySelectorAll('.round-dot')[0].classList.add('active');
-            
+            document.getElementById('gameArea').innerHTML = 
+                '<div style="text-align:center;color:#F1C40F;font-size:1.5em;">🎮 اضغط "بدء التحدي"<br>لبدء المنافسة</div>';
+            document.getElementById('timerDisplay').textContent = '⏱️ 10';
+            document.getElementById('timerDisplay').classList.remove('urgent');
+            document.getElementById('roundNum').textContent = '1';
             document.querySelector('.btn-start').disabled = false;
         }
 
@@ -1055,16 +1143,22 @@
             resetGame();
         }
 
-        window.onload = function() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
-            script.onload = function() {
-                console.log('✅ مكتبة QR Code جاهزة');
-            };
-            document.head.appendChild(script);
-            
-            console.log('🎮 لعبة تحدي العرش - نسخة الذكاء وسرعة البديهة جاهزة!');
-        };
+        function showQRCode() {
+            // بسيط - يظهر الرابط في المنطقة
+            const link = window.location.href;
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align: center;">
+                    <div id="qrHere" style="display: inline-block; background: white; padding: 10px; border-radius: 10px;"></div>
+                    <p style="margin-top: 10px; color: #F1C40F;">امسح للمشاركة!</p>
+                    <button class="btn btn-start" onclick="loadRound()" style="margin-top: 10px;">رجوع للعبة</button>
+                </div>
+            `;
+            new QRCode(document.getElementById('qrHere'), {
+                text: link + '?join=' + Date.now(),
+                width: 150, height: 150,
+                colorDark: "#2c3e50", colorLight: "#ffffff"
+            });
+        }
     </script>
 </body>
 </html>
