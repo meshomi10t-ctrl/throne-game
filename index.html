@@ -3,547 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🏰 تحدي العرش - ألعاب تفاعلية</title>
+    <title>🏰 تحدي العرش - ألعاب الذكاء</title>
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0; padding: 0; box-sizing: border-box;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background: linear-gradient(135deg, #0a0a1a 0%, #1a1a35 100%);
-            font-family: 'Arial', sans-serif;
-            color: white;
-            min-height: 100vh;
-            overflow-x: hidden;
+            font-family: 'Arial', sans-serif; color: white;
+            min-height: 100vh; overflow-x: hidden;
             touch-action: manipulation;
         }
 
         .crown-header {
-            text-align: center;
-            padding: 12px;
-            background: rgba(0,0,0,0.5);
-            border-bottom: 3px solid #F1C40F;
+            text-align: center; padding: 10px;
+            background: rgba(0,0,0,0.5); border-bottom: 3px solid #F1C40F;
         }
-
-        .crown-emoji {
-            font-size: 40px;
-            animation: float 2s infinite;
-        }
-
+        .crown-emoji { font-size: 35px; animation: float 2s infinite; }
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}
         }
+        .title { font-size: 1.4em; color: #F1C40F; }
 
-        .title {
-            font-size: 1.6em;
-            color: #F1C40F;
-            text-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 10px;
-        }
-
+        .container { max-width: 850px; margin: 0 auto; padding: 8px; }
         .game-screen {
-            background: rgba(26, 26, 53, 0.95);
-            border: 2px solid #F1C40F;
-            border-radius: 20px;
-            padding: 12px;
-            min-height: 500px;
-            position: relative;
+            background: rgba(26,26,53,0.95); border: 2px solid #F1C40F;
+            border-radius: 20px; padding: 10px; min-height: 480px; position: relative;
         }
-
         .live-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #e74c3c;
-            padding: 5px 12px;
-            border-radius: 20px;
-            animation: pulse 2s infinite;
-            font-size: 0.8em;
-            z-index: 10;
+            position: absolute; top: 8px; left: 8px; background: #e74c3c;
+            padding: 4px 10px; border-radius: 15px; animation: pulse 2s infinite;
+            font-size: 0.75em; z-index: 10;
         }
-
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+            0%,100%{opacity:1}50%{opacity:0.6}
         }
 
-        .players-area {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 8px 0;
-        }
-
+        .players-area { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         .player-card {
-            text-align: center;
-            flex: 1;
-            transition: all 0.3s;
-            padding: 8px;
-            border-radius: 15px;
+            text-align: center; flex: 1; transition: all 0.3s;
+            padding: 6px; border-radius: 12px;
         }
-
         .player-card.active {
-            background: rgba(241, 196, 15, 0.15);
-            border: 2px solid #F1C40F;
+            background: rgba(241,196,15,0.15); border: 2px solid #F1C40F;
             animation: activeGlow 0.8s infinite;
         }
-
         @keyframes activeGlow {
-            0%, 100% { box-shadow: 0 0 10px rgba(241, 196, 15, 0.3); }
-            50% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.6); }
+            0%,100%{box-shadow:0 0 8px rgba(241,196,15,0.3)}50%{box-shadow:0 0 20px rgba(241,196,15,0.6)}
         }
+        .player-avatar { font-size: 35px; transition: transform 0.3s; }
+        .player-card.active .player-avatar { transform: scale(1.2); }
+        .player-name { font-size: 1em; color: #F1C40F; font-weight: bold; }
+        .player-score { font-size: 1.8em; font-weight: bold; }
+        .king-score { color: #F1C40F; } .challenger-score { color: #3498db; }
+        .vs-badge { font-size: 1.3em; margin: 0 12px; }
 
-        .player-avatar {
-            font-size: 40px;
-            transition: transform 0.3s;
-        }
-
-        .player-card.active .player-avatar {
-            transform: scale(1.2);
-        }
-
-        .player-name {
-            font-size: 1.1em;
-            color: #F1C40F;
-            font-weight: bold;
-        }
-
-        .player-score {
-            font-size: 2em;
-            font-weight: bold;
-        }
-
-        .king-score { color: #F1C40F; }
-        .challenger-score { color: #3498db; }
-
-        .vs-badge {
-            font-size: 1.5em;
-            margin: 0 15px;
-        }
-
-        /* منطقة اللعبة */
         .game-area {
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            padding: 10px;
-            margin: 10px 0;
-            min-height: 320px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: rgba(0,0,0,0.3); border-radius: 15px; padding: 8px;
+            margin: 8px 0; min-height: 280px;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .round-indicator {
-            text-align: center;
-            font-size: 1.1em;
-            color: #F1C40F;
-            margin: 5px 0;
-        }
-
-        .dots {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin: 8px 0;
-        }
-
+        .round-indicator { text-align: center; font-size: 1em; color: #F1C40F; margin: 3px 0; }
+        .dots { display: flex; justify-content: center; gap: 5px; margin: 5px 0; }
         .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #34495e;
-            border: 2px solid #F1C40F;
-            transition: all 0.3s;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #34495e; border: 2px solid #F1C40F; transition: all 0.3s;
         }
-
-        .dot.active {
-            background: #F1C40F;
-            animation: glow 0.8s infinite;
-        }
-
-        .dot.done {
-            background: #27ae60;
-            border-color: #27ae60;
-        }
-
+        .dot.active { background: #F1C40F; animation: glow 0.8s infinite; }
+        .dot.done { background: #27ae60; border-color: #27ae60; }
         @keyframes glow {
-            0%, 100% { box-shadow: 0 0 6px #F1C40F; }
-            50% { box-shadow: 0 0 16px #F1C40F; }
+            0%,100%{box-shadow:0 0 5px #F1C40F}50%{box-shadow:0 0 14px #F1C40F}
         }
 
         .timer-display {
-            text-align: center;
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #F1C40F;
-            margin: 5px 0;
+            text-align: center; font-size: 2em; font-weight: bold;
+            color: #F1C40F; margin: 3px 0;
         }
-
-        .timer-display.urgent {
-            color: #e74c3c;
-            animation: blink 0.5s infinite;
-        }
-
+        .timer-display.urgent { color: #e74c3c; animation: blink 0.5s infinite; }
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            0%,100%{opacity:1}50%{opacity:0.3}
         }
 
-        /* ===== شاشة الشرح ===== */
-        .tutorial-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .tutorial-card {
-            background: linear-gradient(135deg, #1a1a35, #2c2c54);
-            border: 2px solid #F1C40F;
-            border-radius: 25px;
-            padding: 25px;
-            max-width: 450px;
-            width: 90%;
-            text-align: center;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .tutorial-icon {
-            font-size: 70px;
-            animation: bounceIcon 0.6s infinite;
-        }
-
-        @keyframes bounceIcon {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .tutorial-title {
-            font-size: 2em;
-            color: #F1C40F;
-            margin: 15px 0;
-            font-weight: bold;
-        }
-
-        .tutorial-desc {
-            font-size: 1.2em;
-            color: #ecf0f1;
-            line-height: 1.8;
-            margin: 15px 0;
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 15px;
-            border-right: 3px solid #F1C40F;
-        }
-
-        .tutorial-hint {
-            font-size: 1em;
-            color: #3498db;
-            margin: 10px 0;
-        }
-
-        .tutorial-countdown {
-            font-size: 5em;
-            font-weight: bold;
-            color: #F1C40F;
-            margin: 15px 0;
-            animation: countPulse 1s infinite;
-        }
-
-        @keyframes countPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .tutorial-players {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 15px 0;
-            font-size: 1.5em;
-        }
-
-        /* أزرار */
         .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-            touch-action: manipulation;
+            padding: 10px 20px; border: none; border-radius: 20px;
+            font-size: 0.95em; font-weight: bold; cursor: pointer;
+            transition: all 0.3s; color: white; touch-action: manipulation;
         }
-
-        .btn:active {
-            transform: scale(0.95);
-        }
-
+        .btn:active { transform: scale(0.95); }
         .btn-start { background: #27ae60; }
         .btn-qr { background: #8e44ad; }
         .btn-reset { background: #e67e22; }
-
-        .control-buttons {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 8px 0;
-        }
-
-        .victory-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        .control-buttons { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
 
         .hidden { display: none !important; }
 
-        /* ===== XO ===== */
-        .xo-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
-            width: 220px;
-            margin: 0 auto;
+        /* ========= شاشة الشرح ========= */
+        .tutorial-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+        .tutorial-card {
+            background: linear-gradient(135deg, #1a1a35, #2c2c54);
+            border: 2px solid #F1C40F; border-radius: 20px; padding: 20px;
+            max-width: 400px; width: 90%; text-align: center;
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp { from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1} }
+        .tutorial-icon { font-size: 60px; animation: bounceIcon 0.6s infinite; }
+        @keyframes bounceIcon {
+            0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}
+        }
+        .tutorial-title { font-size: 1.6em; color: #F1C40F; margin: 10px 0; font-weight: bold; }
+        .tutorial-desc {
+            font-size: 1.1em; color: #ecf0f1; line-height: 1.7;
+            margin: 10px 0; background: rgba(0,0,0,0.3); padding: 12px;
+            border-radius: 12px; border-right: 3px solid #F1C40F;
+        }
+        .tutorial-hint { font-size: 0.95em; color: #3498db; margin: 8px 0; }
+        .tutorial-players { margin: 8px 0; font-size: 1.3em; }
+        .tutorial-countdown {
+            font-size: 4em; font-weight: bold; color: #F1C40F;
+            margin: 10px 0; animation: countPulse 1s infinite;
+        }
+        @keyframes countPulse {
+            0%,100%{transform:scale(1)}50%{transform:scale(1.1)}
         }
 
-        .xo-cell {
-            aspect-ratio: 1;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5em;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
+        /* ========= لعبة 1: ستروب ========= */
+        .stroop-word {
+            font-size: 4em; font-weight: bold; margin: 10px 0;
+            text-align: center; transition: all 0.3s;
         }
-
-        .xo-cell:active {
-            background: rgba(255,255,255,0.3);
-            transform: scale(0.9);
+        .stroop-buttons {
+            display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px;
         }
-
-        .xo-cell.x { color: #F1C40F; }
-        .xo-cell.o { color: #3498db; }
-        .xo-cell.winner {
-            animation: winPulse 0.5s infinite;
-            background: rgba(39, 174, 96, 0.4);
+        .stroop-btn {
+            padding: 15px 25px; border-radius: 15px; border: none;
+            font-size: 1.2em; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; touch-action: manipulation; color: white;
         }
+        .stroop-btn:active { transform: scale(0.9); }
 
-        @keyframes winPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* ===== Tap Race ===== */
-        .tap-area {
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3em;
-            cursor: pointer;
-            margin: 0 auto;
-            transition: all 0.1s;
-            box-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
-            touch-action: manipulation;
-        }
-
-        .tap-area:active {
-            transform: scale(0.9);
-            box-shadow: 0 0 50px rgba(231, 76, 60, 0.8);
-        }
-
-        .tap-area.king-turn {
-            background: linear-gradient(135deg, #F1C40F, #f39c12);
-            box-shadow: 0 0 30px rgba(241, 196, 15, 0.5);
-        }
-
-        .tap-counter {
-            text-align: center;
-            font-size: 1.8em;
-            margin: 8px 0;
-        }
-
-        /* ===== Memory ===== */
-        .memory-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        .memory-card {
-            aspect-ratio: 1;
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            cursor: pointer;
+        /* ========= لعبة 2: اتجاهات ========= */
+        .direction-arrow {
+            font-size: 6em; text-align: center; margin: 10px 0;
             transition: all 0.3s;
-            touch-action: manipulation;
         }
-
-        .memory-card.flipped {
-            background: #F1C40F;
-            transform: rotateY(180deg);
+        .direction-buttons {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px; max-width: 280px; margin: 10px auto;
         }
-
-        .memory-card.matched {
-            background: #27ae60;
-            opacity: 0.6;
-        }
-
-        /* ===== Reaction ===== */
-        .reaction-area {
-            width: 100%;
-            height: 180px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.1s;
-            font-size: 1.5em;
-            touch-action: manipulation;
-        }
-
-        .reaction-area.waiting { background: #e74c3c; }
-        .reaction-area.ready { background: #2ecc71; }
-        .reaction-area.too-early {
-            background: #e74c3c;
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        /* ===== Number Sort ===== */
-        .number-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        .number-btn {
-            aspect-ratio: 1;
-            border-radius: 10px;
-            border: 2px solid #F1C40F;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 1.3em;
-            cursor: pointer;
+        .dir-btn {
+            aspect-ratio: 1; border-radius: 15px; border: 2px solid #F1C40F;
+            background: rgba(255,255,255,0.1); color: white;
+            font-size: 2em; cursor: pointer; touch-action: manipulation;
             transition: all 0.2s;
-            touch-action: manipulation;
         }
+        .dir-btn:active { background: #F1C40F; color: #1a1a35; transform: scale(0.9); }
 
-        .number-btn:active {
-            background: #F1C40F;
-            color: #1a1a35;
-            transform: scale(0.9);
+        /* ========= لعبة 3: تتبع الكرة ========= */
+        .cups-container {
+            display: flex; justify-content: center; gap: 15px; margin: 15px 0;
         }
+        .cup {
+            width: 80px; height: 100px; border-radius: 10px 10px 0 0;
+            background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+            cursor: pointer; transition: all 0.3s; touch-action: manipulation;
+            position: relative; display: flex; align-items: flex-end;
+            justify-content: center; font-size: 2em; padding-bottom: 10px;
+        }
+        .cup:active { transform: translateY(10px); }
+        .cup.ball { box-shadow: 0 0 25px rgba(241,196,15,0.8); }
+        .cup.reveal { background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%); }
+        .cup-label { font-size: 0.3em; color: white; }
 
-        .number-btn.wrong { background: #e74c3c; animation: shake 0.5s; }
-        .number-btn.correct { background: #27ae60; border-color: #27ae60; }
-
-        /* سجل الأبطال */
-        .sidebar {
-            background: rgba(0,0,0,0.5);
-            border: 2px solid #F1C40F;
+        /* ========= لعبة 4: صح وخطأ ========= */
+        .tf-question {
+            font-size: 2em; text-align: center; margin: 15px 0;
+            background: rgba(255,255,255,0.1); padding: 20px;
             border-radius: 15px;
-            padding: 12px;
-            margin-top: 10px;
+        }
+        .tf-buttons {
+            display: flex; gap: 20px; justify-content: center; margin-top: 15px;
+        }
+        .tf-btn {
+            width: 100px; height: 100px; border-radius: 50%; border: none;
+            font-size: 2.5em; cursor: pointer; touch-action: manipulation;
+            transition: all 0.2s; color: white;
+        }
+        .tf-true { background: #27ae60; }
+        .tf-false { background: #e74c3c; }
+        .tf-btn:active { transform: scale(0.85); }
+
+        /* ========= لعبة 5: سباق الأزرار ========= */
+        .race-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; max-width: 320px; margin: 0 auto;
+        }
+        .race-btn {
+            aspect-ratio: 1; border-radius: 20px; border: none;
+            font-size: 2em; cursor: pointer; touch-action: manipulation;
+            transition: all 0.15s; color: white; opacity: 0.3;
+        }
+        .race-btn.active-btn {
+            opacity: 1; animation: raceGlow 0.6s infinite;
+        }
+        @keyframes raceGlow {
+            0%,100%{box-shadow:0 0 15px currentColor}50%{box-shadow:0 0 35px currentColor}
+        }
+        .race-btn:active { transform: scale(0.85); }
+        .race-king { color: #F1C40F; }
+        .race-challenger { color: #3498db; }
+
+        /* ========= النتائج ========= */
+        .result-message { text-align: center; animation: slideIn 0.5s ease-out; }
+        @keyframes slideIn { from{transform:translateY(-25px);opacity:0}to{transform:translateY(0);opacity:1} }
+
+        .victory-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
         }
 
-        .champions-list {
-            max-height: 150px;
-            overflow-y: auto;
+        .sidebar {
+            background: rgba(0,0,0,0.5); border: 2px solid #F1C40F;
+            border-radius: 15px; padding: 10px; margin-top: 8px;
         }
-
+        .champions-list { max-height: 120px; overflow-y: auto; }
         .champion-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px;
-            border-bottom: 1px solid rgba(241, 196, 15, 0.2);
-            font-size: 0.85em;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px; border-bottom: 1px solid rgba(241,196,15,0.2); font-size: 0.8em;
         }
 
-        .result-message {
-            text-align: center;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @media (max-width: 500px) {
-            .title { font-size: 1.3em; }
-            .player-avatar { font-size: 30px; }
-            .player-score { font-size: 1.5em; }
-            .xo-board { width: 180px; }
-            .xo-cell { font-size: 2em; }
-            .memory-board { max-width: 250px; }
-            .memory-card { font-size: 1.5em; }
-            .number-grid { max-width: 250px; }
-            .number-btn { font-size: 1.1em; }
-            .tutorial-card { padding: 15px; }
-            .tutorial-icon { font-size: 50px; }
-            .tutorial-title { font-size: 1.5em; }
-            .tutorial-desc { font-size: 1em; }
-            .tutorial-countdown { font-size: 3em; }
+        @media (max-width: 450px) {
+            .title { font-size: 1.2em; }
+            .player-avatar { font-size: 28px; }
+            .player-score { font-size: 1.3em; }
+            .stroop-word { font-size: 2.5em; }
+            .direction-arrow { font-size: 4em; }
+            .cup { width: 60px; height: 80px; }
+            .tf-question { font-size: 1.4em; }
+            .tf-btn { width: 70px; height: 70px; font-size: 2em; }
+            .race-grid { max-width: 260px; gap: 6px; }
+            .race-btn { font-size: 1.5em; }
         }
     </style>
 </head>
@@ -554,18 +262,12 @@
     </div>
 
     <div class="container">
-        <div class="game-screen" id="gameScreen">
+        <div class="game-screen">
             <div class="live-badge">🔴 مباشر</div>
-            
-            <div class="round-indicator">
-                الجولة <span id="roundNum">1</span> من 5
-            </div>
+            <div class="round-indicator">الجولة <span id="roundNum">1</span> من 5</div>
             <div class="dots" id="dots">
-                <div class="dot active"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
+                <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div>
             </div>
 
             <div class="players-area">
@@ -574,9 +276,7 @@
                     <div class="player-name">الملك</div>
                     <div class="player-score king-score" id="kingScore">0</div>
                 </div>
-                
                 <div class="vs-badge">⚡</div>
-                
                 <div class="player-card" id="challengerCard">
                     <div class="player-avatar">🗡️</div>
                     <div class="player-name">المتحدي</div>
@@ -585,9 +285,8 @@
             </div>
 
             <div class="timer-display" id="timerDisplay">⏱️ جاهز</div>
-            
             <div class="game-area" id="gameArea">
-                <div style="text-align: center; color: #F1C40F; font-size: 1.5em;">
+                <div style="text-align:center;color:#F1C40F;font-size:1.3em;">
                     🎮 اضغط "بدء التحدي"<br>لبدء المنافسة
                 </div>
             </div>
@@ -600,11 +299,9 @@
         </div>
 
         <div class="sidebar">
-            <h3 style="color: #F1C40F; text-align: center;">🏆 سجل الأبطال</h3>
+            <h3 style="color:#F1C40F;text-align:center;">🏆 سجل الأبطال</h3>
             <div class="champions-list" id="championsList">
-                <div class="champion-item">
-                    <span>👑</span><span>في انتظار أول بطل</span><span>--:--</span>
-                </div>
+                <div class="champion-item"><span>👑</span><span>في انتظار أول بطل</span><span>--:--</span></div>
             </div>
         </div>
     </div>
@@ -613,9 +310,9 @@
     <div id="tutorialOverlay" class="tutorial-overlay hidden">
         <div class="tutorial-card">
             <div class="tutorial-icon" id="tutorialIcon">🎮</div>
-            <div class="tutorial-title" id="tutorialTitle">عنوان اللعبة</div>
-            <div class="tutorial-desc" id="tutorialDesc">الشرح هنا</div>
-            <div class="tutorial-hint" id="tutorialHint">💡 تلميح: ...</div>
+            <div class="tutorial-title" id="tutorialTitle"></div>
+            <div class="tutorial-desc" id="tutorialDesc"></div>
+            <div class="tutorial-hint" id="tutorialHint"></div>
             <div class="tutorial-players" id="tutorialPlayers"></div>
             <div class="tutorial-countdown" id="tutorialCountdown">3</div>
         </div>
@@ -623,519 +320,494 @@
 
     <!-- نافذة النصر -->
     <div id="victoryOverlay" class="victory-overlay hidden">
-        <div style="text-align: center;">
-            <div style="font-size: 100px; animation: bounceIcon 0.5s infinite;">👑</div>
-            <h2 style="color: #F1C40F; font-size: 2em;" id="victoryMessage">الملك يحافظ على عرشه!</h2>
-            <h3 style="color: white; margin: 10px 0;">النتيجة: <span id="victoryScore"></span></h3>
-            <button class="btn btn-start" onclick="closeVictory()" style="margin-top: 15px;">
-                🏰 متابعة
-            </button>
+        <div style="text-align:center;">
+            <div style="font-size:80px;animation:bounceIcon 0.5s infinite;">👑</div>
+            <h2 style="color:#F1C40F;font-size:1.8em;" id="victoryMessage"></h2>
+            <h3 style="color:white;margin:8px 0;">النتيجة: <span id="victoryScore"></span></h3>
+            <button class="btn btn-start" onclick="closeVictory()" style="margin-top:12px;">🏰 متابعة</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>
-        // =============== بيانات الألعاب مع الشرح ===============
+        // ==================== بيانات الألعاب ====================
         const games = [
             {
-                name: '❌⭕ XO السرعة',
-                icon: '❌',
-                title: 'XO السرعة',
-                desc: 'لوحة XO كلاسيكية!<br>اللاعبان يتناوبان وضع الرموز.<br>من يصنع خطاً من 3 رموز يفوز!',
-                hint: 'فكر بسرعة... خصمك ينتظر دورك!',
-                players: '🤴 الملك = ❌ | 🗡️ المتحدي = ⭕',
-                time: 15,
-                init: initXO,
-                cleanup: cleanupXO
-            },
-            {
-                name: '👆 اضغط بأقصى سرعة',
-                icon: '👆',
-                title: 'تحدي النقر السريع',
-                desc: 'كل لاعب عنده 8 ثواني للنقر بأقصى سرعة!<br>اللاعب صاحب أكبر عدد نقرات يفوز.',
-                hint: 'استخدم إصبعين للنقر أسرع!',
-                players: '🤴 الملك أولاً ثم 🗡️ المتحدي',
+                name: '🎨 لون الكلمة',
+                icon: '🎨',
+                title: 'تحدي ستروب',
+                desc: 'ستظهر كلمة اسم لون (مثل: "أحمر")<br>ولكنها مكتوبة بلون مختلف!<br>المطلوب: المس اسم <b>اللون الذي تراه</b><br>وليس الكلمة المكتوبة.',
+                hint: 'الدماغ يقرأ الكلمة تلقائياً... تجاهل القراءة وركز على اللون!',
+                players: '🤴 الملك و 🗡️ المتحدي يتناوبان',
                 time: 8,
-                init: initTapRace,
-                cleanup: cleanupTapRace
+                init: initStroop, tick: null, end: endStroop
             },
             {
-                name: '🧠 تطابق الذاكرة',
-                icon: '🧠',
-                title: 'لعبة الذاكرة',
-                desc: '16 بطاقة مقلوبة. ابحث عن الأزواج المتطابقة!<br>اللاعبان يتناوبان. من يجد أزواجاً أكثر يفوز.',
-                hint: 'تذكر مكان كل رمز... ستحتاجه لاحقاً!',
-                players: '🤴 و 🗡️ يتناوبان',
-                time: 25,
-                init: initMemory,
-                cleanup: cleanupMemory
+                name: '🧭 الاتجاهات',
+                icon: '🧭',
+                title: 'الاتجاه المعاكس',
+                desc: 'سيظهر سهم باتجاه معين.<br>المطلوب: المس الاتجاه <b>المعاكس</b> للسهم!<br>مثلاً: سهم لليسار ← المس "يمين"',
+                hint: 'فكر بالعكس... السهم لليسار يعني المس يمين!',
+                players: '🤴 الملك و 🗡️ المتحدي يتناوبان',
+                time: 7,
+                init: initDirection, tick: null, end: endDirection
             },
             {
-                name: '⚡ سرعة الرد',
-                icon: '⚡',
-                title: 'تحدي سرعة الرد',
-                desc: 'انتظر حتى تتحول الشاشة للأخضر...<br>ثم المس بأسرع ما يمكن!<br>أسرع لاعب يفوز.',
-                hint: 'لا تضغط قبل اللون الأخضر وإلا تخسر!',
-                players: '🤴 الملك أولاً ثم 🗡️ المتحدي',
-                time: 10,
-                init: initReaction,
-                cleanup: cleanupReaction
+                name: '👁️ تتبع الكرة',
+                icon: '👁️',
+                title: 'تتبع الكرة',
+                desc: '3 أكواب، كرة ذهبية تحت واحد منها.<br>ستتحرك الأكواب بسرعة!<br>بعد التوقف: المس الكوب الذي يحوي الكرة.',
+                hint: 'ركز بعينك على الكأس الذي يحوي الكرة ولا تنشغل بالباقي!',
+                players: '🤴 الملك و 🗡️ المتحدي يتناوبان',
+                time: 8,
+                init: initCups, tick: null, end: null
             },
             {
-                name: '🔢 ترتيب الأرقام',
-                icon: '🔢',
-                title: 'ترتيب الأرقام تصاعدياً',
-                desc: '8 أرقام مبعثرة. اضغط عليها بالترتيب من الأصغر للأكبر!<br>كل إجابة صحيحة = نقطة. الأخطاء تمرر الدور للخصم.',
-                hint: 'ابحث عن الرقم الأصغر المتاح دائماً',
-                players: '🤴 و 🗡️ يتناوبان بعد كل إجابة صحيحة',
-                time: 20,
-                init: initNumberSort,
-                cleanup: cleanupNumberSort
+                name: '✅ صح أو خطأ',
+                icon: '✅',
+                title: 'صح أو خطأ السريع',
+                desc: 'ستظهر جملة (مثل: "السماء خضراء").<br>المطلوب: المس ✓ إذا كانت صحيحة<br>أو ✗ إذا كانت خاطئة. بأسرع وقت!',
+                hint: 'بعض الجمل واضحة جداً... لا تتردد!',
+                players: '🤴 الملك و 🗡️ المتحدي يتناوبان',
+                time: 5,
+                init: initTrueFalse, tick: null, end: endTrueFalse
+            },
+            {
+                name: '🏃 سباق الأزرار',
+                icon: '🏃',
+                title: 'سباق الأزرار',
+                desc: '4 أزرار ستضيء بشكل عشوائي واحداً تلو الآخر.<br>اللاعبان يتنافسان معاً!<br>من يلمس الزر المضيء أولاً يكسب النقطة.',
+                hint: 'ضع إصبعك في المنتصف لتكون أسرع!',
+                players: '🤴 و 🗡️ يتنافسان مباشرة!',
+                time: 15,
+                init: initRace, tick: null, end: endRace
             }
         ];
 
-        // =============== حالة اللعبة ===============
+        // ==================== حالة اللعبة ====================
         const state = {
-            running: false,
-            round: 0,
-            kingScore: 0,
-            challengerScore: 0,
-            currentPlayer: 'king',
-            timer: null,
-            timeLeft: 10,
-            gameData: {},
-            touchLocked: false,
-            tutorialDone: false
+            running: false, round: 0, kingScore: 0, challengerScore: 0,
+            currentPlayer: 'king', timer: null, timeLeft: 10,
+            gameData: {}, touchLocked: false, raceInterval: null
         };
 
-        // =============== شاشة الشرح ===============
+        // ==================== شاشة الشرح ====================
         function showTutorial(roundIndex, callback) {
             const game = games[roundIndex];
             const overlay = document.getElementById('tutorialOverlay');
-            
             document.getElementById('tutorialIcon').textContent = game.icon;
             document.getElementById('tutorialTitle').textContent = game.title;
             document.getElementById('tutorialDesc').innerHTML = game.desc;
             document.getElementById('tutorialHint').innerHTML = '💡 ' + game.hint;
             document.getElementById('tutorialPlayers').textContent = game.players;
-            
             overlay.classList.remove('hidden');
-            
-            // عد تنازلي 3, 2, 1, انطلق!
+
             let count = 3;
-            const countdownEl = document.getElementById('tutorialCountdown');
-            countdownEl.textContent = count;
-            countdownEl.style.color = '#F1C40F';
-            
-            const countInterval = setInterval(() => {
+            const cd = document.getElementById('tutorialCountdown');
+            cd.textContent = count; cd.style.color = '#F1C40F';
+            const iv = setInterval(() => {
                 count--;
                 if (count <= 0) {
-                    clearInterval(countInterval);
-                    countdownEl.textContent = '🚀 انطلق!';
-                    countdownEl.style.color = '#2ecc71';
-                    countdownEl.style.animation = 'none';
-                    
+                    clearInterval(iv);
+                    cd.textContent = '🚀 انطلق!'; cd.style.color = '#2ecc71';
                     setTimeout(() => {
                         overlay.classList.add('hidden');
-                        countdownEl.style.animation = 'countPulse 1s infinite';
-                        state.tutorialDone = true;
                         if (callback) callback();
-                    }, 600);
+                    }, 500);
                 } else {
-                    countdownEl.textContent = count;
-                    if (count === 1) {
-                        countdownEl.style.color = '#e74c3c';
-                    }
+                    cd.textContent = count;
+                    if (count === 1) cd.style.color = '#e74c3c';
                 }
-            }, 800);
+            }, 700);
         }
 
-        // =============== لعبة 1: XO السرعة ===============
-        function initXO() {
-            state.gameData = { board: Array(9).fill(''), winner: null };
+        // ==================== لعبة 1: ستروب ====================
+        const colors = [
+            { name: 'أحمر', code: '#e74c3c' },
+            { name: 'أزرق', code: '#3498db' },
+            { name: 'أخضر', code: '#2ecc71' },
+            { name: 'أصفر', code: '#f1c40f' }
+        ];
+
+        function initStroop() {
             state.currentPlayer = 'king';
             state.timeLeft = games[0].time;
-            
-            const area = document.getElementById('gameArea');
-            area.innerHTML = '<div class="xo-board" id="xoBoard"></div>';
-            
-            const board = document.getElementById('xoBoard');
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'xo-cell';
-                cell.dataset.index = i;
-                cell.addEventListener('click', () => xoClick(i, cell));
-                board.appendChild(cell);
-            }
-            
+            state.gameData = { score: 0, roundNum: 0, playerDone: false };
+            nextStroopRound();
             updateActivePlayer();
         }
 
-        function xoClick(index, cell) {
-            if (state.touchLocked || !state.running) return;
-            if (state.gameData.board[index] !== '') return;
-            if (state.gameData.winner) return;
-            
-            const symbol = state.currentPlayer === 'king' ? '❌' : '⭕';
-            state.gameData.board[index] = symbol;
-            cell.textContent = symbol;
-            cell.classList.add(symbol === '❌' ? 'x' : 'o');
-            
-            const winner = checkXOWinner();
-            if (winner) {
-                state.gameData.winner = winner;
-                endMiniGame(winner === '❌' ? 'king' : 'challenger');
-                return;
-            }
-            
-            if (!state.gameData.board.includes('')) {
-                endMiniGame('draw');
-                return;
-            }
-            
-            state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
-            updateActivePlayer();
-            resetTimer();
-        }
-
-        function checkXOWinner() {
-            const b = state.gameData.board;
-            const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            for (const [a,c,d] of lines) {
-                if (b[a] && b[a] === b[c] && b[a] === b[d]) {
-                    [a,c,d].forEach(i => {
-                        document.querySelectorAll('.xo-cell')[i].classList.add('winner');
-                    });
-                    return b[a];
+        function nextStroopRound() {
+            state.gameData.roundNum++;
+            if (state.gameData.roundNum > 4) {
+                // 4 جولات لكل لاعب
+                if (!state.gameData.playerDone) {
+                    state.gameData.playerDone = true;
+                    state.gameData.roundNum = 1;
+                    state.gameData.kingScore = state.gameData.score;
+                    state.gameData.score = 0;
+                    state.currentPlayer = 'challenger';
+                    state.timeLeft = games[0].time;
+                    resetTimer();
+                    updateActivePlayer();
+                } else {
+                    state.gameData.challengerScore = state.gameData.score;
+                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
+                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
+                    endMiniGame(winner);
+                    return;
                 }
             }
-            return null;
+            renderStroop();
         }
 
-        function cleanupXO() {}
+        function renderStroop() {
+            const colorName = colors[Math.floor(Math.random() * 4)];
+            let colorCode;
+            do { colorCode = colors[Math.floor(Math.random() * 4)]; }
+            while (colorCode.name === colorName.name);
 
-        // =============== لعبة 2: اضغط بسرعة ===============
-        function initTapRace() {
-            state.gameData = { kingTaps: 0, challengerTaps: 0, phase: 'king' };
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align:center;">
+                    <div class="stroop-word" style="color:${colorCode.code};" id="stroopWord">
+                        ${colorName.name}
+                    </div>
+                    <div class="stroop-buttons">
+                        ${colors.map(c => `
+                            <button class="stroop-btn" style="background:${c.code};"
+                                onclick="stroopAnswer('${c.name}','${colorCode.name}')">${c.name}</button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function stroopAnswer(answered, correct) {
+            if (state.touchLocked || !state.running) return;
+            if (answered === correct) {
+                state.gameData.score += 25;
+                flashGreen();
+            } else {
+                flashRed();
+            }
+            nextStroopRound();
+        }
+
+        function endStroop() {}
+
+        // ==================== لعبة 2: اتجاهات ====================
+        const directions = [
+            { arrow: '⬆️', name: 'أعلى', opposite: 'أسفل' },
+            { arrow: '⬇️', name: 'أسفل', opposite: 'أعلى' },
+            { arrow: '⬅️', name: 'يسار', opposite: 'يمين' },
+            { arrow: '➡️', name: 'يمين', opposite: 'يسار' }
+        ];
+
+        function initDirection() {
             state.currentPlayer = 'king';
             state.timeLeft = games[1].time;
-            
-            document.getElementById('gameArea').innerHTML = `
-                <div style="text-align: center;">
-                    <div class="tap-counter" id="tapCount">0</div>
-                    <div class="tap-area king-turn" id="tapBtn">👆 اضغط!</div>
-                    <p style="margin-top: 8px; color: #F1C40F;">دور: <span id="tapPlayer">الملك 🤴</span></p>
-                </div>
-            `;
-            
-            document.getElementById('tapBtn').addEventListener('click', tapRaceClick);
+            state.gameData = { score: 0, roundNum: 0, playerDone: false };
+            nextDirectionRound();
             updateActivePlayer();
         }
 
-        function tapRaceClick() {
+        function nextDirectionRound() {
+            state.gameData.roundNum++;
+            if (state.gameData.roundNum > 5) {
+                if (!state.gameData.playerDone) {
+                    state.gameData.playerDone = true;
+                    state.gameData.roundNum = 1;
+                    state.gameData.kingScore = state.gameData.score;
+                    state.gameData.score = 0;
+                    state.currentPlayer = 'challenger';
+                    state.timeLeft = games[1].time;
+                    resetTimer();
+                    updateActivePlayer();
+                } else {
+                    state.gameData.challengerScore = state.gameData.score;
+                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
+                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
+                    endMiniGame(winner);
+                    return;
+                }
+            }
+            renderDirection();
+        }
+
+        function renderDirection() {
+            const dir = directions[Math.floor(Math.random() * 4)];
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align:center;">
+                    <div class="direction-arrow">${dir.arrow}</div>
+                    <div class="direction-buttons">
+                        <div></div>
+                        <button class="dir-btn" onclick="dirAnswer('أعلى','${dir.opposite}')">⬆️</button><div></div>
+                        <button class="dir-btn" onclick="dirAnswer('يسار','${dir.opposite}')">⬅️</button>
+                        <div style="font-size:2em;color:#F1C40F;">عكس</div>
+                        <button class="dir-btn" onclick="dirAnswer('يمين','${dir.opposite}')">➡️</button>
+                        <div></div>
+                        <button class="dir-btn" onclick="dirAnswer('أسفل','${dir.opposite}')">⬇️</button><div></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function dirAnswer(answered, correct) {
             if (state.touchLocked || !state.running) return;
-            
-            if (state.currentPlayer === 'king') {
-                state.gameData.kingTaps++;
-                document.getElementById('tapCount').textContent = state.gameData.kingTaps;
+            if (answered === correct) {
+                state.gameData.score += 25;
+                flashGreen();
             } else {
-                state.gameData.challengerTaps++;
-                document.getElementById('tapCount').textContent = state.gameData.challengerTaps;
+                flashRed();
             }
-            
-            const btn = document.getElementById('tapBtn');
-            btn.style.transform = 'scale(0.85)';
-            setTimeout(() => btn.style.transform = 'scale(1)', 50);
+            nextDirectionRound();
         }
 
-        function cleanupTapRace() {
-            if (state.gameData.phase === 'king') {
-                state.gameData.phase = 'challenger';
-                state.currentPlayer = 'challenger';
-                document.getElementById('tapBtn').classList.remove('king-turn');
-                document.getElementById('tapPlayer').textContent = 'المتحدي 🗡️';
-                document.getElementById('tapCount').textContent = '0';
-                state.timeLeft = games[1].time;
-                resetTimer();
-                updateActivePlayer();
-                return false;
-            } else {
-                const winner = state.gameData.kingTaps > state.gameData.challengerTaps ? 'king' :
-                              state.gameData.challengerTaps > state.gameData.kingTaps ? 'challenger' : 'draw';
-                endMiniGame(winner);
-                return true;
-            }
-        }
+        function endDirection() {}
 
-        // =============== لعبة 3: تطابق الذاكرة ===============
-        function initMemory() {
-            const emojis = ['🌟','🔥','💎','🎯','🚀','⭐','🎪','🎨'];
-            const pairs = [...emojis, ...emojis];
-            for (let i = pairs.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
-            }
-            
-            state.gameData = {
-                cards: pairs,
-                flipped: [],
-                matched: [],
-                kingMatches: 0,
-                challengerMatches: 0,
-                lockBoard: false
-            };
+        // ==================== لعبة 3: تتبع الكرة ====================
+        function initCups() {
             state.currentPlayer = 'king';
             state.timeLeft = games[2].time;
-            
-            document.getElementById('gameArea').innerHTML = '<div class="memory-board" id="memoryBoard"></div>';
-            
-            const board = document.getElementById('memoryBoard');
-            pairs.forEach((emoji, index) => {
-                const card = document.createElement('div');
-                card.className = 'memory-card';
-                card.dataset.index = index;
-                card.dataset.emoji = emoji;
-                card.textContent = '❓';
-                card.addEventListener('click', () => memoryClick(index, card));
-                board.appendChild(card);
-            });
-            
+            state.gameData = { ballPos: 0, roundNum: 0, playerDone: false, score: 0, answered: false };
+            nextCupRound();
             updateActivePlayer();
         }
 
-        function memoryClick(index, card) {
-            if (state.touchLocked || !state.running || state.gameData.lockBoard) return;
-            if (state.gameData.matched.includes(index)) return;
-            if (state.gameData.flipped.includes(index)) return;
-            
-            card.textContent = state.gameData.cards[index];
-            card.classList.add('flipped');
-            state.gameData.flipped.push(index);
-            
-            if (state.gameData.flipped.length === 2) {
-                state.gameData.lockBoard = true;
-                const [i1, i2] = state.gameData.flipped;
-                
-                if (state.gameData.cards[i1] === state.gameData.cards[i2]) {
-                    state.gameData.matched.push(i1, i2);
-                    document.querySelectorAll('.memory-card')[i1].classList.add('matched');
-                    document.querySelectorAll('.memory-card')[i2].classList.add('matched');
-                    
-                    if (state.currentPlayer === 'king') state.gameData.kingMatches++;
-                    else state.gameData.challengerMatches++;
-                    
-                    state.gameData.flipped = [];
-                    state.gameData.lockBoard = false;
-                    
-                    if (state.gameData.matched.length === state.gameData.cards.length) {
-                        const winner = state.gameData.kingMatches > state.gameData.challengerMatches ? 'king' :
-                                      state.gameData.challengerMatches > state.gameData.kingMatches ? 'challenger' : 'draw';
-                        endMiniGame(winner);
-                    }
+        function nextCupRound() {
+            state.gameData.roundNum++;
+            if (state.gameData.roundNum > 3) {
+                if (!state.gameData.playerDone) {
+                    state.gameData.playerDone = true;
+                    state.gameData.roundNum = 1;
+                    state.gameData.kingScore = state.gameData.score;
+                    state.gameData.score = 0;
+                    state.currentPlayer = 'challenger';
+                    state.timeLeft = games[2].time;
+                    resetTimer();
+                    updateActivePlayer();
                 } else {
-                    setTimeout(() => {
-                        [i1, i2].forEach(i => {
-                            document.querySelectorAll('.memory-card')[i].classList.remove('flipped');
-                            document.querySelectorAll('.memory-card')[i].textContent = '❓';
-                        });
-                        state.gameData.flipped = [];
-                        state.gameData.lockBoard = false;
-                        state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
-                        updateActivePlayer();
-                    }, 800);
+                    state.gameData.challengerScore = state.gameData.score;
+                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
+                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
+                    endMiniGame(winner);
+                    return;
                 }
             }
+
+            state.gameData.ballPos = Math.floor(Math.random() * 3);
+            state.gameData.answered = false;
+            renderCups('hide');
         }
 
-        function cleanupMemory() {}
-
-        // =============== لعبة 4: سرعة الرد ===============
-        function initReaction() {
-            state.gameData = { 
-                phase: 'waiting', playerPhase: 'king',
-                kingTime: null, challengerTime: null,
-                startTime: null, timeoutId: null
-            };
-            state.currentPlayer = 'king';
-            state.timeLeft = games[3].time;
-            
+        function renderCups(mode) {
+            const ballEmoji = '🟡';
             document.getElementById('gameArea').innerHTML = `
-                <div style="text-align: center;">
-                    <div class="reaction-area waiting" id="reactionArea">🔴 انتظر اللون الأخضر...</div>
-                    <p style="margin-top: 8px;" id="reactionPlayer">دور: الملك 🤴</p>
+                <div style="text-align:center;">
+                    <p style="color:#F1C40F;margin-bottom:10px;">${mode==='hide' ? '👀 تابع الكرة...' : '🤔 أين الكرة؟'}</p>
+                    <div class="cups-container">
+                        ${[0,1,2].map(i => `
+                            <div class="cup ${mode==='show' && i===state.gameData.ballPos ? 'ball reveal' : ''}"
+                                 onclick="cupClick(${i})">
+                                ${mode==='show' && i===state.gameData.ballPos ? ballEmoji : ''}
+                                <span class="cup-label">${i+1}</span>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             `;
-            
-            document.getElementById('reactionArea').addEventListener('click', reactionClick);
-            scheduleReaction();
-            updateActivePlayer();
-        }
 
-        function scheduleReaction() {
-            const delay = 1000 + Math.random() * 3000;
-            state.gameData.timeoutId = setTimeout(() => {
-                if (!state.running) return;
-                const area = document.getElementById('reactionArea');
-                if (area) {
-                    area.classList.remove('waiting');
-                    area.classList.add('ready');
-                    area.textContent = '🟢 المس الآن!';
-                    state.gameData.phase = 'ready';
-                    state.gameData.startTime = Date.now();
-                }
-            }, delay);
-        }
-
-        function reactionClick() {
-            if (state.touchLocked || !state.running) return;
-            const area = document.getElementById('reactionArea');
-            
-            if (state.gameData.phase === 'waiting') {
-                clearTimeout(state.gameData.timeoutId);
-                area.classList.add('too-early');
-                area.textContent = '❌ مبكر جداً!';
-                recordReaction(9999);
-                setTimeout(prepareNextReaction, 1500);
-                return;
-            }
-            
-            if (state.gameData.phase === 'ready') {
-                const reactionTime = Date.now() - state.gameData.startTime;
-                area.classList.remove('ready');
-                area.classList.add('matched');
-                area.textContent = `⚡ ${reactionTime} مللي ثانية`;
-                recordReaction(reactionTime);
-                setTimeout(prepareNextReaction, 1200);
+            if (mode === 'hide') {
+                setTimeout(() => renderCups('show'), 2000);
             }
         }
 
-        function recordReaction(time) {
-            if (state.gameData.playerPhase === 'king') state.gameData.kingTime = time;
-            else state.gameData.challengerTime = time;
-        }
+        function cupClick(index) {
+            if (state.touchLocked || !state.running || state.gameData.answered) return;
+            state.gameData.answered = true;
 
-        function prepareNextReaction() {
-            if (state.gameData.playerPhase === 'king') {
-                state.gameData.playerPhase = 'challenger';
-                state.currentPlayer = 'challenger';
-                const area = document.getElementById('reactionArea');
-                if (area) {
-                    area.className = 'reaction-area waiting';
-                    area.textContent = '🔴 انتظر اللون الأخضر...';
-                }
-                document.getElementById('reactionPlayer').textContent = 'دور: المتحدي 🗡️';
-                state.gameData.phase = 'waiting';
-                updateActivePlayer();
-                scheduleReaction();
-                return false;
+            if (index === state.gameData.ballPos) {
+                state.gameData.score += 35;
+                flashGreen();
             } else {
-                const winner = state.gameData.kingTime < state.gameData.challengerTime ? 'king' : 'challenger';
-                endMiniGame(winner);
-                return true;
+                flashRed();
             }
+            setTimeout(nextCupRound, 800);
         }
 
-        function cleanupReaction() {
-            clearTimeout(state.gameData.timeoutId);
-        }
+        // ==================== لعبة 4: صح وخطأ ====================
+        const tfQuestions = [
+            { q: 'الشمس تشرق من الشرق', a: true },
+            { q: 'السماء خضراء', a: false },
+            { q: 'الماء يغلي عند 100 درجة مئوية', a: true },
+            { q: 'الأسماك تطير', a: false },
+            { q: 'القمر كوكب', a: false },
+            { q: '2+2=4', a: true },
+            { q: 'الزرافة حيوان بحري', a: false },
+            { q: 'الثلج بارد', a: true },
+            { q: '10×10=1000', a: false },
+            { q: 'عدد أيام الأسبوع 7', a: true },
+            { q: 'النار باردة', a: false },
+            { q: 'الذهب معدن ثمين', a: true }
+        ];
 
-        // =============== لعبة 5: ترتيب الأرقام ===============
-        function initNumberSort() {
-            const numbers = [];
-            for (let i = 1; i <= 20; i++) numbers.push(i);
-            const shuffled = numbers.sort(() => Math.random() - 0.5).slice(0, 8);
-            
-            state.gameData = {
-                numbers: shuffled,
-                sorted: [...shuffled].sort((a,b) => a-b),
-                nextIndex: 0,
-                kingCorrect: 0,
-                challengerCorrect: 0
-            };
+        function initTrueFalse() {
             state.currentPlayer = 'king';
-            state.timeLeft = games[4].time;
-            
-            let gridHTML = '<div class="number-grid" id="numberGrid">';
-            shuffled.forEach(n => {
-                gridHTML += `<button class="number-btn" data-num="${n}">${n}</button>`;
-            });
-            gridHTML += '</div>';
-            document.getElementById('gameArea').innerHTML = gridHTML;
-            
-            document.querySelectorAll('.number-btn').forEach(btn => {
-                btn.addEventListener('click', () => numberClick(btn));
-            });
-            
+            state.timeLeft = games[3].time;
+            state.gameData = { score: 0, roundNum: 0, playerDone: false, used: [] };
+            nextTFRound();
             updateActivePlayer();
         }
 
-        function numberClick(btn) {
-            if (state.touchLocked || !state.running) return;
-            
-            const num = parseInt(btn.dataset.num);
-            
-            if (num === state.gameData.sorted[state.gameData.nextIndex]) {
-                btn.classList.add('correct');
-                btn.disabled = true;
-                state.gameData.nextIndex++;
-                
-                if (state.currentPlayer === 'king') state.gameData.kingCorrect++;
-                else state.gameData.challengerCorrect++;
-                
-                if (state.gameData.nextIndex >= state.gameData.sorted.length) {
-                    const winner = state.gameData.kingCorrect > state.gameData.challengerCorrect ? 'king' :
-                                  state.gameData.challengerCorrect > state.gameData.kingCorrect ? 'challenger' : 'draw';
-                    endMiniGame(winner);
-                } else {
-                    state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
+        function nextTFRound() {
+            state.gameData.roundNum++;
+            if (state.gameData.roundNum > 5) {
+                if (!state.gameData.playerDone) {
+                    state.gameData.playerDone = true;
+                    state.gameData.roundNum = 1;
+                    state.gameData.kingScore = state.gameData.score;
+                    state.gameData.score = 0;
+                    state.currentPlayer = 'challenger';
+                    state.timeLeft = games[3].time;
+                    resetTimer();
                     updateActivePlayer();
+                } else {
+                    state.gameData.challengerScore = state.gameData.score;
+                    const winner = state.gameData.kingScore > state.gameData.challengerScore ? 'king' :
+                                  state.gameData.challengerScore > state.gameData.kingScore ? 'challenger' : 'draw';
+                    endMiniGame(winner);
+                    return;
                 }
-            } else {
-                btn.classList.add('wrong');
-                setTimeout(() => btn.classList.remove('wrong'), 300);
-                // تمرير الدور للخصم
-                state.currentPlayer = state.currentPlayer === 'king' ? 'challenger' : 'king';
-                updateActivePlayer();
             }
+
+            let q;
+            do { q = tfQuestions[Math.floor(Math.random() * tfQuestions.length)]; }
+            while (state.gameData.used.includes(q.q));
+            state.gameData.used.push(q.q);
+            state.gameData.currentQ = q;
+            renderTF(q);
         }
 
-        function cleanupNumberSort() {}
+        function renderTF(q) {
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align:center;">
+                    <div class="tf-question">${q.q}</div>
+                    <div class="tf-buttons">
+                        <button class="tf-btn tf-true" onclick="tfAnswer(true)">✓</button>
+                        <button class="tf-btn tf-false" onclick="tfAnswer(false)">✗</button>
+                    </div>
+                </div>
+            `;
+        }
 
-        // =============== إدارة اللعبة ===============
+        function tfAnswer(answer) {
+            if (state.touchLocked || !state.running) return;
+            if (answer === state.gameData.currentQ.a) {
+                state.gameData.score += 25;
+                flashGreen();
+            } else {
+                flashRed();
+            }
+            nextTFRound();
+        }
+
+        function endTrueFalse() {}
+
+        // ==================== لعبة 5: سباق الأزرار ====================
+        function initRace() {
+            state.timeLeft = games[4].time;
+            state.gameData = { kingClicks: 0, challengerClicks: 0, activeBtn: null };
+
+            document.getElementById('gameArea').innerHTML = `
+                <div style="text-align:center;">
+                    <div style="display:flex;justify-content:space-around;margin-bottom:10px;font-size:1.2em;">
+                        <span>🤴 <span id="raceKingScore">0</span></span>
+                        <span>🗡️ <span id="raceChallengerScore">0</span></span>
+                    </div>
+                    <div class="race-grid" id="raceGrid">
+                        <button class="race-btn" data-btn="0" data-color="#e74c3c"
+                            style="background:#e74c3c;">🔴</button>
+                        <button class="race-btn" data-btn="1" data-color="#3498db"
+                            style="background:#3498db;">🔵</button>
+                        <button class="race-btn" data-btn="2" data-color="#2ecc71"
+                            style="background:#2ecc71;">🟢</button>
+                        <button class="race-btn" data-btn="3" data-color="#f39c12"
+                            style="background:#f39c12;">🟠</button>
+                    </div>
+                </div>
+            `;
+
+            document.querySelectorAll('.race-btn').forEach(btn => {
+                btn.addEventListener('click', () => raceClick(btn));
+            });
+
+            startRaceRound();
+        }
+
+        function startRaceRound() {
+            document.querySelectorAll('.race-btn').forEach(b => {
+                b.classList.remove('active-btn', 'race-king', 'race-challenger');
+            });
+
+            const btns = document.querySelectorAll('.race-btn');
+            const randomBtn = btns[Math.floor(Math.random() * 4)];
+            randomBtn.classList.add('active-btn');
+            state.gameData.activeBtn = randomBtn;
+        }
+
+        function raceClick(btn) {
+            if (state.touchLocked || !state.running) return;
+            if (!btn.classList.contains('active-btn')) return;
+
+            btn.classList.remove('active-btn');
+            btn.classList.add('race-king');
+            state.gameData.kingClicks++;
+            updateRaceScores();
+            setTimeout(startRaceRound, 400);
+        }
+
+        function updateRaceScores() {
+            document.getElementById('raceKingScore').textContent = state.gameData.kingClicks;
+            document.getElementById('raceChallengerScore').textContent = state.gameData.challengerClicks;
+        }
+
+        function endRace() {
+            const winner = state.gameData.kingClicks > state.gameData.challengerClicks ? 'king' :
+                          state.gameData.challengerClicks > state.gameData.kingClicks ? 'challenger' : 'draw';
+            endMiniGame(winner);
+        }
+
+        // ==================== تأثيرات ====================
+        function flashGreen() {
+            const area = document.getElementById('gameArea');
+            area.style.boxShadow = 'inset 0 0 40px rgba(46,204,113,0.5)';
+            setTimeout(() => area.style.boxShadow = '', 250);
+        }
+        function flashRed() {
+            const area = document.getElementById('gameArea');
+            area.style.boxShadow = 'inset 0 0 40px rgba(231,76,60,0.5)';
+            setTimeout(() => area.style.boxShadow = '', 250);
+        }
+
+        // ==================== إدارة اللعبة العامة ====================
         function startGame() {
             if (state.running) return;
-            
-            state.running = true;
-            state.round = 1;
-            state.kingScore = 0;
-            state.challengerScore = 0;
-            state.tutorialDone = false;
-            
-            updateScores();
-            updateDots();
+            state.running = true; state.round = 1;
+            state.kingScore = 0; state.challengerScore = 0;
+            state.touchLocked = false;
+            updateScores(); updateDots();
             document.getElementById('roundNum').textContent = state.round;
             document.getElementById('btnStart').disabled = true;
-            
-            // إظهار شرح الجولة الأولى
-            showTutorial(0, () => {
-                loadRound();
-            });
+
+            showTutorial(0, () => loadRound());
         }
 
         function loadRound() {
             const game = games[state.round - 1];
-            
-            // تنظيف السابق
-            const prevGame = games[state.round - 2];
-            if (prevGame && prevGame.cleanup) prevGame.cleanup();
-            
-            // بدء اللعبة
             document.getElementById('gameArea').innerHTML = '<div style="text-align:center;color:#F1C40F;">⏳ تجهيز...</div>';
             document.getElementById('timerDisplay').textContent = '⏱️ جاهز';
             document.getElementById('timerDisplay').classList.remove('urgent');
-            
             game.init();
-            updateActivePlayer();
             startTimer();
         }
 
@@ -1143,19 +815,11 @@
             clearInterval(state.timer);
             updateTimerDisplay();
             document.getElementById('timerDisplay').classList.remove('urgent');
-            
             state.timer = setInterval(() => {
                 state.timeLeft--;
                 updateTimerDisplay();
-                
-                if (state.timeLeft <= 3) {
-                    document.getElementById('timerDisplay').classList.add('urgent');
-                }
-                
-                if (state.timeLeft <= 0) {
-                    clearInterval(state.timer);
-                    handleTimeout();
-                }
+                if (state.timeLeft <= 3) document.getElementById('timerDisplay').classList.add('urgent');
+                if (state.timeLeft <= 0) { clearInterval(state.timer); handleTimeout(); }
             }, 1000);
         }
 
@@ -1172,66 +836,40 @@
 
         function handleTimeout() {
             document.getElementById('timerDisplay').classList.remove('urgent');
-            
-            // للعبتي النقر ورد الفعل
-            if (state.round === 2) {
-                const ended = cleanupTapRace();
-                if (!ended) return;
-            }
-            if (state.round === 4) {
-                const ended = prepareNextReaction();
-                if (!ended) return;
-            }
-            
-            // الوقت انتهى
-            const winner = state.currentPlayer === 'king' ? 'challenger' : 'king';
-            endMiniGame(winner);
+            const game = games[state.round - 1];
+            if (game.end) game.end();
+            else endMiniGame('draw');
         }
 
         function endMiniGame(winner) {
             clearInterval(state.timer);
             document.getElementById('timerDisplay').classList.remove('urgent');
             state.touchLocked = true;
-            
-            const points = [0, 50, 40, 40, 50, 60][state.round];
-            
-            if (winner === 'king') {
-                state.kingScore += points;
-            } else if (winner === 'challenger') {
-                state.challengerScore += points;
-            } else {
-                state.kingScore += Math.floor(points / 2);
-                state.challengerScore += Math.floor(points / 2);
-            }
-            
+
+            const points = [0, 50, 50, 50, 50, 60][state.round];
+            if (winner === 'king') state.kingScore += points;
+            else if (winner === 'challenger') state.challengerScore += points;
+            else { state.kingScore += Math.floor(points/2); state.challengerScore += Math.floor(points/2); }
             updateScores();
-            
-            const winnerEmoji = winner === 'king' ? '🤴' : winner === 'challenger' ? '🗡️' : '🤝';
-            const msg = winner === 'draw' ? 'تعادل!' : 
-                       winner === 'king' ? 'الملك يفوز بالجولة!' : 'المتحدي يفوز بالجولة!';
-            
+
+            const emoji = winner === 'king' ? '🤴' : winner === 'challenger' ? '🗡️' : '🤝';
+            const msg = winner === 'draw' ? 'تعادل!' : winner === 'king' ? 'الملك يفوز!' : 'المتحدي يفوز!';
+
             document.getElementById('gameArea').innerHTML = `
                 <div class="result-message">
-                    <div style="font-size: 4em;">${winnerEmoji}</div>
-                    <div style="font-size: 1.5em; color: #F1C40F; margin: 8px 0;">${msg}</div>
-                    <div style="color: #95a5a6;">+${points} نقطة</div>
+                    <div style="font-size:3.5em;">${emoji}</div>
+                    <div style="font-size:1.4em;color:#F1C40F;margin:6px 0;">${msg}</div>
+                    <div style="color:#95a5a6;">+${points} نقطة</div>
                 </div>
             `;
-            
+
             setTimeout(() => {
-                state.round++;
-                state.touchLocked = false;
-                
-                if (state.round > 5) {
-                    endGame();
-                } else {
+                state.round++; state.touchLocked = false;
+                if (state.round > 5) endGame();
+                else {
                     updateDots();
                     document.getElementById('roundNum').textContent = state.round;
-                    
-                    // شرح الجولة التالية
-                    showTutorial(state.round - 1, () => {
-                        loadRound();
-                    });
+                    showTutorial(state.round - 1, () => loadRound());
                 }
             }, 2000);
         }
@@ -1239,28 +877,19 @@
         function endGame() {
             state.running = false;
             const kingWins = state.kingScore > state.challengerScore;
-            
-            document.getElementById('victoryMessage').textContent = 
-                kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
-            document.getElementById('victoryScore').textContent = 
-                `${state.kingScore} - ${state.challengerScore}`;
+            document.getElementById('victoryMessage').textContent = kingWins ? '👑 الملك يحافظ على عرشه!' : '⚔️ لدينا ملك جديد!';
+            document.getElementById('victoryScore').textContent = `${state.kingScore} - ${state.challengerScore}`;
             document.getElementById('victoryOverlay').classList.remove('hidden');
-            
-            updateChampions(kingWins ? 'الملك' : 'المتحدي', state.kingScore, state.challengerScore);
+            updateChampions(kingWins ? 'الملك' : 'المتحدي');
             document.getElementById('btnStart').disabled = false;
         }
 
         function updateActivePlayer() {
-            const kingCard = document.getElementById('kingCard');
-            const challengerCard = document.getElementById('challengerCard');
-            kingCard.classList.remove('active');
-            challengerCard.classList.remove('active');
-            
-            if (state.currentPlayer === 'king') {
-                kingCard.classList.add('active');
-            } else {
-                challengerCard.classList.add('active');
-            }
+            const king = document.getElementById('kingCard');
+            const chal = document.getElementById('challengerCard');
+            king.classList.remove('active'); chal.classList.remove('active');
+            if (state.currentPlayer === 'king') king.classList.add('active');
+            else chal.classList.add('active');
         }
 
         function updateScores() {
@@ -1269,40 +898,34 @@
         }
 
         function updateDots() {
-            const dots = document.querySelectorAll('.dot');
-            dots.forEach((dot, i) => {
-                dot.classList.remove('active', 'done');
-                if (i + 1 === state.round) dot.classList.add('active');
-                else if (i + 1 < state.round) dot.classList.add('done');
+            document.querySelectorAll('.dot').forEach((d,i) => {
+                d.classList.remove('active','done');
+                if (i+1 === state.round) d.classList.add('active');
+                else if (i+1 < state.round) d.classList.add('done');
             });
         }
 
-        function updateChampions(winner, ks, cs) {
+        function updateChampions(winner) {
             const list = document.getElementById('championsList');
             const time = new Date().toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'});
             const item = document.createElement('div');
             item.className = 'champion-item';
-            item.innerHTML = `<span>👑</span><span>${winner} (${ks}-${cs})</span><span>${time}</span>`;
+            item.innerHTML = `<span>👑</span><span>${winner}</span><span>${time}</span>`;
             list.insertBefore(item, list.firstChild);
             if (list.children.length > 10) list.lastChild.remove();
         }
 
         function resetGame() {
             clearInterval(state.timer);
-            state.running = false;
-            state.round = 0;
-            state.kingScore = 0;
-            state.challengerScore = 0;
+            state.running = false; state.round = 0;
+            state.kingScore = 0; state.challengerScore = 0;
             state.touchLocked = false;
-            state.tutorialDone = false;
-            
             updateScores();
             document.querySelectorAll('.dot').forEach((d,i) => {
-                d.classList.remove('done', 'active');
-                if (i === 0) d.classList.add('active');
+                d.classList.remove('done','active');
+                if (i===0) d.classList.add('active');
             });
-            document.getElementById('gameArea').innerHTML = 
-                '<div style="text-align:center;color:#F1C40F;font-size:1.5em;">🎮 اضغط "بدء التحدي"<br>لبدء المنافسة</div>';
+            document.getElementById('gameArea').innerHTML = '<div style="text-align:center;color:#F1C40F;font-size:1.3em;">🎮 اضغط "بدء التحدي"<br>لبدء المنافسة</div>';
             document.getElementById('timerDisplay').textContent = '⏱️ جاهز';
             document.getElementById('timerDisplay').classList.remove('urgent');
             document.getElementById('roundNum').textContent = '1';
@@ -1317,15 +940,15 @@
         function showQRCode() {
             const link = window.location.href;
             document.getElementById('gameArea').innerHTML = `
-                <div style="text-align: center;">
-                    <div id="qrHere" style="display: inline-block; background: white; padding: 10px; border-radius: 10px;"></div>
-                    <p style="margin-top: 10px; color: #F1C40F;">📱 امسح للمشاركة!</p>
-                    <button class="btn btn-start" onclick="resetGame()" style="margin-top: 10px;">رجوع</button>
+                <div style="text-align:center;">
+                    <div id="qrHere" style="display:inline-block;background:white;padding:8px;border-radius:8px;"></div>
+                    <p style="margin-top:8px;color:#F1C40F;">📱 امسح للمشاركة!</p>
+                    <button class="btn btn-start" onclick="resetGame()" style="margin-top:8px;">رجوع</button>
                 </div>
             `;
             new QRCode(document.getElementById('qrHere'), {
                 text: link + '?join=' + Date.now(),
-                width: 150, height: 150,
+                width: 130, height: 130,
                 colorDark: "#2c3e50", colorLight: "#ffffff"
             });
         }
