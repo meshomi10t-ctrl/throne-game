@@ -140,6 +140,20 @@
         .card-countdown { font-size:3.5rem; font-weight:bold; color:var(--gold); margin:10px 0; }
         .disabled-overlay { position:absolute; top:0; left:0; right:0; bottom:0; z-index:10; background:transparent; pointer-events:none; }
 
+        /* سجل الأبطال */
+        .champions-panel {
+            background: rgba(0,0,0,0.5); border: 2px solid var(--gold); border-radius: 15px;
+            padding: 10px; margin: 10px; max-height: 200px; overflow-y: auto;
+        }
+        .champions-panel h3 { color: var(--gold); text-align: center; margin-bottom: 8px; font-size: 1.1rem; }
+        .champion-entry {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+        }
+        .champion-entry .name { color: white; }
+        .champion-entry .reign { color: #95a5a6; }
+
         @media (max-width:480px) {
             .arena { grid-template-columns:1fr; }
             .king-zone, .challenger-zone { border:none; border-bottom:1px solid rgba(255,255,255,0.1); }
@@ -147,6 +161,7 @@
             .zone-score { font-size:2rem; }
             .mini-game { min-height:130px; }
             .btn { font-size:0.9rem; padding:10px 18px; }
+            .champions-panel { margin: 5px; max-height: 150px; }
         }
     </style>
 </head>
@@ -174,6 +189,11 @@
         <div class="arena">
             <div class="player-zone king-zone" id="kingZone"><div class="zone-label">👑 الملك</div><div class="zone-avatar">🤴</div><div class="zone-name" id="kingName">@الملك</div><div class="zone-score" id="kingScore">0</div><div class="mini-game" id="kingGame">انتظر البدء...</div><div class="disabled-overlay" id="kingOverlay" style="display:none;"></div></div>
             <div class="player-zone challenger-zone" id="challengerZone"><div class="zone-label">🗡️ المتحدي</div><div class="zone-avatar">🗡️</div><div class="zone-name" id="challengerName">@المتسابق</div><div class="zone-score" id="challengerScore">0</div><div class="mini-game" id="challengerGame">انتظر البدء...</div><div class="disabled-overlay" id="challengerOverlay" style="display:none;"></div></div>
+        </div>
+        <!-- سجل الأبطال -->
+        <div class="champions-panel" id="championsPanel">
+            <h3>🏆 سجل الأبطال</h3>
+            <div id="championsList"></div>
         </div>
         <div class="controls" id="mainControls">
             <button class="btn btn-start" id="btnStart">🚀 بدء التحدي</button>
@@ -232,7 +252,7 @@
             const rand = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
             const E = id => document.getElementById(id);
 
-            // ==================== PLAYERS ====================
+            // ==================== PLAYERS & CHAMPIONS ====================
             let players = {
                 king: { name: '@الملك', score: 0 },
                 challenger: { name: '@المتسابق', score: 0 }
@@ -240,6 +260,56 @@
             let waitingPlayers = [];
             let gameActive = false;
             let viewerMode = false;
+
+            // سجل الأبطال (يُحمل من localStorage)
+            let champions = [];
+            try {
+                const saved = localStorage.getItem('throneChampions');
+                if (saved) champions = JSON.parse(saved);
+            } catch(e) { champions = []; }
+
+            function saveChampions() {
+                localStorage.setItem('throneChampions', JSON.stringify(champions));
+            }
+
+            function addChampion(name, reignSeconds) {
+                // تجنب الإدخالات الفارغة أو القصيرة جداً (أقل من 5 ثوانٍ)
+                if (!name || name === '@الملك' || name === '@المتسابق' || reignSeconds < 5) return;
+                const minutes = Math.floor(reignSeconds / 60);
+                const seconds = reignSeconds % 60;
+                const duration = minutes > 0 ? `${minutes}د ${seconds}ث` : `${seconds} ثانية`;
+                champions.unshift({ name, duration, reignSeconds, timestamp: Date.now() });
+                // الاحتفاظ بآخر 20 بطلاً فقط
+                if (champions.length > 20) champions.pop();
+                saveChampions();
+                renderChampions();
+            }
+
+            function renderChampions() {
+                const list = E('championsList');
+                if (!list) return;
+                if (champions.length === 0) {
+                    list.innerHTML = '<div style="color:#95a5a6; text-align:center;">لا يوجد أبطال سابقون</div>';
+                    return;
+                }
+                list.innerHTML = champions.map((c, i) => `
+                    <div class="champion-entry">
+                        <span class="name">${i+1}. ${c.name}</span>
+                        <span class="reign">⏱️ ${c.duration}</span>
+                    </div>
+                `).join('');
+            }
+
+            // وقت بدء حكم الملك الحالي (ميلي ثانية)
+            let kingStartTime = Date.now();
+
+            function resetKingTimer() {
+                kingStartTime = Date.now();
+            }
+
+            function getKingReignSeconds() {
+                return Math.floor((Date.now() - kingStartTime) / 1000);
+            }
 
             // ==================== GAMES ====================
             const colorList = [
@@ -269,6 +339,7 @@
             function switchToArena() {
                 E('loginScreen').classList.remove('active');
                 E('arenaScreen').classList.add('active');
+                renderChampions();
             }
 
             // ==================== JOIN / VIEWER ====================
@@ -279,6 +350,7 @@
                 if (players.king.name === '@الملك') {
                     players.king.name = finalName;
                     E('kingName').textContent = finalName;
+                    resetKingTimer();
                     switchToArena();
                 } else if (players.challenger.name === '@المتسابق') {
                     players.challenger.name = finalName;
@@ -307,6 +379,7 @@
                 document.getElementById('btnSoundViewer').addEventListener('click', toggleSound);
                 E('kingOverlay').style.display = 'block';
                 E('challengerOverlay').style.display = 'block';
+                renderChampions();
             }
 
             // ==================== TUTORIAL ====================
@@ -558,6 +631,7 @@
                 state.kingScore = 0; state.challengerScore = 0;
                 state.kingDone = false; state.challengerDone = false;
                 state.codeBreakWinner = null;
+                resetKingTimer();
                 updateScores(); updateDots();
                 E('roundNum').textContent = '1';
                 let startBtn = E('btnStart'); if (startBtn) startBtn.disabled = true;
@@ -605,15 +679,21 @@
                 E('victoryOverlay').classList.remove('hidden'); Sound.victory();
 
                 if (!kingWins) {
+                    // الملك القديم يخسر: أضفه إلى سجل الأبطال مع مدة حكمه
+                    addChampion(players.king.name, getKingReignSeconds());
+                    // تتويج الملك الجديد
                     players.king = { name: players.challenger.name, score: 0 };
                     players.challenger = { name: waitingPlayers.length ? waitingPlayers.shift() : '@متسابق جديد', score: 0 };
+                    resetKingTimer();
                 } else {
+                    // الملك الحالي يحتفظ بالعرش، نضيف مدة حكمه لاحقًا عندما يخسر
                     players.challenger = { name: waitingPlayers.length ? waitingPlayers.shift() : '@متسابق جديد', score: 0 };
                 }
                 E('kingName').textContent = players.king.name;
                 E('challengerName').textContent = players.challenger.name;
                 let startBtn = E('btnStart'); if (startBtn) startBtn.disabled = false;
                 updateScores();
+                renderChampions();
                 setTimeout(() => showChallengeQR(), 3000);
             }
             function updateScores() {
@@ -640,6 +720,7 @@
                 E('challengerGame').innerHTML = '<div style="color:var(--blue);">انتظر البدء...</div>';
                 E('timerDisplay').textContent = '⏱️ 45'; E('timerDisplay').classList.remove('urgent');
                 let startBtn = E('btnStart'); if (startBtn && !viewerMode) startBtn.disabled = false;
+                renderChampions();
             }
             function closeVictory() {
                 E('victoryOverlay').classList.add('hidden');
@@ -660,6 +741,8 @@
             function leaveThrone() {
                 if (viewerMode) return;
                 if (confirm('مغادرة العرش؟')) {
+                    // إضافة الملك الحالي للسجل قبل المغادرة
+                    addChampion(players.king.name, getKingReignSeconds());
                     E('returnOverlay').classList.remove('hidden');
                     state.returnSeconds = 180; E('returnCountdown').textContent = state.returnSeconds;
                     Sound.alarm();
@@ -672,13 +755,21 @@
                 }
             }
             function replacePlayer() {
-                if (waitingPlayers.length) { players.king.name = waitingPlayers.shift(); E('kingName').textContent = players.king.name; }
+                if (waitingPlayers.length) {
+                    players.king.name = waitingPlayers.shift();
+                    E('kingName').textContent = players.king.name;
+                    resetKingTimer();
+                } else {
+                    players.king.name = '@الملك';
+                    resetKingTimer();
+                }
                 showChallengeQR();
             }
             function attemptReconnect() {
                 clearInterval(state.returnTimer);
                 E('returnOverlay').classList.add('hidden');
                 Sound.start();
+                resetKingTimer(); // نعيد ضبط التوقيت لأنه عاد
             }
 
             // ==================== EVENT LISTENERS ====================
@@ -707,7 +798,9 @@
                 }
             });
 
-            console.log('✅ جميع الأزرار تعمل الآن');
+            // عرض أولي للسجل
+            renderChampions();
+            console.log('✅ جميع الأزرار وسجل الأبطال يعملون الآن');
         })();
     </script>
 </body>
