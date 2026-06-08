@@ -17,9 +17,10 @@
         input:focus { outline: none; border-color: #fff; }
         .btn { width:100%; padding:15px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
         .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #555 !important; cursor: not-allowed; opacity: 0.6; }
         .btn-green { background:var(--green); }
         .btn-purple { background:#8e44ad; }
-        .room-id { background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:5px; margin:15px 0; user-select: all; }
+        .room-id { background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; font-size:38px; font-weight:bold; color:var(--gold); letter-spacing:8px; margin:15px 0; user-select: all; }
         .status { margin:10px; font-size:16px; color:#ccc; min-height: 24px; }
         .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0; }
         .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:15px; }
@@ -39,12 +40,12 @@
 
 <div class="screen" id="roomScreen">
     <div class="logo" id="roomIcon">👑</div>
-    <div class="title" id="roomTitle">أنت الملك!</div>
+    <div class="title" id="roomTitle">جاري تهيئة العرش...</div>
     <div class="room-id" id="roomIdDisplay">...</div>
-    <div class="status" id="statusText">جاري تهيئة الغرفة...</div>
+    <div class="status" id="statusText">جاري الاتصال بالسيرفر وتأمين رقم الغرفة...</div>
     
     <div id="manualConnectArea">
-        <p style="margin-top:15px; color:#aaa;">أو أدخل معرف غرفة للاتصال يدوياً:</p>
+        <p style="margin-top:15px; color:#aaa;">أو أدخل معرف غرفه الخصم يدوياً:</p>
         <input id="remoteRoomId" placeholder="مثال: 523" type="number">
         <button class="btn btn-purple" id="manualConnectBtn">🔗 انضم للغرفة</button>
     </div>
@@ -70,16 +71,28 @@
 const E = id => document.getElementById(id);
 let peer = null, conn = null, myRole = '', myName = '';
 
-// جلب معرف الغرفة من الرابط إن وجد
-let urlRoomId = new URLSearchParams(window.location.search).get('room');
+// تكوين خوادم اتصال مستقرة لمنع مشاكل جدران الحماية وشبكات الهاتف
+const peerConfig = {
+    host: '0.peerjs.com',
+    port: 443,
+    secure: true,
+    config: {
+        'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+    },
+    debug: 1
+};
 
+let urlRoomId = new URLSearchParams(window.location.search).get('room');
 if (urlRoomId) {
     E('loginIcon').textContent = '🗡️';
     E('loginTitle').textContent = 'الانضمام كمتحدي';
     E('loginSubtitle').textContent = `تنبيه: أنت تدخل الغرفة رقم [ ${urlRoomId} ]`;
 }
 
-// الزر الرئيسي الموحد - تم إصلاح التعليق فيه
 E('joinBtn').addEventListener('click', () => {
     myName = E('playerName').value.trim();
     if (!myName) {
@@ -88,9 +101,8 @@ E('joinBtn').addEventListener('click', () => {
     }
     myName = myName.startsWith('@') ? myName : '@' + myName;
 
-    // تعطيل الزر مؤقتاً لمنع النقرات المتعددة وتجميد الكود
     E('joinBtn').disabled = true;
-    E('joinBtn').textContent = 'جاري الاتصال...';
+    E('joinBtn').textContent = 'جاري الحجز بالشبكة...';
 
     if (urlRoomId) {
         startAsChallenger(urlRoomId);
@@ -99,14 +111,12 @@ E('joinBtn').addEventListener('click', () => {
     }
 });
 
-// زر الاتصال اليدوي
 E('manualConnectBtn').addEventListener('click', () => {
     const remoteId = E('remoteRoomId').value.trim();
-    if (!remoteId) {
-        alert('الرجاء كتابة رقم الغرفة المكون من 3 خانات!');
+    if (!remoteId || remoteId.length < 3) {
+        alert('الرجاء كتابة رقم الغرفة الصحيح المكون من 3 خانات!');
         return;
     }
-    // إذا ضغط المتحدي يدويًا نأخذ الاسم المكتوب في الشاشة الأولى
     if(!myName) {
         myName = E('playerName').value.trim() || '@متحدي';
         if(!myName.startsWith('@')) myName = '@' + myName;
@@ -118,15 +128,14 @@ function startAsKing() {
     myRole = 'king';
     E('loginScreen').classList.remove('active');
     E('roomScreen').classList.add('active');
-    E('roomTitle').textContent = 'جاري إنشاء الغرفة...';
+    E('roomTitle').textContent = 'جاري حجز رقم متاح...';
     
-    // توليد رقم من 3 خانات
+    // توليد رقم عشوائي ثلاثي
     const customRoomId = Math.floor(100 + Math.random() * 900).toString();
     
-    // إنشاء كائن Peer مع خيارات السيرفر لضمان عدم التعليق
-    peer = new Peer(customRoomId, {
-        debug: 1
-    });
+    if(peer) { peer.destroy(); }
+
+    peer = new Peer(customRoomId, peerConfig);
     
     peer.on('open', (id) => {
         E('roomIdDisplay').textContent = id;
@@ -141,16 +150,13 @@ function startAsKing() {
     });
 
     peer.on('error', (err) => {
-        E('joinBtn').disabled = false;
-        E('joinBtn').textContent = '🚀 انضم كمتسابق';
-        
-        if (err.type === 'unavailable-id') {
-            // حل ذكي: إذا تكرر الرقم بالصدفة، نعيد المحاولة تلقائياً برقم آخر دون قفل الصفحة
-            console.log('الرقم مستخدم، جاري توليد رقم آخر...');
-            startAsKing(); 
+        console.error("خطأ سيرفر الملك:", err.type);
+        // إذا كان الرقم ثلاثي مستخدم من شخص آخر في العالم، يقوم السيرفر تلقائياً بطلب رقم جديد فوراً
+        if (err.type === 'unavailable-id' || err.type === 'network') {
+            setTimeout(() => { startAsKing(); }, 500);
         } else {
-            alert('خطأ في الاتصال بالخادم: ' + err.type);
-            location.reload();
+            resetButtons();
+            alert('تعذر الاتصال بالسيرفر الرئيسي، يرجى المحاولة مجدداً.');
         }
     });
 }
@@ -163,25 +169,33 @@ function startAsChallenger(remoteId) {
     E('roomIdDisplay').style.display = 'none';
     E('manualConnectArea').style.display = 'none';
     E('roomIcon').textContent = '🗡️';
-    E('roomTitle').textContent = `جاري الاتصال بالغرفة [ ${remoteId} ]...`;
-    E('statusText').textContent = 'يرجى الانتظار...';
+    E('roomTitle').textContent = `جاري فحص الغرفة [ ${remoteId} ]...`;
+    E('statusText').textContent = 'يتصل الآن بالملك، انتظر قليلاً...';
     E('challengerName').textContent = myName;
 
-    peer = new Peer({ debug: 1 });
+    if(peer) { peer.destroy(); }
+
+    // المتحدي يدخل بنظام الـ Auto-ID ليتجنب مشاكل رفض السيرفر
+    peer = new Peer(peerConfig);
     
     peer.on('open', () => {
-        conn = peer.connect(remoteId, { reliable: true });
+        // محاولة ربط موثوقة ومكررة لتجاوز جدران الحماية
+        conn = peer.connect(remoteId, { 
+            reliable: true,
+            serialization: 'json'
+        });
         setupConnection();
     });
 
     peer.on('error', (err) => {
-        alert('تعذر الاتصال! تأكد من رقم الغرفة أو أن الملك متصل.');
+        console.error("خطأ سيرفر المتحدي:", err.type);
+        alert('❌ لم نجد الملك! تأكد أن رقم الغرفة صحيح، أو أن الملك متصل بنفس الوقت.');
         location.reload();
     });
 }
 
 function setupConnection() {
-    // نضمن تنفيذ الأحداث فوراً عند فتح القناة
+    // عند نجاح فتح خط الاتصال المباشر P2P
     conn.on('open', () => {
         conn.send({ type: 'name', name: myName, role: myRole });
 
@@ -189,8 +203,8 @@ function setupConnection() {
             E('statusText').textContent = 'الخصم متصل وجاهز للنزاع!';
             E('startGameBtn').style.display = 'block';
         } else {
-            E('roomTitle').textContent = 'متصل بالغرفة! 🎉';
-            E('statusText').textContent = 'أنت المتحدي. انتظر حتى يبدأ الملك التحدي...';
+            E('roomTitle').textContent = 'متصل بنجاح! 🎉';
+            E('statusText').textContent = 'تم دخول مجلس الملك. انتظر بدء التحدي...';
         }
     });
 
@@ -222,7 +236,7 @@ E('startGameBtn').addEventListener('click', () => {
         conn.send({ type: 'startGame' });
         runGameStartLogic();
     } else {
-        alert('الخصم غير متصل بشكل كامل بعد.');
+        alert('عذراً، انقطع اتصال الخصم فجأة.');
     }
 });
 
@@ -230,6 +244,11 @@ function runGameStartLogic() {
     E('roomScreen').classList.remove('active');
     E('arenaScreen').classList.add('active');
     alert('اللعبة بدأت بنجاح!');
+}
+
+function resetButtons() {
+    E('joinBtn').disabled = false;
+    E('joinBtn').textContent = '🚀 انضم كمتسابق';
 }
 </script>
 </body>
