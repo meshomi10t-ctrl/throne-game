@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 تحدي العرش - اختبار</title>
+    <title>🏰 تحدي العرش</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
         body {
             background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%);
             font-family: 'Segoe UI', Arial, sans-serif; color: white;
-            min-height: 100vh; display: flex; justify-content: center; align-items: center;
-            touch-action: manipulation;
+            min-height: 100vh; overflow-x: hidden; touch-action: manipulation;
         }
-        .login-screen { background: radial-gradient(ellipse at center, #1a1a35 0%, #0a0a1a 100%); padding:1rem; width: 100%; max-width: 400px; }
+        .screen { display:none; min-height:100vh; }
+        .screen.active { display:block; }
+        .login-screen { display:flex; justify-content:center; align-items:center; background: radial-gradient(ellipse at center, #1a1a35 0%, #0a0a1a 100%); padding:1rem; }
         .login-card {
             background: rgba(26,26,53,0.9); border:2px solid var(--gold); border-radius:30px;
-            padding:2rem 1.5rem; width:100%; text-align:center;
+            padding:2rem 1.5rem; max-width:400px; width:100%; text-align:center;
             box-shadow: 0 0 40px rgba(241,196,15,0.2);
         }
         .login-icon { font-size:4rem; animation:float 2s infinite; }
@@ -32,81 +33,131 @@
             cursor:pointer; color:white; margin:0.4rem 0; width:100%;
         }
         .btn-primary { background:var(--green); }
-        .arena { display:grid; grid-template-columns:1fr 1fr; gap:0; min-height: 200px; margin-top: 20px; }
-        .player-zone { padding:0.8rem; border:2px solid transparent; background:rgba(0,0,0,0.3); text-align: center; }
+        .header { text-align:center; padding:0.8rem; background:rgba(0,0,0,0.8); border-bottom:2px solid var(--gold); }
+        .header-crown { font-size:2rem; animation:float 2s infinite; }
+        .header-title { font-size:1.4rem; color:var(--gold); font-weight:bold; }
+        .live-badge { display:inline-block; background:var(--red); padding:0.2rem 0.8rem; border-radius:15px; font-size:0.7rem; animation:pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.6} }
+        .round-bar { text-align:center; padding:0.6rem; font-size:0.9rem; color:var(--gold); background:rgba(0,0,0,0.6); }
+        .r-dots { display:flex; justify-content:center; gap:6px; margin:5px 0; }
+        .r-dot { width:12px; height:12px; border-radius:50%; background:#34495e; border:2px solid var(--gold); }
+        .r-dot.active { background:var(--gold); animation:glow 0.8s infinite; }
+        .r-dot.done { background:var(--green); border-color:var(--green); }
+        @keyframes glow { 0%,100%{box-shadow:0 0 6px var(--gold)}50%{box-shadow:0 0 16px var(--gold)} }
+        .timer-big { text-align:center; font-size:2rem; font-weight:bold; color:var(--gold); padding:0.3rem; }
+        .timer-big.urgent { color:var(--red); animation:blink 0.4s infinite; }
+        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+        .arena { display:grid; grid-template-columns:1fr 1fr; gap:0; min-height:50vh; }
+        .player-zone {
+            position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding:0.8rem; min-height:300px; border:2px solid transparent; background:rgba(0,0,0,0.3);
+        }
+        .king-zone { border-right:1px solid rgba(255,255,255,0.1); }
+        .challenger-zone { border-left:1px solid rgba(255,255,255,0.1); }
+        .zone-label { position:absolute; top:10px; font-size:0.9rem; font-weight:bold; padding:4px 12px; border-radius:15px; }
+        .king-zone .zone-label { background:rgba(241,196,15,0.2); color:var(--gold); }
+        .challenger-zone .zone-label { background:rgba(52,152,219,0.2); color:var(--blue); }
+        .zone-avatar { font-size:3.5rem; }
         .zone-name { font-size:1rem; font-weight:bold; margin:5px 0; }
-        .zone-score { font-size:2rem; font-weight:bold; }
+        .zone-score { font-size:2.5rem; font-weight:bold; }
         .king-zone .zone-score { color:var(--gold); } .challenger-zone .zone-score { color:var(--blue); }
+        .mini-game {
+            width:100%; min-height:150px; display:flex; align-items:center; justify-content:center;
+            border-radius:15px; background:rgba(0,0,0,0.4); padding:0.5rem; margin:5px 0;
+        }
+        .stroop-word { font-size:2.5rem; font-weight:bold; margin:5px 0; text-align:center; }
+        .stroop-btns { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+        .stroop-btn { padding:10px 16px; border-radius:12px; border:2px solid rgba(255,255,255,0.3); font-size:1rem; font-weight:bold; cursor:pointer; color:white; min-width:65px; }
+        .dir-arrow { font-size:5rem; text-align:center; margin:5px 0; }
+        .dir-btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:200px; margin:10px auto; }
+        .dir-btn { aspect-ratio:1; border-radius:12px; border:2px solid var(--gold); background:rgba(255,255,255,0.1); color:white; font-size:2rem; cursor:pointer; }
+        .tf-question { font-size:1.2rem; text-align:center; margin:8px 0; background:rgba(255,255,255,0.1); padding:0.8rem; border-radius:12px; }
+        .tf-btns { display:flex; gap:20px; justify-content:center; margin-top:10px; }
+        .tf-btn { width:70px; height:70px; border-radius:50%; border:3px solid rgba(255,255,255,0.3); font-size:2rem; cursor:pointer; color:white; display:flex; align-items:center; justify-content:center; }
+        .tf-true { background:var(--green); } .tf-false { background:var(--red); }
+        .sniper-area { position:relative; width:100%; height:160px; background:rgba(0,0,0,0.3); border-radius:12px; overflow:hidden; }
+        .target { position:absolute; border-radius:50%; cursor:pointer; background:radial-gradient(circle, var(--gold), var(--red)); transform:translate(-50%,-50%); box-shadow:0 0 30px rgba(241,196,15,0.8); }
+        .codebreak-area { display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; }
+        .digit-row { display:flex; gap:8px; justify-content:center; }
+        .digit-slot { width:55px; height:65px; border-radius:10px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:bold; color:white; cursor:pointer; }
+        .digit-slot.locked { background:var(--green); border-color:var(--green); cursor:default; }
+        .digit-slot.yellow { background:#f39c12; } .digit-slot.red { background:var(--red); }
+        .digit-picker { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+        .digit-btn { width:40px; height:40px; border-radius:8px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; font-size:1.2rem; cursor:pointer; }
+        .controls { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:10px; background:rgba(0,0,0,0.9); border-top:2px solid var(--gold); }
+        .hidden { display:none !important; }
+        .overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.95); display:flex; justify-content:center; align-items:center; z-index:200; padding:1rem; }
+        .card { background:rgba(26,26,53,0.95); border:2px solid var(--gold); border-radius:25px; padding:1.5rem; max-width:400px; width:100%; text-align:center; }
+        .card-icon { font-size:4rem; } .card-title { font-size:1.5rem; color:var(--gold); margin:10px 0; }
+        .card-desc { font-size:1rem; color:#ecf0f1; line-height:1.6; margin:10px 0; background:rgba(0,0,0,0.3); padding:10px; border-radius:12px; }
+        .card-countdown { font-size:3.5rem; font-weight:bold; color:var(--gold); margin:10px 0; }
+        .champions-panel { background: rgba(0,0,0,0.5); border: 2px solid var(--gold); border-radius: 15px; padding: 10px; margin: 10px; max-height: 200px; overflow-y: auto; }
+        .champions-panel h3 { color: var(--gold); text-align: center; margin-bottom: 8px; font-size: 1.1rem; }
+        .champion-entry { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; }
+        @media (max-width:480px) { .arena { grid-template-columns:1fr; } .king-zone, .challenger-zone { border:none; border-bottom:1px solid rgba(255,255,255,0.1); } .zone-avatar { font-size:2.8rem; } .zone-score { font-size:2rem; } .mini-game { min-height:130px; } .btn { font-size:0.9rem; padding:10px 18px; } }
     </style>
 </head>
 <body>
-    <div class="login-screen" id="loginContainer">
-        <div class="login-card">
-            <div class="login-icon">👑</div>
-            <div class="login-title">تحدي العرش (اختبار)</div>
-            <input class="login-input" id="playerNameInput" placeholder="@username">
-            <button class="btn btn-primary" id="joinBtn">🚀 انضم كمتسابق</button>
-        </div>
-    </div>
+    <div class="screen active" id="loginScreen"><div class="login-screen"><div class="login-card">
+        <div class="login-icon">👑</div><div class="login-title">تحدي العرش</div>
+        <input class="login-input" id="playerNameInput" placeholder="@username">
+        <button class="btn btn-primary" id="joinBtn">🚀 انضم كمتسابق</button>
+    </div></div></div>
 
-    <div id="arenaContainer" style="display:none; width:100%; max-width:600px; padding:1rem;">
-        <div class="header" style="text-align:center; margin-bottom:1rem;"><span class="header-crown">👑</span><span class="header-title">تحدي العرش</span></div>
+    <div class="screen" id="arenaScreen">
+        <div class="header"><div class="header-crown">👑</div><div class="header-title">تحدي العرش</div><span class="live-badge">🔴 مباشر</span></div>
+        <div class="round-bar">الجولة <span id="roundNum">1</span>/5 <div class="r-dots" id="roundDots"><div class="r-dot active"></div><div class="r-dot"></div><div class="r-dot"></div><div class="r-dot"></div><div class="r-dot"></div></div></div>
+        <div class="timer-big" id="timerDisplay">⏱️ 45</div>
         <div class="arena">
-            <div class="player-zone king-zone"><span class="zone-label" style="color:var(--gold);">👑 الملك</span><div class="zone-name" id="kingName">@الملك</div><div class="zone-score" id="kingScore">0</div></div>
-            <div class="player-zone challenger-zone"><span class="zone-label" style="color:var(--blue);">🗡️ المتحدي</span><div class="zone-name" id="challengerName">في الانتظار...</div><div class="zone-score" id="challengerScore">0</div></div>
+            <div class="player-zone king-zone" id="kingZone"><div class="zone-label">👑 الملك</div><div class="zone-avatar">🤴</div><div class="zone-name" id="kingName">@الملك</div><div class="zone-score" id="kingScore">0</div><div class="mini-game" id="kingGame">انتظر البدء...</div></div>
+            <div class="player-zone challenger-zone" id="challengerZone"><div class="zone-label">🗡️ المتحدي</div><div class="zone-avatar">🗡️</div><div class="zone-name" id="challengerName">في الانتظار...</div><div class="zone-score" id="challengerScore">0</div><div class="mini-game" id="challengerGame">...</div></div>
         </div>
-        <button class="btn btn-primary" id="btnStart" disabled>🚀 بدء التحدي</button>
+        <div class="champions-panel" id="championsPanel"><h3>🏆 سجل الأبطال</h3><div id="championsList"></div></div>
+        <div class="controls" id="mainControls">
+            <button class="btn btn-primary" id="btnStart" disabled>🚀 بدء التحدي</button>
+        </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script>
-        // ⚠️ استبدل هذا برابط قاعدة البيانات الخاصة بك
-        const FIREBASE_URL = "https://fofo-f48f4-default-rtdb.firebaseio.com/";
-        firebase.initializeApp({ databaseURL: FIREBASE_URL });
-        const db = firebase.database();
-        const roomRef = db.ref("rooms/throne");
+        // استخدام GUN كقاعدة بيانات لا مركزية (مجانية، بدون إعدادات)
+        const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
+        const room = gun.get('throne_room_shared');
 
-        const E = id => document.getElementById(id);
-        let myRole = null, myName = '';
-        let heartbeatInterval = null;
+        const Sound = {
+            ctx: null, muted: false,
+            init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
+            tone(f,d,t,v){if(this.muted||!this.ctx)return;try{let o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=t||'square';o.frequency.value=f;g.gain.value=Math.min(1,v||0.8);g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+d);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+d);}catch(e){}},
+            correct(){this.tone(880,0.15,'square',0.8);setTimeout(()=>this.tone(1100,0.2,'square',0.7),150);},
+            wrong(){this.tone(200,0.3,'sawtooth',1);},
+            start(){this.tone(440,0.1);setTimeout(()=>this.tone(660,0.1),100);setTimeout(()=>this.tone(880,0.2),200);},
+            victory(){[523,659,784,1047].forEach((n,i)=>setTimeout(()=>this.tone(n,0.4,'square',1),i*250));for(let i=0;i<15;i++)setTimeout(()=>this.tone(200+Math.random()*500,0.15,'triangle',0.8),i*100+500);},
+            tick(){this.tone(1000,0.05,'square',0.5);},
+            alarm(){for(let i=0;i<5;i++)setTimeout(()=>this.tone(800,0.15,'square',0.9),i*300);}
+        };
+        document.addEventListener('touchstart',()=>Sound.init(),{once:true});
+        document.addEventListener('click',()=>Sound.init(),{once:true});
 
-        async function joinRoom() {
+        const E=id=>document.getElementById(id);
+        const shuffle=arr=>arr.sort(()=>Math.random()-0.5);
+        const rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+
+        let myRole=null, myName='';
+        let gameActive=false;
+
+        // ==================== نظام الغرفة المشتركة ====================
+        function joinRoom() {
             myName = E('playerNameInput').value.trim();
             if (!myName) return;
             myName = myName.startsWith('@') ? myName : '@' + myName;
 
-            const snap = await roomRef.once('value');
-            const room = snap.val() || {};
-
-            if (!room.king) {
-                // كن الملك
-                myRole = 'king';
-                await roomRef.child('king').set({ name: myName, score: 0, lastBeat: Date.now() });
-                roomRef.child('king').onDisconnect().remove();
-            } else if (!room.challenger) {
-                // كن المتحدي
-                myRole = 'challenger';
-                await roomRef.child('challenger').set({ name: myName, score: 0, lastBeat: Date.now() });
-                roomRef.child('challenger').onDisconnect().remove();
-            } else {
-                alert('الغرفة ممتلئة حالياً. حاول مرة أخرى بعد قليل.');
-                return;
-            }
-
-            // إظهار الساحة
-            E('loginContainer').style.display = 'none';
-            E('arenaContainer').style.display = 'block';
-
-            // بدء مراقبة الغرفة
-            roomRef.on('value', snap => {
-                const r = snap.val() || {};
+            // الاستماع لتغيرات الغرفة
+            room.open((data) => {
+                if (!data) return;
+                const r = data;
                 if (r.king) {
                     E('kingName').textContent = r.king.name;
                     E('kingScore').textContent = r.king.score || 0;
-                } else {
-                    E('kingName').textContent = '@الملك';
-                    E('kingScore').textContent = '0';
                 }
                 if (r.challenger) {
                     E('challengerName').textContent = r.challenger.name;
@@ -119,18 +170,25 @@
                 }
             });
 
-            // نبض القلب
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
-            heartbeatInterval = setInterval(() => {
-                if (myRole) roomRef.child(myRole).update({ lastBeat: Date.now() });
-            }, 3000);
+            // قراءة الحالة الحالية
+            room.once((data) => {
+                const r = data || {};
+                if (!r.king) {
+                    myRole = 'king';
+                    room.get('king').put({ name: myName, score: 0 });
+                    E('kingName').textContent = myName;
+                } else if (!r.challenger) {
+                    myRole = 'challenger';
+                    room.get('challenger').put({ name: myName, score: 0 });
+                    E('challengerName').textContent = myName;
+                } else {
+                    alert('الغرفة ممتلئة حالياً. حاول مرة أخرى.');
+                    return;
+                }
+                E('loginScreen').classList.remove('active');
+                E('arenaScreen').classList.add('active');
+            });
         }
-
-        // تنظيف عند المغادرة
-        window.addEventListener('beforeunload', () => {
-            if (myRole) roomRef.child(myRole).remove();
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
-        });
 
         document.getElementById('joinBtn').addEventListener('click', joinRoom);
     </script>
