@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة العرش - نظام ٥ جولات وسجل الأبطال</title>
+    <title>🏰 بطولة ساحة النزاع - تحديث الاستمرارية</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -20,8 +20,7 @@
         .btn:disabled { background: #555 !important; cursor: not-allowed; opacity: 0.6; }
         .btn-green { background:var(--green); }
         .btn-purple { background:#8e44ad; }
-        .btn-gold { background:var(--gold); color: black; }
-        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; user-select: all; }
+        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
         .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
         .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
         .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; position: relative; }
@@ -29,17 +28,14 @@
         .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
         .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         
-        /* عناصر الالعاب */
         .game-click-btn { background: linear-gradient(135deg, #e74c3c, #9b59b6); border: none; color: white; font-size: 20px; font-weight: bold; padding: 20px 30px; border-radius: 50px; cursor: pointer; width: 90%; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
         .reaction-zone { width: 100%; height: 160px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; cursor: pointer; }
         
-        /* لوحة القوائم */
         .game-select-box { display: none; background: rgba(0,0,0,0.95); border: 2px solid var(--gold); border-radius: 15px; padding: 15px; position: absolute; width: 95%; z-index: 20; }
         .game-select-box button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        /* جدول الأبطال */
         .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
         .leaderboard-table th, .leaderboard-table td { padding: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .leaderboard-table th { background: rgba(241, 196, 15, 0.2); color: var(--gold); }
@@ -47,7 +43,6 @@
 </head>
 <body>
 
-<!-- شاشة البداية -->
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
     <div class="title">بطولة ساحة النزاع</div>
@@ -55,7 +50,6 @@
     <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
     <button class="btn btn-green" id="joinBtn">🚀 دخول المجلس</button>
     
-    <!-- سجل الأبطال -->
     <div style="margin-top:25px; border-top: 1px solid rgba(255,255,255,0.2); padding-top:15px;">
         <h3 style="color:var(--gold); font-size:16px;">📜 سجل أبطال العرش التاريخي</h3>
         <table class="leaderboard-table">
@@ -66,16 +60,13 @@
                     <th>حماية العرش (متتالي)</th>
                 </tr>
             </thead>
-            <tbody id="leaderboardBody">
-                <!-- يتم التوليد هنا -->
-            </tbody>
+            <tbody id="leaderboardBody"></tbody>
         </table>
     </div>
 </div>
 
-<!-- شاشة الغرفة -->
 <div class="screen" id="roomScreen">
-    <div class="logo" id="roomIcon">👑</div>
+    <div class="logo">👑</div>
     <div class="title" id="roomTitle">جاري تهيئة العرش...</div>
     <div class="room-id" id="roomIdDisplay">...</div>
     <div class="status" id="statusText">جاري تأمين الغرفة...</div>
@@ -85,13 +76,10 @@
         <input id="remoteRoomId" placeholder="اكتب رقم الغرفة هنا..." type="number">
         <button class="btn btn-purple" id="manualConnectBtn">🔗 دخول النزاع</button>
     </div>
-    
     <button class="btn btn-green" id="startGameBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
 </div>
 
-<!-- الساحة -->
 <div class="screen" id="arenaScreen">
-    <!-- صندوق اختيار الألعاب للملك -->
     <div class="game-select-box" id="gameSelectBox">
         <h3 style="color:var(--gold); margin-bottom:10px;">اختر تحدي الجولة القادمة:</h3>
         <button style="background: #e74c3c; color: white;" onclick="selectGame(1)">1. تحدي النقر السريع 👑</button>
@@ -134,24 +122,21 @@ const E = id => document.getElementById(id);
 let peer = null, conn = null, myRole = '', myName = '';
 let gameTimer = null, reactionTimeout = null;
 
-// مستودع النقاط للبطولة الحالية (تراكمي لـ 5 جولات)
 let currentRoundNum = 1;
 let kingTotalScore = 0;
 let challengerTotalScore = 0;
 
-// نقاط الجولة الحالية فقط (تصفر بعد كل لعبة)
 let myRoundPoints = 0;
 let opponentRoundPoints = 0;
-
-let kingStreak = 0; // كم انتصار متتالي للملك الحالي في هذه الغرفة
+let kingStreak = 0; 
 let secretCode = ""; 
+let currentActiveGame = 1;
 
 const peerConfig = {
     host: '0.peerjs.com', port: 443, secure: true,
     config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
 };
 
-// تشغيل سجل الأبطال عند الفتح
 updateLeaderboardUI();
 
 let urlRoomId = new URLSearchParams(window.location.search).get('room');
@@ -159,7 +144,7 @@ if (urlRoomId) { E('loginSubtitle').textContent = `تنبيه: ستدخل لتح
 
 E('joinBtn').addEventListener('click', () => {
     myName = E('playerName').value.trim();
-    if (!myName) return alert('أدخل اسمك أولاً للدخول للمجلس!');
+    if (!myName) return alert('أدخل اسمك أولاً!');
     myName = myName.startsWith('@') ? myName : '@' + myName;
     E('joinBtn').disabled = true;
     if (urlRoomId) startAsChallenger(urlRoomId); else startAsKing();
@@ -181,7 +166,7 @@ function startAsKing() {
     
     peer.on('open', (id) => {
         E('roomIdDisplay').textContent = id;
-        E('roomTitle').textContent = 'أنت الملك المستضيف! شارك الرقم';
+        E('roomTitle').textContent = 'أنت الملك المستضيف!';
         E('statusText').textContent = 'في انتظار تقدم متحدي لعرشك...';
         E('kingName').textContent = myName;
         E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
@@ -198,17 +183,17 @@ function startAsChallenger(remoteId) {
     
     peer = new Peer(peerConfig);
     peer.on('open', () => { conn = peer.connect(remoteId, { reliable: true }); setupConnection(); });
-    peer.on('error', () => { alert('فشل العثور على الملك! ربما الغرفة مغلقة.'); location.reload(); });
+    peer.on('error', () => { alert('فشل العثور على الملك!'); location.reload(); });
 }
 
 function setupConnection() {
     conn.on('open', () => {
         conn.send({ type: 'initData', name: myName, role: myRole, currentStreak: kingStreak });
         if (myRole === 'king') {
-            E('statusText').textContent = 'وصل المتحدي! اضغط بالأسفل لبدء البطولة فوراً.';
+            E('statusText').textContent = 'وصل المتحدي! ابدأ الآن.';
             E('startGameBtn').style.display = 'block';
         } else {
-            E('roomTitle').textContent = 'تم حجز مقعدك كمتحدي! 🎉';
+            E('roomTitle').textContent = 'تم حجز مقعدك كمتحدي!';
             E('statusText').textContent = 'الملك يختار الآن تحدي الجولة الأولى...';
         }
     });
@@ -249,35 +234,32 @@ function setupConnection() {
             syncScoresUI();
         }
         if (data.type === 'reactionWin') {
-            opponentRoundPoints = 5; // فوز سريع بالنقرة للخصم
+            opponentRoundPoints = 5; 
             syncScoresUI();
             endRoundLogic(data.winnerName + " اقتنص نقطة الاستجابة السريعة!");
         }
         if (data.type === 'guessCorrect') {
-            opponentRoundPoints = 15; // مكافأة فك الشفرة للخصم
+            opponentRoundPoints = 15; 
             syncScoresUI();
             endRoundLogic(`🎉 ${data.winnerName} فك الشفرة! الرقم هو ${secretCode}`);
         }
         if (data.type === 'finalKickout') {
             alert(data.msg);
-            location.reload(); // طرد الخاسر فوراً للرئيسية
+            location.reload(); 
         }
         if (data.type === 'becameKing') {
-            // المتحدي القديم تم تتويجه كملك جديد للغرفة!
             alert("👑 تحية للملك الجديد! لقد أطحت بالخصم وتربعت على العرش!");
             myRole = 'king';
-            kingStreak = 1; // أول انتصار له
+            kingStreak = 1; 
             saveToLeaderboard(myName, kingStreak);
             
-            // تحويل الواجهة ليكون هو المستضيف المستقبلي
             E('kingName').textContent = myName;
             E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
             E('challengerName').textContent = "في انتظار متحدي جديد...";
             E('challengerScore').textContent = "0";
             
-            // مسح البيانات التراكمية استعداداً لمتحدي قادم
             resetTournamentData();
-            E('gameArea').innerHTML = `<p style="color:var(--green); font-weight:bold;">أنت الملك الحالي للغرفة أونلاين! شارك رقم الغرفة مع شخص آخر لتواجهه.</p>`;
+            E('gameArea').innerHTML = `<p style="color:var(--green); font-weight:bold;">أنت الملك الحالي للغرفة أونلاين! شارك رقم الغرفة.</p>`;
         }
     });
 
@@ -299,10 +281,13 @@ function resetTournamentData() {
     kingTotalScore = 0;
     challengerTotalScore = 0;
     E('roundDisplay').textContent = `🚩 الجولة: 1 / 5`;
+    E('kingScore').textContent = "0";
+    E('challengerScore').textContent = "0";
 }
 
 function selectGame(id) {
     E('gameSelectBox').style.display = 'none';
+    currentActiveGame = id;
     
     let extra = "";
     if(id === 5) { extra = Math.floor(1000 + Math.random() * 9000).toString(); secretCode = extra; }
@@ -314,10 +299,8 @@ function selectGame(id) {
 }
 
 function syncScoresUI() {
-    // حساب المجموع التراكمي الحي (البطولة = الجولات السابقة + الحالية)
     let liveKingScore = kingTotalScore + (myRole === 'king' ? myRoundPoints : opponentRoundPoints);
     let liveChallengerScore = challengerTotalScore + (myRole === 'challenger' ? myRoundPoints : opponentRoundPoints);
-    
     E('kingScore').textContent = liveKingScore;
     E('challengerScore').textContent = liveChallengerScore;
 }
@@ -338,7 +321,7 @@ function runGameStartLogic() {
     else if (currentActiveGame === 5) startGuessGame();
 }
 
-// [الألعاب الـ 5 المعتمدة]
+// 1
 function startClickGame() {
     E('currentGameTitle').textContent = "النقر السريع"; let timeLeft = 10; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
     E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 👑</button>`;
@@ -346,12 +329,10 @@ function startClickGame() {
         myRoundPoints++; syncScoresUI();
         conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
     });
-    gameTimer = setInterval(() => {
-        timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-        if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); }
-    }, 1000);
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
+// 2
 function startColorGame() {
     E('currentGameTitle').textContent = "تطابق لون الخط"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
     const colors = [{name: 'أحمر', value: '#e74c3c'}, {name: 'أزرق', value: '#3498db'}, {name: 'أخضر', value: '#2ecc71'}, {name: 'أصفر', value: '#f1c40f'}];
@@ -372,6 +353,7 @@ function startColorGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
+// 3
 function startReactionGame() {
     E('currentGameTitle').textContent = "سرعة الاستجابة"; E('timerDisplay').textContent = `⏱️ --`;
     E('gameArea').innerHTML = `<div class="reaction-zone" id="reactZone" style="background:#e74c3c;">تأهب للون الأخضر... 🛑</div>`;
@@ -389,6 +371,7 @@ function startReactionGame() {
     });
 }
 
+// 4
 function startMathGame() {
     E('currentGameTitle').textContent = "الحساب الفوري"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
     function genMath() {
@@ -409,6 +392,7 @@ function startMathGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
+// 5
 function startGuessGame() {
     E('currentGameTitle').textContent = "فك شفرة الرقم"; E('timerDisplay').textContent = `⏱️ نشط`;
     E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">خمن الشفرة من 4 أرقام:</p><input id="guessInput" type="number" placeholder="من 1000 إلى 9999" style="width:80%; margin:5px 0;"><button class="btn btn-purple" id="guessBtn" style="padding:10px;">إرسال 🔍</button><p id="guessHint" style="margin-top:5px; font-weight:bold; color:var(--gold);"></p>`;
@@ -427,46 +411,56 @@ function startGuessGame() {
 function endRoundLogic(customMsg = "") {
     clearInterval(gameTimer); clearTimeout(reactionTimeout);
     
-    // حقن وتجميع النقاط الحالية رسمياً في الخزائن الكلية للبطولة
+    // حقن النقاط وتراكمها فوراً
     kingTotalScore += (myRole === 'king' ? myRoundPoints : opponentRoundPoints);
     challengerTotalScore += (myRole === 'challenger' ? myRoundPoints : opponentRoundPoints);
+    
+    // إعادة ضبط العرض الكلي للتأكد من المزامنة
+    E('kingScore').textContent = kingTotalScore;
+    E('challengerScore').textContent = challengerTotalScore;
     
     let roundWinnerNotice = customMsg ? customMsg : (myRoundPoints > opponentRoundPoints ? "أنت فزت بنقاط هذه الجولة! 🗡️" : "الخصم كسب الجولة! 🛡️");
     if(myRoundPoints === opponentRoundPoints && !customMsg) roundWinnerNotice = "تعادل في نقاط هذه الجولة! 🤝";
 
     if (currentRoundNum < 5) {
-        // مواصلة الجولة التالية
+        // بناء واجهة الانتقال للجولة التالية (ستظهر للملك والمتسابق دون أي شاشات انتظار عشوائية)
         E('gameArea').innerHTML = `
             <h3 style="color:var(--gold);">انتهت الجولة ${currentRoundNum}!</h3>
             <p style="font-size:15px; margin:10px 0;">${roundWinnerNotice}</p>
-            ${myRole === 'king' ? '<button class="btn btn-green" id="nextRoundBtn" style="width:auto; padding:8px 20px;">⚔️ الجولة التالية</button>' : '<p style="color:#aaa; font-size:13px;">في انتظار أن يفتح الملك الجولة التالية...</p>'}
+            <div id="actionContainer" style="width:100%;"></div>
         `;
+        
+        // إذا كان هو الملك، نزرع له زر الانتقال الفعلي مباشرة
         if (myRole === 'king') {
-            E('nextRoundBtn').addEventListener('click', () => {
+            const btn = document.createElement('button');
+            btn.className = "btn btn-green";
+            btn.style.width = "auto";
+            btn.style.padding = "8px 20px";
+            btn.textContent = "⚔️ الجولة التالية";
+            btn.onclick = function() {
                 currentRoundNum++;
-                conn.send({ type: 'prepareNextRound', round: currentRoundNum });
+                if (conn && conn.open) {
+                    conn.send({ type: 'prepareNextRound', round: currentRoundNum });
+                }
                 E('gameSelectBox').style.display = 'block';
-            });
+            };
+            E('actionContainer').appendChild(btn);
+        } else {
+            E('actionContainer').innerHTML = `<p style="color:#aaa; font-size:13px;">في انتظار أن يفتح الملك الجولة التالية...</p>`;
         }
     } else {
-        // وصلنا لجولة النهاية الحسم (الجولة 5)
         executeTournamentSettlement();
     }
 }
 
-// تصفية النزاع النهائي وطرد الخاسر وتحديث سجل الأبطال
+// تصفية البطولة الكلية
 function executeTournamentSettlement() {
-    let kingNameStr = E('kingName').textContent;
-    let challengerNameStr = E('challengerName').textContent;
-    
-    let finalWinnerRole = "";
+    let finalWinnerRole = "king";
     if (kingTotalScore > challengerTotalScore) finalWinnerRole = "king";
     else if (challengerTotalScore > kingTotalScore) finalWinnerRole = "challenger";
-    else finalWinnerRole = "king"; // في حال التعادل المطلق يبقى الملك حامياً للعرش
 
     if (myRole === 'king') {
         if (finalWinnerRole === 'king') {
-            // الملك حافظ على مكانه
             kingStreak++;
             saveToLeaderboard(myName, kingStreak);
             E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
@@ -475,31 +469,25 @@ function executeTournamentSettlement() {
                 <h2 style="color:var(--gold);">👑 حسم الموقف ونصر الملك!</h2>
                 <p>لقد انتصرت بالبطولة الكلية وحافظت على عرشك بنجاح!</p>
                 <p style="color:var(--green); margin-top:10px;">سلسلة صمودك الحالية: ${kingStreak} انتصارات متتالية</p>
-                <p style="font-size:12px; color:#aaa; margin-top:10px;">تم طرد المتحدي الخاسر. في انتظار دخول ضحية جديدة...</p>
             `;
-            // طرد المتحدي
-            conn.send({ type: 'finalKickout', msg: `💀 سقطت دفاعاتك الكلية! تم قهرك وطردك من مجلس الملك ${myName} بعد 5 جولات دموية.` });
+            conn.send({ type: 'finalKickout', msg: `💀 سقطت دفاعاتك الكلية! تم طردك من مجلس الملك ${myName} بعد 5 جولات.` });
             resetTournamentData();
         } else {
-            // الملك الحالي خسر العرش! يتم إعلام المتحدي وتتويجه، ثم طرد نفسه تلقائياً
             conn.send({ type: 'becameKing' });
-            alert(`💀 خسرت العرش! تمت الإطاحة بك وبسلسلة انتصاراتك (${kingStreak}). سيتم إخراجك الآن.`);
+            alert(`💀 خسرت العرش! تمت الإطاحة بك وبسلسلة انتصاراتك (${kingStreak}).`);
             location.reload();
         }
     }
 }
 
-// [إدارة سجل الأبطال التاريخي بذاكرة المتصفح المحلية]
 function saveToLeaderboard(name, streak) {
     let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
     let playerIdx = board.findIndex(p => p.name === name);
-    
     if (playerIdx !== -1) {
         if (streak > board[playerIdx].streak) { board[playerIdx].streak = streak; }
     } else {
         board.push({ name: name, streak: streak });
     }
-    // ترتيب تنازلي: الأعلى صموداً هو الأول
     board.sort((a, b) => b.streak - a.streak);
     localStorage.setItem('throne_leaderboard', JSON.stringify(board));
     updateLeaderboardUI();
