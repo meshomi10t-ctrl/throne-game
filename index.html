@@ -33,7 +33,7 @@
             cursor:pointer; color:white; margin:0.4rem 0; width:100%;
         }
         .btn-primary { background:var(--green); }
-        .btn-danger { background:var(--red); }
+        .btn-secondary { background: var(--blue); }
         .header { text-align:center; padding:0.8rem; background:rgba(0,0,0,0.8); border-bottom:2px solid var(--gold); }
         .header-crown { font-size:2rem; animation:float 2s infinite; }
         .header-title { font-size:1.4rem; color:var(--gold); font-weight:bold; }
@@ -148,7 +148,7 @@
         <div class="champions-panel" id="championsPanel"><h3>🏆 سجل الأبطال</h3><div id="championsList"></div></div>
         <div class="controls" id="mainControls">
             <button class="btn btn-primary" id="btnStart" disabled>🚀 بدء التحدي</button>
-            <button class="btn btn-danger hidden" id="btnResetRoom" onclick="resetRoom()">🔄 إعادة تعيين الغرفة</button>
+            <button class="btn btn-secondary hidden" id="btnRetry" onclick="retryJoin()">🔄 إعادة المحاولة</button>
         </div>
     </div>
 
@@ -185,15 +185,14 @@
 
         let myRole=null, myName='';
         let heartbeatInterval=null;
-        let gameActive=false, localKingTime=Date.now();
 
-        // ==================== دوال إدارة الغرفة ====================
+        // ==================== إدارة الغرفة التلقائية ====================
         async function joinRoom(){
             myName = E('playerNameInput').value.trim();
             if(!myName) return;
             myName = myName.startsWith('@') ? myName : '@' + myName;
 
-            // تنظيف الأدوار غير النشطة
+            // تنظيف الأدوار غير النشطة (أكثر من 8 ثوانٍ)
             await cleanInactiveRoles();
 
             const snap = await roomRef.once('value');
@@ -201,55 +200,57 @@
 
             if (!room.king) {
                 myRole = 'king';
-                await roomRef.child('king').set({
-                    name: myName,
-                    score: 0,
-                    lastBeat: firebase.database.ServerValue.TIMESTAMP
-                });
-                roomRef.child('king').onDisconnect().remove();
+                await setRole('king');
             } else if (!room.challenger) {
                 myRole = 'challenger';
-                await roomRef.child('challenger').set({
-                    name: myName,
-                    score: 0,
-                    lastBeat: firebase.database.ServerValue.TIMESTAMP
-                });
-                roomRef.child('challenger').onDisconnect().remove();
+                await setRole('challenger');
             } else {
-                // الغرفة ممتلئة، لكن قد يكون أحد اللاعبين غير نشط
-                alert('الغرفة ممتلئة حالياً. إذا كنت تعتقد أن اللاعبين غير نشطين، اطلب من الملك إعادة تعيين الغرفة.');
+                // الغرفة ممتلئة، نظهر زر إعادة المحاولة
+                E('btnRetry').classList.remove('hidden');
+                alert('الغرفة ممتلئة حالياً. اضغط "إعادة المحاولة" بعد قليل.');
                 return;
             }
 
-            startHeartbeat();
+            E('btnRetry').classList.add('hidden');
             E('loginScreen').classList.remove('active');
             E('arenaScreen').classList.add('active');
+            startHeartbeat();
             listenToRoom();
+        }
+
+        async function setRole(role) {
+            const roleRef = roomRef.child(role);
+            await roleRef.set({
+                name: myName,
+                score: 0,
+                lastBeat: firebase.database.ServerValue.TIMESTAMP
+            });
+            roleRef.onDisconnect().remove();
         }
 
         async function cleanInactiveRoles() {
             const snap = await roomRef.once('value');
             const room = snap.val() || {};
             const now = Date.now();
-            const TIMEOUT = 10000; // 10 ثوانٍ
+            const TIMEOUT = 8000; // 8 ثوانٍ
 
-            if (room.king && room.king.lastBeat && (now - room.king.lastBeat > TIMEOUT)) {
-                await roomRef.child('king').remove();
-            }
-            if (room.challenger && room.challenger.lastBeat && (now - room.challenger.lastBeat > TIMEOUT)) {
-                await roomRef.child('challenger').remove();
+            for (const role of ['king', 'challenger']) {
+                if (room[role]) {
+                    const lastBeat = room[role].lastBeat || 0;
+                    if (now - lastBeat > TIMEOUT) {
+                        await roomRef.child(role).remove();
+                    }
+                }
             }
         }
 
         function startHeartbeat() {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
             heartbeatInterval = setInterval(() => {
-                if (myRole === 'king') {
-                    roomRef.child('king').update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
-                } else if (myRole === 'challenger') {
-                    roomRef.child('challenger').update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
+                if (myRole) {
+                    roomRef.child(myRole).update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
                 }
-            }, 5000);
+            }, 3000);
         }
 
         function listenToRoom() {
@@ -266,35 +267,41 @@
                     E('challengerName').textContent = r.challenger.name;
                     E('challengerScore').textContent = r.challenger.score || 0;
                     E('btnStart').disabled = (myRole !== 'king');
-                    // إظهار زر إعادة التعيين للملك فقط
-                    if (myRole === 'king') {
-                        E('btnResetRoom').classList.remove('hidden');
-                    }
                 } else {
                     E('challengerName').textContent = 'في الانتظار...';
                     E('challengerScore').textContent = '0';
                     E('btnStart').disabled = true;
-                    E('btnResetRoom').classList.add('hidden');
                 }
             });
         }
 
-        window.resetRoom = async function() {
-            if (myRole !== 'king') return;
-            if (confirm('هل أنت متأكد من إعادة تعيين الغرفة؟ سيتم طرد المتحدي الحالي.')) {
-                await roomRef.child('challenger').remove();
-                // إعادة تعيين المتغيرات المحلية
-                state.running = false;
-                gameActive = false;
-                E('btnStart').disabled = true;
-                E('challengerName').textContent = 'في الانتظار...';
-                E('challengerScore').textContent = '0';
+        window.retryJoin = async function() {
+            await cleanInactiveRoles();
+            const snap = await roomRef.once('value');
+            const room = snap.val() || {};
+            if (!room.king) {
+                myRole = 'king';
+                await setRole('king');
+                E('btnRetry').classList.add('hidden');
+                E('loginScreen').classList.remove('active');
+                E('arenaScreen').classList.add('active');
+                startHeartbeat();
+                listenToRoom();
+            } else if (!room.challenger) {
+                myRole = 'challenger';
+                await setRole('challenger');
+                E('btnRetry').classList.add('hidden');
+                E('loginScreen').classList.remove('active');
+                E('arenaScreen').classList.add('active');
+                startHeartbeat();
+                listenToRoom();
+            } else {
+                alert('الغرفة ما زالت ممتلئة. حاول مرة أخرى بعد قليل.');
             }
         };
 
         window.addEventListener('beforeunload', () => {
-            if (myRole === 'king') roomRef.child('king').remove();
-            if (myRole === 'challenger') roomRef.child('challenger').remove();
+            if (myRole) roomRef.child(myRole).remove();
             if (heartbeatInterval) clearInterval(heartbeatInterval);
         });
 
