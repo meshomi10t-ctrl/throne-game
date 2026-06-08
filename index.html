@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - تحديث الاستمرارية</title>
+    <title>🏰 بطولة ساحة النزاع - المسار الخماسي الثابت</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -28,13 +28,15 @@
         .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
         .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         
+        /* عناصر الألعاب */
         .game-click-btn { background: linear-gradient(135deg, #e74c3c, #9b59b6); border: none; color: white; font-size: 20px; font-weight: bold; padding: 20px 30px; border-radius: 50px; cursor: pointer; width: 90%; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
-        .reaction-zone { width: 100%; height: 160px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; cursor: pointer; }
         
-        .game-select-box { display: none; background: rgba(0,0,0,0.95); border: 2px solid var(--gold); border-radius: 15px; padding: 15px; position: absolute; width: 95%; z-index: 20; }
-        .game-select-box button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        /* شبكة تحدي الشيء المختلف */
+        .grid-odd { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-top: 10px; }
+        .odd-btn { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; font-size: 28px; cursor: pointer; transition: 0.1s; }
+        .odd-btn:active { transform: scale(0.92); }
         
         .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
         .leaderboard-table th, .leaderboard-table td { padding: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -80,15 +82,6 @@
 </div>
 
 <div class="screen" id="arenaScreen">
-    <div class="game-select-box" id="gameSelectBox">
-        <h3 style="color:var(--gold); margin-bottom:10px;">اختر تحدي الجولة القادمة:</h3>
-        <button style="background: #e74c3c; color: white;" onclick="selectGame(1)">1. تحدي النقر السريع 👑</button>
-        <button style="background: #3498db; color: white;" onclick="selectGame(2)">2. تحدي اللون الصحيح 🎨</button>
-        <button style="background: #2ecc71; color: white;" onclick="selectGame(3)">3. تحدي ردة الفعل ⏱️</button>
-        <button style="background: #9b59b6; color: white;" onclick="selectGame(4)">4. تحدي الحساب السريع 🧠</button>
-        <button style="background: #f1c40f; color: black;" onclick="selectGame(5)">5. فك الرقم السري (4 أرقام) 🔒</button>
-    </div>
-
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 5</span>
         <span style="background:var(--red); padding:3px 12px; border-radius:20px; font-size: 13px;" id="currentGameTitle">انتظار...</span>
@@ -120,7 +113,7 @@
 <script>
 const E = id => document.getElementById(id);
 let peer = null, conn = null, myRole = '', myName = '';
-let gameTimer = null, reactionTimeout = null;
+let gameTimer = null;
 
 let currentRoundNum = 1;
 let kingTotalScore = 0;
@@ -130,7 +123,7 @@ let myRoundPoints = 0;
 let opponentRoundPoints = 0;
 let kingStreak = 0; 
 let secretCode = ""; 
-let currentActiveGame = 1;
+let oddTargetIndex = 0; 
 
 const peerConfig = {
     host: '0.peerjs.com', port: 443, secure: true,
@@ -194,7 +187,7 @@ function setupConnection() {
             E('startGameBtn').style.display = 'block';
         } else {
             E('roomTitle').textContent = 'تم حجز مقعدك كمتحدي!';
-            E('statusText').textContent = 'الملك يختار الآن تحدي الجولة الأولى...';
+            E('statusText').textContent = 'الملك يطلق الجولة الأولى الآن...';
         }
     });
 
@@ -217,26 +210,15 @@ function setupConnection() {
             kingStreak = data.currentStreak;
             E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
         }
-        if (data.type === 'prepareNextRound') {
-            currentRoundNum = data.round;
-            E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
-            E('gameArea').innerHTML = `<p style="color:var(--gold);">الملك يختار التحدي القادم حالياً... 🤔</p>`;
-            E('timerDisplay').textContent = "⏱️ --";
-        }
-        if (data.type === 'startGame') {
+        if (data.type === 'triggerNextGame') {
             currentRoundNum = data.roundNum;
-            currentActiveGame = data.gameId;
             secretCode = data.extraData || "";
+            oddTargetIndex = data.oddIndex !== undefined ? data.oddIndex : 0;
             runGameStartLogic();
         }
         if (data.type === 'roundPointsUpdate') {
             opponentRoundPoints = data.points;
             syncScoresUI();
-        }
-        if (data.type === 'reactionWin') {
-            opponentRoundPoints = 5; 
-            syncScoresUI();
-            endRoundLogic(data.winnerName + " اقتنص نقطة الاستجابة السريعة!");
         }
         if (data.type === 'guessCorrect') {
             opponentRoundPoints = 15; 
@@ -259,7 +241,9 @@ function setupConnection() {
             E('challengerScore').textContent = "0";
             
             resetTournamentData();
-            E('gameArea').innerHTML = `<p style="color:var(--green); font-weight:bold;">أنت الملك الحالي للغرفة أونلاين! شارك رقم الغرفة.</p>`;
+            E('roomScreen').classList.add('active');
+            E('arenaScreen').classList.remove('active');
+            E('statusText').textContent = "أنت الملك المستضيف الجديد! بانتظار متحدي...";
         }
     });
 
@@ -273,7 +257,7 @@ E('startGameBtn').addEventListener('click', () => {
     resetTournamentData();
     E('roomScreen').classList.remove('active');
     E('arenaScreen').classList.add('active');
-    E('gameSelectBox').style.display = 'block'; 
+    kingFireNextRound(); // تشغيل الجولة الأولى تلقائياً
 });
 
 function resetTournamentData() {
@@ -285,17 +269,18 @@ function resetTournamentData() {
     E('challengerScore').textContent = "0";
 }
 
-function selectGame(id) {
-    E('gameSelectBox').style.display = 'none';
-    currentActiveGame = id;
-    
+// دالة الملك لتجهيز حزم البيانات وإطلاق الجولة بشكل متزامن
+function kingFireNextRound() {
     let extra = "";
-    if(id === 5) { extra = Math.floor(1000 + Math.random() * 9000).toString(); secretCode = extra; }
+    let randomOddIdx = 0;
+    
+    if(currentRoundNum === 5) { extra = Math.floor(1000 + Math.random() * 9000).toString(); secretCode = extra; }
+    if(currentRoundNum === 4) { randomOddIdx = Math.floor(Math.random() * 9); oddTargetIndex = randomOddIdx; }
     
     if (conn && conn.open) {
-        conn.send({ type: 'startGame', gameId: id, extraData: extra, roundNum: currentRoundNum });
-        runGameStartLogic();
+        conn.send({ type: 'triggerNextGame', roundNum: currentRoundNum, extraData: extra, oddIndex: randomOddIdx });
     }
+    runGameStartLogic();
 }
 
 function syncScoresUI() {
@@ -306,25 +291,22 @@ function syncScoresUI() {
 }
 
 function runGameStartLogic() {
-    E('loginScreen').classList.remove('active');
-    E('roomScreen').classList.remove('active');
-    E('arenaScreen').classList.add('active');
-
     myRoundPoints = 0; opponentRoundPoints = 0; syncScoresUI();
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
-    clearInterval(gameTimer); clearTimeout(reactionTimeout);
+    clearInterval(gameTimer);
 
-    if (currentActiveGame === 1) startClickGame();
-    else if (currentActiveGame === 2) startColorGame();
-    else if (currentActiveGame === 3) startReactionGame();
-    else if (currentActiveGame === 4) startMathGame();
-    else if (currentActiveGame === 5) startGuessGame();
+    // ربط الجولة باللعبة المحددة لها بالترتيب
+    if (currentRoundNum === 1) startClickGame();
+    else if (currentRoundNum === 2) startColorGame();
+    else if (currentRoundNum === 3) startMathGame();
+    else if (currentRoundNum === 4) startOddGame();
+    else if (currentRoundNum === 5) startGuessGame();
 }
 
-// 1
+// [الجولة 1. تحدي النقر السريع]
 function startClickGame() {
-    E('currentGameTitle').textContent = "النقر السريع"; let timeLeft = 10; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-    E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 👑</button>`;
+    E('currentGameTitle').textContent = "النقر السريع 👑"; let timeLeft = 10; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+    E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 🔥</button>`;
     E('actionBtn').addEventListener('click', () => {
         myRoundPoints++; syncScoresUI();
         conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
@@ -332,14 +314,14 @@ function startClickGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
-// 2
+// [الجولة 2. تحدي تطابق اللون الصحيح]
 function startColorGame() {
-    E('currentGameTitle').textContent = "تطابق لون الخط"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+    E('currentGameTitle').textContent = "تطابق اللون 🎨"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
     const colors = [{name: 'أحمر', value: '#e74c3c'}, {name: 'أزرق', value: '#3498db'}, {name: 'أخضر', value: '#2ecc71'}, {name: 'أصفر', value: '#f1c40f'}];
     function nextRound() {
         let textWord = colors[Math.floor(Math.random() * colors.length)];
         let targetColor = colors[Math.floor(Math.random() * colors.length)]; 
-        E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">اختر زر الملاءمة للون الخط:</p><h1 style="font-size:32px; color:${targetColor.value}; margin:10px 0;">${textWord.name}</h1><div class="options-grid" id="optionsBox"></div>`;
+        E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">اختر زر الملاءمة للون الخط وليس الكلمة:</p><h1 style="font-size:32px; color:${targetColor.value}; margin:10px 0;">${textWord.name}</h1><div class="options-grid" id="optionsBox"></div>`;
         colors.forEach(c => {
             let b = document.createElement('button'); b.className = 'option-btn'; b.style.backgroundColor = c.value; b.textContent = c.name;
             b.onclick = () => {
@@ -353,27 +335,9 @@ function startColorGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
-// 3
-function startReactionGame() {
-    E('currentGameTitle').textContent = "سرعة الاستجابة"; E('timerDisplay').textContent = `⏱️ --`;
-    E('gameArea').innerHTML = `<div class="reaction-zone" id="reactZone" style="background:#e74c3c;">تأهب للون الأخضر... 🛑</div>`;
-    let canClick = false; let randomDelay = 2000 + Math.random() * 3000;
-    reactionTimeout = setTimeout(() => {
-        canClick = true; let z = E('reactZone');
-        if(z) { z.style.backgroundColor = '#2ecc71'; z.textContent = "اضغط فوراً!!! ⚡"; }
-    }, randomDelay);
-    E('reactZone').addEventListener('click', () => {
-        if(!canClick) {
-            opponentRoundPoints = 5; syncScoresUI(); endRoundLogic("ضغطت مبكراً! فاز الخصم بنقاط الجولة.");
-        } else {
-            myRoundPoints = 5; syncScoresUI(); conn.send({ type: 'reactionWin', winnerName: myName }); endRoundLogic("🏆 استجابة خارقة! اقتنصت الجولة!");
-        }
-    });
-}
-
-// 4
+// [الجولة 3. تحدي الحساب السريع]
 function startMathGame() {
-    E('currentGameTitle').textContent = "الحساب الفوري"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+    E('currentGameTitle').textContent = "الحساب الفوري 🧠"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
     function genMath() {
         let n1 = Math.floor(2 + Math.random() * 10), n2 = Math.floor(2 + Math.random() * 10);
         let isPlus = Math.random() > 0.5; let ans = isPlus ? (n1 + n2) : (n1 * n2);
@@ -392,12 +356,51 @@ function startMathGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
-// 5
+// [الجولة 4. تحدي الشيء المختلف]
+function startOddGame() {
+    E('currentGameTitle').textContent = "الشيء المختلف 🕵️‍♂️"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+    const emojiPool = [
+        { normal: '😂', odd: '😁' }, { normal: '🍏', odd: '🍐' }, 
+        { normal: '🐱', odd: '🦊' }, { normal: '🎈', odd: '🏮' },
+        { normal: '⚽', odd: '🏀' }, { normal: '🔒', odd: '🔓' }
+    ];
+    let currentSet = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+
+    function buildGrid() {
+        E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa; margin-bottom:5px;">اعثر على الرمز المختلف واضغط عليه بسرعة!</p><div class="grid-odd" id="oddGridBox"></div>`;
+        for(let i = 0; i < 9; i++) {
+            let b = document.createElement('button'); b.className = 'odd-btn';
+            if(i === oddTargetIndex) {
+                b.textContent = currentSet.odd;
+                b.onclick = () => {
+                    myRoundPoints += 4; syncScoresUI();
+                    conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
+                    if(myRole === 'king') { 
+                        oddTargetIndex = Math.floor(Math.random() * 9);
+                        if (conn && conn.open) conn.send({ type: 'triggerNextGame', roundNum: 4, oddIndex: oddTargetIndex });
+                        buildGrid();
+                    } 
+                };
+            } else {
+                b.textContent = currentSet.normal;
+                b.onclick = () => {
+                    myRoundPoints = Math.max(0, myRoundPoints - 2); syncScoresUI();
+                    conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
+                };
+            }
+            E('oddGridBox').appendChild(b);
+        }
+    }
+    buildGrid();
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
+}
+
+// [الجولة 5. تخمين وفك الرقم السري]
 function startGuessGame() {
-    E('currentGameTitle').textContent = "فك شفرة الرقم"; E('timerDisplay').textContent = `⏱️ نشط`;
-    E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">خمن الشفرة من 4 أرقام:</p><input id="guessInput" type="number" placeholder="من 1000 إلى 9999" style="width:80%; margin:5px 0;"><button class="btn btn-purple" id="guessBtn" style="padding:10px;">إرسال 🔍</button><p id="guessHint" style="margin-top:5px; font-weight:bold; color:var(--gold);"></p>`;
+    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; E('timerDisplay').textContent = `⏱️ نشط`;
+    E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة دفعة واحدة:</p><input id="guessInput" type="number" placeholder="من 1000 إلى 9999" style="width:80%; margin:5px 0;"><button class="btn btn-purple" id="guessBtn" style="padding:10px;">إرسال التخمين 🔍</button><p id="guessHint" style="margin-top:5px; font-weight:bold; color:var(--gold);"></p>`;
     E('guessBtn').addEventListener('click', () => {
-        let val = E('guessInput').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
+        let val = E('guessInput').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام كاملة!');
         if (val === secretCode) {
             myRoundPoints = 15; syncScoresUI(); conn.send({ type: 'guessCorrect', winnerName: myName }); endRoundLogic(`🎉 فككت الشفرة بنجاح! الرقم هو ${secretCode}`);
         } else {
@@ -407,15 +410,13 @@ function startGuessGame() {
     });
 }
 
-// نهاية الجولة الواحدة
+// [إدارة انتهاء الجولات والتحويل للمرحلة التالية]
 function endRoundLogic(customMsg = "") {
-    clearInterval(gameTimer); clearTimeout(reactionTimeout);
+    clearInterval(gameTimer);
     
-    // حقن النقاط وتراكمها فوراً
     kingTotalScore += (myRole === 'king' ? myRoundPoints : opponentRoundPoints);
     challengerTotalScore += (myRole === 'challenger' ? myRoundPoints : opponentRoundPoints);
     
-    // إعادة ضبط العرض الكلي للتأكد من المزامنة
     E('kingScore').textContent = kingTotalScore;
     E('challengerScore').textContent = challengerTotalScore;
     
@@ -423,41 +424,34 @@ function endRoundLogic(customMsg = "") {
     if(myRoundPoints === opponentRoundPoints && !customMsg) roundWinnerNotice = "تعادل في نقاط هذه الجولة! 🤝";
 
     if (currentRoundNum < 5) {
-        // بناء واجهة الانتقال للجولة التالية (ستظهر للملك والمتسابق دون أي شاشات انتظار عشوائية)
         E('gameArea').innerHTML = `
             <h3 style="color:var(--gold);">انتهت الجولة ${currentRoundNum}!</h3>
             <p style="font-size:15px; margin:10px 0;">${roundWinnerNotice}</p>
             <div id="actionContainer" style="width:100%;"></div>
         `;
         
-        // إذا كان هو الملك، نزرع له زر الانتقال الفعلي مباشرة
         if (myRole === 'king') {
             const btn = document.createElement('button');
-            btn.className = "btn btn-green";
-            btn.style.width = "auto";
-            btn.style.padding = "8px 20px";
-            btn.textContent = "⚔️ الجولة التالية";
+            btn.className = "btn btn-green"; btn.style.width = "auto"; btn.style.padding = "8px 20px"; btn.textContent = "⚔️ الجولة التالية تلقائياً";
             btn.onclick = function() {
                 currentRoundNum++;
-                if (conn && conn.open) {
-                    conn.send({ type: 'prepareNextRound', round: currentRoundNum });
-                }
-                E('gameSelectBox').style.display = 'block';
+                kingFireNextRound();
             };
             E('actionContainer').appendChild(btn);
         } else {
-            E('actionContainer').innerHTML = `<p style="color:#aaa; font-size:13px;">في انتظار أن يفتح الملك الجولة التالية...</p>`;
+            E('actionContainer').innerHTML = `<p style="color:#aaa; font-size:13px;">في انتظار سحب الملك للجولة التالية...</p>`;
         }
     } else {
         executeTournamentSettlement();
     }
 }
 
-// تصفية البطولة الكلية
+// [تصفية المجموع التراكمي وتحديد الفائز بالعرش]
 function executeTournamentSettlement() {
     let finalWinnerRole = "king";
     if (kingTotalScore > challengerTotalScore) finalWinnerRole = "king";
     else if (challengerTotalScore > kingTotalScore) finalWinnerRole = "challenger";
+    // في حال التعادل بالنقاط التراكمية تماماً، الأولوية لحامي العرش (الملك) للبقاء
 
     if (myRole === 'king') {
         if (finalWinnerRole === 'king') {
@@ -466,46 +460,4 @@ function executeTournamentSettlement() {
             E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
             
             E('gameArea').innerHTML = `
-                <h2 style="color:var(--gold);">👑 حسم الموقف ونصر الملك!</h2>
-                <p>لقد انتصرت بالبطولة الكلية وحافظت على عرشك بنجاح!</p>
-                <p style="color:var(--green); margin-top:10px;">سلسلة صمودك الحالية: ${kingStreak} انتصارات متتالية</p>
-            `;
-            conn.send({ type: 'finalKickout', msg: `💀 سقطت دفاعاتك الكلية! تم طردك من مجلس الملك ${myName} بعد 5 جولات.` });
-            resetTournamentData();
-        } else {
-            conn.send({ type: 'becameKing' });
-            alert(`💀 خسرت العرش! تمت الإطاحة بك وبسلسلة انتصاراتك (${kingStreak}).`);
-            location.reload();
-        }
-    }
-}
-
-function saveToLeaderboard(name, streak) {
-    let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
-    let playerIdx = board.findIndex(p => p.name === name);
-    if (playerIdx !== -1) {
-        if (streak > board[playerIdx].streak) { board[playerIdx].streak = streak; }
-    } else {
-        board.push({ name: name, streak: streak });
-    }
-    board.sort((a, b) => b.streak - a.streak);
-    localStorage.setItem('throne_leaderboard', JSON.stringify(board));
-    updateLeaderboardUI();
-}
-
-function updateLeaderboardUI() {
-    let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
-    let html = "";
-    if(board.length === 0) {
-        html = `<tr><td colspan="3" style="color:#777;">لا يوجد أبطال مسجلين حتى الآن. كن الأول!</td></tr>`;
-    } else {
-        board.slice(0, 5).forEach((p, idx) => {
-            let crown = idx === 0 ? '🥇 👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : '•'));
-            html += `<tr><td>${crown} ${idx+1}</td><td style="color:var(--gold); font-weight:bold;">${p.name}</td><td>${p.streak} جولات صمود</td></tr>`;
-        });
-    }
-    E('leaderboardBody').innerHTML = html;
-}
-</script>
-</body>
-</html>
+                <h2 style="color:var(--gold);">👑 انتصار كاسح وحماية
