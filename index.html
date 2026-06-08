@@ -148,7 +148,6 @@
         <div class="champions-panel" id="championsPanel"><h3>🏆 سجل الأبطال</h3><div id="championsList"></div></div>
         <div class="controls" id="mainControls">
             <button class="btn btn-primary" id="btnStart" disabled>🚀 بدء التحدي</button>
-            <button class="btn btn-secondary hidden" id="btnRetry" onclick="retryJoin()">🔄 إعادة المحاولة</button>
         </div>
     </div>
 
@@ -159,8 +158,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        // ⚠️ استبدل هذا الرابط برابط قاعدة البيانات الخاصة بك
-        const FIREBASE_URL = "https://kkkooo-8a13b-default-rtdb.firebaseio.com/";
+        // ⚠️ استبدل هذا الرابط برابط قاعدة البيانات الخاصة بك (يجب أن يكون نفس الرابط لجميع الأجهزة)
+        const FIREBASE_URL = "https://fofo-f48f4-default-rtdb.firebaseio.com/";
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
         const roomRef = db.ref("rooms/throne");
@@ -185,47 +184,52 @@
 
         let myRole=null, myName='';
         let heartbeatInterval=null;
+        let gameActive=false, localKingTime=Date.now();
 
-        // ==================== إدارة الغرفة التلقائية ====================
+        // ==================== إدارة الغرفة ====================
         async function joinRoom(){
             myName = E('playerNameInput').value.trim();
             if(!myName) return;
             myName = myName.startsWith('@') ? myName : '@' + myName;
 
-            // تنظيف الأدوار غير النشطة (أكثر من 8 ثوانٍ)
+            // تنظيف تلقائي للاعبين غير النشطين
             await cleanInactiveRoles();
 
             const snap = await roomRef.once('value');
             const room = snap.val() || {};
 
             if (!room.king) {
+                // أول لاعب يدخل يصبح ملكاً، ونقوم بإفراغ الغرفة بالكامل لضمان النظافة
+                await roomRef.set({
+                    king: {
+                        name: myName,
+                        score: 0,
+                        lastBeat: firebase.database.ServerValue.TIMESTAMP
+                    }
+                });
                 myRole = 'king';
-                await setRole('king');
             } else if (!room.challenger) {
                 myRole = 'challenger';
-                await setRole('challenger');
+                await roomRef.child('challenger').set({
+                    name: myName,
+                    score: 0,
+                    lastBeat: firebase.database.ServerValue.TIMESTAMP
+                });
+                roomRef.child('challenger').onDisconnect().remove();
             } else {
-                // الغرفة ممتلئة، نظهر زر إعادة المحاولة
-                E('btnRetry').classList.remove('hidden');
-                alert('الغرفة ممتلئة حالياً. اضغط "إعادة المحاولة" بعد قليل.');
+                alert('الغرفة ممتلئة حالياً. حاول مرة أخرى بعد قليل.');
                 return;
             }
 
-            E('btnRetry').classList.add('hidden');
+            // نبض القلب للملك
+            if (myRole === 'king') {
+                roomRef.child('king').onDisconnect().remove();
+            }
+
+            startHeartbeat();
             E('loginScreen').classList.remove('active');
             E('arenaScreen').classList.add('active');
-            startHeartbeat();
             listenToRoom();
-        }
-
-        async function setRole(role) {
-            const roleRef = roomRef.child(role);
-            await roleRef.set({
-                name: myName,
-                score: 0,
-                lastBeat: firebase.database.ServerValue.TIMESTAMP
-            });
-            roleRef.onDisconnect().remove();
         }
 
         async function cleanInactiveRoles() {
@@ -274,31 +278,6 @@
                 }
             });
         }
-
-        window.retryJoin = async function() {
-            await cleanInactiveRoles();
-            const snap = await roomRef.once('value');
-            const room = snap.val() || {};
-            if (!room.king) {
-                myRole = 'king';
-                await setRole('king');
-                E('btnRetry').classList.add('hidden');
-                E('loginScreen').classList.remove('active');
-                E('arenaScreen').classList.add('active');
-                startHeartbeat();
-                listenToRoom();
-            } else if (!room.challenger) {
-                myRole = 'challenger';
-                await setRole('challenger');
-                E('btnRetry').classList.add('hidden');
-                E('loginScreen').classList.remove('active');
-                E('arenaScreen').classList.add('active');
-                startHeartbeat();
-                listenToRoom();
-            } else {
-                alert('الغرفة ما زالت ممتلئة. حاول مرة أخرى بعد قليل.');
-            }
-        };
 
         window.addEventListener('beforeunload', () => {
             if (myRole) roomRef.child(myRole).remove();
