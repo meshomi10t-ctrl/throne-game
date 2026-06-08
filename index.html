@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>🏰 تحدي العرش - أونلاين</title>
     <style>
-        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; }
+        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:#0a0a1a; color:white; font-family: Arial; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
         .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
         .screen.active { display:block; }
         .logo { font-size:60px; animation: float 2s infinite; }
@@ -17,7 +17,8 @@
         .btn { width:100%; padding:15px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
         .btn-green { background:var(--green); }
         .btn-purple { background:#8e44ad; }
-        .room-id { background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; font-size:20px; letter-spacing:2px; margin:15px 0; }
+        .room-id { background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; font-size:22px; letter-spacing:2px; margin:15px 0; word-break:break-all; }
+        .status { margin:10px; font-size:16px; color:#ccc; }
         .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0; }
         .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:15px; }
         .timer { font-size:40px; font-weight:bold; color:var(--gold); margin:15px 0; }
@@ -26,28 +27,29 @@
 </head>
 <body>
 
-<!-- شاشة الدخول -->
+<!-- شاشة البداية (الاسم والدور) -->
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
-    <div class="title">تحدي العرش - أونلاين</div>
+    <div class="title">تحدي العرش</div>
     <input id="playerName" placeholder="@username">
     <button class="btn btn-green" id="joinBtn">🚀 انضم كمتسابق</button>
 </div>
 
-<!-- شاشة مشاركة/إدخال معرف الغرفة -->
+<!-- شاشة الغرفة (في انتظار الخصم) -->
 <div class="screen" id="roomScreen">
     <div class="logo">🔗</div>
     <div class="title" id="roomTitle">أنت الملك! شارك هذا المعرف</div>
     <div class="room-id" id="roomIdDisplay">.......</div>
-    <p style="margin:10px;">أو أدخل معرف غرفة للانضمام كمتحدي:</p>
+    <div class="status" id="statusText">في انتظار الخصم...</div>
+    <p>أو أدخل معرف غرفة للانضمام:</p>
     <input id="remoteRoomId" placeholder="معرف الغرفة">
-    <button class="btn btn-purple" id="connectBtn">🔗 انضم للغرفة</button>
+    <button class="btn btn-purple" id="manualConnectBtn">🔗 انضم للغرفة</button>
     <button class="btn btn-green" id="startGameBtn" style="display:none;">🚀 بدء التحدي</button>
 </div>
 
-<!-- الساحة -->
+<!-- الساحة (اللعبة) -->
 <div class="screen" id="arenaScreen">
-    <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <span style="font-size:20px; color:var(--gold);">👑 تحدي العرش</span>
         <span style="background:var(--red); padding:5px 15px; border-radius:20px;">🔴 مباشر</span>
     </div>
@@ -56,7 +58,7 @@
         <div class="player-box"><div style="font-size:40px;">🤴</div><div id="kingName">@الملك</div><div style="font-size:36px; color:var(--gold);" id="kingScore">0</div></div>
         <div class="player-box"><div style="font-size:40px;">🗡️</div><div id="challengerName">في الانتظار...</div><div style="font-size:36px; color:var(--blue);" id="challengerScore">0</div></div>
     </div>
-    <div class="game-area" id="gameArea">انتظر الخصم...</div>
+    <div class="game-area" id="gameArea">اضغط بدء التحدي</div>
     <button class="btn btn-green" id="startGameLocal" style="display:none;">🚀 بدء التحدي</button>
 </div>
 
@@ -64,28 +66,40 @@
 <script>
 const E = id => document.getElementById(id);
 let peer, conn, myRole, myName;
-const roomId = new URLSearchParams(window.location.search).get('room');
+let roomId = new URLSearchParams(window.location.search).get('room');
 
-// إنشاء اتصال PeerJS
-if (roomId) {
-    // المتحدي يحاول الاتصال
-    startAsChallenger(roomId);
-} else {
-    // ملك (بدون معرف مسبق)
-    document.getElementById('joinBtn').addEventListener('click', () => {
-        myName = E('playerName').value.trim();
-        if (!myName) return;
-        myName = myName.startsWith('@') ? myName : '@' + myName;
+// الزر الرئيسي
+document.getElementById('joinBtn').addEventListener('click', () => {
+    myName = E('playerName').value.trim();
+    if (!myName) return;
+    myName = myName.startsWith('@') ? myName : '@' + myName;
+
+    if (roomId) {
+        // يوجد معرف في الرابط: انضم كمتحدي
+        startAsChallenger(roomId);
+    } else {
+        // لا يوجد معرف: كن ملكًا
         startAsKing();
-    });
-}
+    }
+});
+
+// زر الاتصال اليدوي (إذا لم يكن هناك معرف في الرابط)
+document.getElementById('manualConnectBtn').addEventListener('click', () => {
+    const remoteId = E('remoteRoomId').value.trim();
+    if (remoteId) {
+        startAsChallenger(remoteId);
+    }
+});
 
 function startAsKing() {
     peer = new Peer();
     peer.on('open', (id) => {
         myRole = 'king';
+        // تحديث رابط الصفحة ليشمل معرف الغرفة (دون إعادة تحميل)
+        window.history.replaceState({}, '', `?room=${id}`);
+        roomId = id;
         showRoomScreen(id);
-        // انتظار اتصال المتحدي
+        // استقبال اتصال المتحدي
         peer.on('connection', (c) => {
             conn = c;
             setupConnection();
@@ -94,82 +108,71 @@ function startAsKing() {
 }
 
 function startAsChallenger(remoteId) {
-    myName = prompt('أدخل اسمك:');
-    if (!myName) return;
-    myName = myName.startsWith('@') ? myName : '@' + myName;
+    myRole = 'challenger';
     peer = new Peer();
     conn = peer.connect(remoteId);
-    myRole = 'challenger';
     setupConnection();
+    // إظهار شاشة الغرفة مع رسالة "جارٍ الاتصال..."
+    showRoomScreen(remoteId);
+    E('roomTitle').textContent = 'جارٍ الاتصال بالغرفة...';
+    E('statusText').textContent = 'محاولة الاتصال...';
 }
 
-function showRoomScreen(roomId) {
+function showRoomScreen(id) {
     E('loginScreen').classList.remove('active');
     E('roomScreen').classList.add('active');
-    E('roomIdDisplay').textContent = roomId;
-    // تحديث الرابط ليحتوي على معرف الغرفة
-    window.history.replaceState({}, '', `?room=${roomId}`);
-    document.getElementById('connectBtn').style.display = 'none';
+    if (id) E('roomIdDisplay').textContent = id;
 }
 
 function setupConnection() {
     conn.on('open', () => {
-        // إرسال اسم اللاعب
+        // إرسال بيانات اللاعب
         conn.send({ type: 'name', name: myName, role: myRole });
-        
+
         conn.on('data', (data) => {
             if (data.type === 'name') {
                 if (data.role === 'king') {
                     E('kingName').textContent = data.name;
                 } else {
                     E('challengerName').textContent = data.name;
-                    // اكتمل اللاعبان، أظهر زر البدء للملك
-                    if (myRole === 'king') {
-                        document.getElementById('startGameLocal').style.display = 'block';
-                    }
+                }
+                // تحديث شاشة الغرفة
+                if (myRole === 'king' && data.role === 'challenger') {
+                    E('statusText').textContent = 'الخصم متصل!';
+                    E('startGameBtn').style.display = 'block';
+                }
+                if (myRole === 'challenger' && data.role === 'king') {
+                    E('roomTitle').textContent = 'متصل بالغرفة! في انتظار بدء الملك...';
+                    E('statusText').textContent = 'أنت المتحدي. انتظر بدء التحدي.';
                 }
             }
-            // باقي الأوامر (نقاط، انتهاء الجولة... إلخ)
-            if (data.type === 'score') {
-                E(data.player + 'Score').textContent = data.score;
-            }
             if (data.type === 'startGame') {
-                E('roomScreen').classList.remove('active');
-                E('arenaScreen').classList.add('active');
-                // بدء الألعاب... (سيتم إكمالها لاحقًا)
+                // بدء اللعبة على جهاز المتحدي
+                startGame();
             }
         });
 
-        // التبديل إلى الساحة إذا كان المتحدي
+        // إذا كان المتحدي، أرسل اسمه بعد فتح الاتصال مباشرة
         if (myRole === 'challenger') {
-            E('loginScreen').classList.remove('active');
-            E('roomScreen').classList.add('active');
-            E('roomTitle').textContent = 'متصل! في انتظار البدء';
+            // تم الإرسال في السطر الأول
         }
     });
 }
 
-// زر البدء للملك
-document.getElementById('startGameLocal').addEventListener('click', () => {
-    conn.send({ type: 'startGame' });
-    // بدء اللعبة محليًا
+// زر بدء التحدي (يظهر للملك فقط)
+document.getElementById('startGameBtn').addEventListener('click', () => {
+    if (conn) conn.send({ type: 'startGame' });
     startGame();
 });
 
 function startGame() {
     E('roomScreen').classList.remove('active');
     E('arenaScreen').classList.add('active');
-    alert('اللعبة بدأت! (سيتم إكمال الجولات لاحقًا)');
+    E('kingName').textContent = myRole === 'king' ? myName : E('kingName').textContent;
+    E('challengerName').textContent = myRole === 'challenger' ? myName : E('challengerName').textContent;
+    // سيتم إكمال الجولات لاحقًا
+    alert('اللعبة بدأت! (سيتم إضافة الجولات لاحقًا)');
 }
-
-// زر الاتصال اليدوي (للدخول برقم غرفة)
-document.getElementById('connectBtn').addEventListener('click', () => {
-    const remoteId = E('remoteRoomId').value.trim();
-    if (remoteId) {
-        startAsChallenger(remoteId);
-        document.getElementById('connectBtn').style.display = 'none';
-    }
-});
 </script>
 </body>
 </html>
