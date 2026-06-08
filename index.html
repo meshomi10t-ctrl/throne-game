@@ -7,18 +7,20 @@
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
         .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
         .screen.active { display:block; }
         .logo { font-size:60px; animation: float 2s infinite; }
         @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)} }
         .title { font-size:28px; color:var(--gold); margin:10px 0; }
         input { width:100%; padding:15px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        .btn { width:100%; padding:15px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
+        input:focus { outline: none; border-color: #fff; }
+        .btn { width:100%; padding:15px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-green { background:var(--green); }
         .btn-purple { background:#8e44ad; }
-        .room-id { background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; font-size:32px; font-weight:bold; color:var(--gold); letter-spacing:5px; margin:15px 0; word-break:break-all; user-select: all; }
-        .status { margin:10px; font-size:16px; color:#ccc; }
+        .room-id { background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:5px; margin:15px 0; user-select: all; }
+        .status { margin:10px; font-size:16px; color:#ccc; min-height: 24px; }
         .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0; }
         .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:15px; }
         .timer { font-size:40px; font-weight:bold; color:var(--gold); margin:15px 0; }
@@ -30,8 +32,8 @@
 <div class="screen active" id="loginScreen">
     <div class="logo" id="loginIcon">👑</div>
     <div class="title" id="loginTitle">تحدي العرش</div>
-    <p id="loginSubtitle" style="margin-bottom: 10px; color: #ccc;"></p>
-    <input id="playerName" placeholder="@username">
+    <p id="loginSubtitle" style="margin-bottom: 10px; color: #ccc; font-size: 14px;"></p>
+    <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
     <button class="btn btn-green" id="joinBtn">🚀 انضم كمتسابق</button>
 </div>
 
@@ -42,7 +44,7 @@
     <div class="status" id="statusText">جاري تهيئة الغرفة...</div>
     
     <div id="manualConnectArea">
-        <p>أو أدخل معرف غرفة للاتصال يدوياً:</p>
+        <p style="margin-top:15px; color:#aaa;">أو أدخل معرف غرفة للاتصال يدوياً:</p>
         <input id="remoteRoomId" placeholder="مثال: 523" type="number">
         <button class="btn btn-purple" id="manualConnectBtn">🔗 انضم للغرفة</button>
     </div>
@@ -52,4 +54,183 @@
 
 <div class="screen" id="arenaScreen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <span style="font-size:
+        <span style="font-size:20px; color:var(--gold);">👑 تحدي العرش</span>
+        <span style="background:var(--red); padding:5px 15px; border-radius:20px; font-size: 14px;">🔴 مباشر</span>
+    </div>
+    <div class="timer" id="timerDisplay">⏱️ 45</div>
+    <div class="arena">
+        <div class="player-box"><div style="font-size:40px;">🤴</div><div id="kingName">@الملك</div><div style="font-size:36px; color:var(--gold);" id="kingScore">0</div></div>
+        <div class="player-box"><div style="font-size:40px;">🗡️</div><div id="challengerName">في الانتظار...</div><div style="font-size:36px; color:var(--blue);" id="challengerScore">0</div></div>
+    </div>
+    <div class="game-area" id="gameArea">اضغط بدء التحدي</div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<script>
+const E = id => document.getElementById(id);
+let peer = null, conn = null, myRole = '', myName = '';
+
+// جلب معرف الغرفة من الرابط إن وجد
+let urlRoomId = new URLSearchParams(window.location.search).get('room');
+
+if (urlRoomId) {
+    E('loginIcon').textContent = '🗡️';
+    E('loginTitle').textContent = 'الانضمام كمتحدي';
+    E('loginSubtitle').textContent = `تنبيه: أنت تدخل الغرفة رقم [ ${urlRoomId} ]`;
+}
+
+// الزر الرئيسي الموحد - تم إصلاح التعليق فيه
+E('joinBtn').addEventListener('click', () => {
+    myName = E('playerName').value.trim();
+    if (!myName) {
+        alert('الرجاء إدخال اسمك أولاً!');
+        return;
+    }
+    myName = myName.startsWith('@') ? myName : '@' + myName;
+
+    // تعطيل الزر مؤقتاً لمنع النقرات المتعددة وتجميد الكود
+    E('joinBtn').disabled = true;
+    E('joinBtn').textContent = 'جاري الاتصال...';
+
+    if (urlRoomId) {
+        startAsChallenger(urlRoomId);
+    } else {
+        startAsKing();
+    }
+});
+
+// زر الاتصال اليدوي
+E('manualConnectBtn').addEventListener('click', () => {
+    const remoteId = E('remoteRoomId').value.trim();
+    if (!remoteId) {
+        alert('الرجاء كتابة رقم الغرفة المكون من 3 خانات!');
+        return;
+    }
+    // إذا ضغط المتحدي يدويًا نأخذ الاسم المكتوب في الشاشة الأولى
+    if(!myName) {
+        myName = E('playerName').value.trim() || '@متحدي';
+        if(!myName.startsWith('@')) myName = '@' + myName;
+    }
+    startAsChallenger(remoteId);
+});
+
+function startAsKing() {
+    myRole = 'king';
+    E('loginScreen').classList.remove('active');
+    E('roomScreen').classList.add('active');
+    E('roomTitle').textContent = 'جاري إنشاء الغرفة...';
+    
+    // توليد رقم من 3 خانات
+    const customRoomId = Math.floor(100 + Math.random() * 900).toString();
+    
+    // إنشاء كائن Peer مع خيارات السيرفر لضمان عدم التعليق
+    peer = new Peer(customRoomId, {
+        debug: 1
+    });
+    
+    peer.on('open', (id) => {
+        E('roomIdDisplay').textContent = id;
+        E('roomTitle').textContent = 'أنت الملك! شارك هذا الرقم';
+        E('statusText').textContent = 'في انتظار انضمام الخصم...';
+        E('kingName').textContent = myName;
+    });
+
+    peer.on('connection', (c) => {
+        conn = c;
+        setupConnection();
+    });
+
+    peer.on('error', (err) => {
+        E('joinBtn').disabled = false;
+        E('joinBtn').textContent = '🚀 انضم كمتسابق';
+        
+        if (err.type === 'unavailable-id') {
+            // حل ذكي: إذا تكرر الرقم بالصدفة، نعيد المحاولة تلقائياً برقم آخر دون قفل الصفحة
+            console.log('الرقم مستخدم، جاري توليد رقم آخر...');
+            startAsKing(); 
+        } else {
+            alert('خطأ في الاتصال بالخادم: ' + err.type);
+            location.reload();
+        }
+    });
+}
+
+function startAsChallenger(remoteId) {
+    myRole = 'challenger';
+    E('loginScreen').classList.remove('active');
+    E('roomScreen').classList.add('active');
+    
+    E('roomIdDisplay').style.display = 'none';
+    E('manualConnectArea').style.display = 'none';
+    E('roomIcon').textContent = '🗡️';
+    E('roomTitle').textContent = `جاري الاتصال بالغرفة [ ${remoteId} ]...`;
+    E('statusText').textContent = 'يرجى الانتظار...';
+    E('challengerName').textContent = myName;
+
+    peer = new Peer({ debug: 1 });
+    
+    peer.on('open', () => {
+        conn = peer.connect(remoteId, { reliable: true });
+        setupConnection();
+    });
+
+    peer.on('error', (err) => {
+        alert('تعذر الاتصال! تأكد من رقم الغرفة أو أن الملك متصل.');
+        location.reload();
+    });
+}
+
+function setupConnection() {
+    // نضمن تنفيذ الأحداث فوراً عند فتح القناة
+    conn.on('open', () => {
+        conn.send({ type: 'name', name: myName, role: myRole });
+
+        if (myRole === 'king') {
+            E('statusText').textContent = 'الخصم متصل وجاهز للنزاع!';
+            E('startGameBtn').style.display = 'block';
+        } else {
+            E('roomTitle').textContent = 'متصل بالغرفة! 🎉';
+            E('statusText').textContent = 'أنت المتحدي. انتظر حتى يبدأ الملك التحدي...';
+        }
+    });
+
+    conn.on('data', (data) => {
+        if (data.type === 'name') {
+            if (data.role === 'king') {
+                E('kingName').textContent = data.name;
+            } else {
+                E('challengerName').textContent = data.name;
+                if (myRole === 'king') {
+                    E('statusText').textContent = `المتحدي ${data.name} متصل الآن!`;
+                    E('startGameBtn').style.display = 'block';
+                }
+            }
+        }
+        if (data.type === 'startGame') {
+            runGameStartLogic();
+        }
+    });
+
+    conn.on('close', () => {
+        alert('انقطع الاتصال بالطرف الآخر!');
+        location.reload();
+    });
+}
+
+E('startGameBtn').addEventListener('click', () => {
+    if (conn && conn.open) {
+        conn.send({ type: 'startGame' });
+        runGameStartLogic();
+    } else {
+        alert('الخصم غير متصل بشكل كامل بعد.');
+    }
+});
+
+function runGameStartLogic() {
+    E('roomScreen').classList.remove('active');
+    E('arenaScreen').classList.add('active');
+    alert('اللعبة بدأت بنجاح!');
+}
+</script>
+</body>
+</html>
