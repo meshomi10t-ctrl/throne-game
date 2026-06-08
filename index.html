@@ -33,6 +33,7 @@
             cursor:pointer; color:white; margin:0.4rem 0; width:100%;
         }
         .btn-primary { background:var(--green); }
+        .btn-danger { background:var(--red); }
         .header { text-align:center; padding:0.8rem; background:rgba(0,0,0,0.8); border-bottom:2px solid var(--gold); }
         .header-crown { font-size:2rem; animation:float 2s infinite; }
         .header-title { font-size:1.4rem; color:var(--gold); font-weight:bold; }
@@ -147,6 +148,7 @@
         <div class="champions-panel" id="championsPanel"><h3>🏆 سجل الأبطال</h3><div id="championsList"></div></div>
         <div class="controls" id="mainControls">
             <button class="btn btn-primary" id="btnStart" disabled>🚀 بدء التحدي</button>
+            <button class="btn btn-danger hidden" id="btnResetRoom" onclick="resetRoom()">🔄 إعادة تعيين الغرفة</button>
         </div>
     </div>
 
@@ -191,19 +193,11 @@
             if(!myName) return;
             myName = myName.startsWith('@') ? myName : '@' + myName;
 
+            // تنظيف الأدوار غير النشطة
+            await cleanInactiveRoles();
+
             const snap = await roomRef.once('value');
             const room = snap.val() || {};
-
-            // التحقق من وجود لاعبين غير نشطين (آخر نبض > 30 ثانية)
-            const now = Date.now();
-            if (room.king && room.king.lastBeat && (now - room.king.lastBeat > 30000)) {
-                await roomRef.child('king').remove();
-                delete room.king;
-            }
-            if (room.challenger && room.challenger.lastBeat && (now - room.challenger.lastBeat > 30000)) {
-                await roomRef.child('challenger').remove();
-                delete room.challenger;
-            }
 
             if (!room.king) {
                 myRole = 'king';
@@ -212,7 +206,6 @@
                     score: 0,
                     lastBeat: firebase.database.ServerValue.TIMESTAMP
                 });
-                // عند قطع الاتصال، احذف الملك
                 roomRef.child('king').onDisconnect().remove();
             } else if (!room.challenger) {
                 myRole = 'challenger';
@@ -223,11 +216,33 @@
                 });
                 roomRef.child('challenger').onDisconnect().remove();
             } else {
-                alert('الغرفة ممتلئة حالياً. حاول مرة أخرى بعد قليل.');
+                // الغرفة ممتلئة، لكن قد يكون أحد اللاعبين غير نشط
+                alert('الغرفة ممتلئة حالياً. إذا كنت تعتقد أن اللاعبين غير نشطين، اطلب من الملك إعادة تعيين الغرفة.');
                 return;
             }
 
-            // بدء نبض القلب كل 5 ثوان
+            startHeartbeat();
+            E('loginScreen').classList.remove('active');
+            E('arenaScreen').classList.add('active');
+            listenToRoom();
+        }
+
+        async function cleanInactiveRoles() {
+            const snap = await roomRef.once('value');
+            const room = snap.val() || {};
+            const now = Date.now();
+            const TIMEOUT = 10000; // 10 ثوانٍ
+
+            if (room.king && room.king.lastBeat && (now - room.king.lastBeat > TIMEOUT)) {
+                await roomRef.child('king').remove();
+            }
+            if (room.challenger && room.challenger.lastBeat && (now - room.challenger.lastBeat > TIMEOUT)) {
+                await roomRef.child('challenger').remove();
+            }
+        }
+
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
             heartbeatInterval = setInterval(() => {
                 if (myRole === 'king') {
                     roomRef.child('king').update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
@@ -235,11 +250,9 @@
                     roomRef.child('challenger').update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
                 }
             }, 5000);
+        }
 
-            E('loginScreen').classList.remove('active');
-            E('arenaScreen').classList.add('active');
-
-            // مراقبة الغرفة
+        function listenToRoom() {
             roomRef.on('value', snap => {
                 const r = snap.val() || {};
                 if (r.king) {
@@ -253,28 +266,39 @@
                     E('challengerName').textContent = r.challenger.name;
                     E('challengerScore').textContent = r.challenger.score || 0;
                     E('btnStart').disabled = (myRole !== 'king');
+                    // إظهار زر إعادة التعيين للملك فقط
+                    if (myRole === 'king') {
+                        E('btnResetRoom').classList.remove('hidden');
+                    }
                 } else {
                     E('challengerName').textContent = 'في الانتظار...';
                     E('challengerScore').textContent = '0';
                     E('btnStart').disabled = true;
+                    E('btnResetRoom').classList.add('hidden');
                 }
-                // إذا غادر اللاعبان، إعادة تعيين الواجهة
-                if (!r.king && !r.challenger) {
-                    // يمكن إظهار رسالة للمستخدم بأن الغرفة أصبحت فارغة
-                    E('kingName').textContent = '@الملك';
-                    E('challengerName').textContent = 'في الانتظار...';
-                }
-            });
-
-            // تنظيف عند مغادرة الصفحة
-            window.addEventListener('beforeunload', () => {
-                if (myRole === 'king') roomRef.child('king').remove();
-                if (myRole === 'challenger') roomRef.child('challenger').remove();
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
             });
         }
 
-        // ==================== الألعاب (كما هي بدون تغيير) ====================
+        window.resetRoom = async function() {
+            if (myRole !== 'king') return;
+            if (confirm('هل أنت متأكد من إعادة تعيين الغرفة؟ سيتم طرد المتحدي الحالي.')) {
+                await roomRef.child('challenger').remove();
+                // إعادة تعيين المتغيرات المحلية
+                state.running = false;
+                gameActive = false;
+                E('btnStart').disabled = true;
+                E('challengerName').textContent = 'في الانتظار...';
+                E('challengerScore').textContent = '0';
+            }
+        };
+
+        window.addEventListener('beforeunload', () => {
+            if (myRole === 'king') roomRef.child('king').remove();
+            if (myRole === 'challenger') roomRef.child('challenger').remove();
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+        });
+
+        // ==================== الألعاب (كما هي) ====================
         const colorList=[{name:'أحمر',code:'#e74c3c'},{name:'أزرق',code:'#3498db'},{name:'أخضر',code:'#2ecc71'},{name:'أصفر',code:'#f1c40f'},{name:'بنفسجي',code:'#9b59b6'},{name:'فيروزي',code:'#1abc9c'}];
         const dirs=[{arrow:'⬆️',name:'أعلى',opp:'أسفل'},{arrow:'⬇️',name:'أسفل',opp:'أعلى'},{arrow:'⬅️',name:'يسار',opp:'يمين'},{arrow:'➡️',name:'يمين',opp:'يسار'}];
         const tfQ=[{q:'الشمس تشرق من الشرق',a:true},{q:'السماء خضراء',a:false},{q:'الماء يغلي عند 100°',a:true},{q:'الأسماك تطير',a:false},{q:'2+2=4',a:true},{q:'الزرافة حيوان بحري',a:false},{q:'النار باردة',a:false},{q:'الذهب معدن',a:true},{q:'الأسبوع 7 أيام',a:true},{q:'10×10=1000',a:false}];
@@ -393,14 +417,11 @@
             E('victoryDetail').innerHTML=`🤴 ${E('kingName').textContent}: ${state.kingTotal}<br>🗡️ ${E('challengerName').textContent}: ${state.challengerTotal}`;
             E('victoryOverlay').classList.remove('hidden');Sound.victory();
             if(!kingWins){
-                // إضافة الملك الخاسر إلى السجل
                 addChampion(E('kingName').textContent, Math.floor((Date.now()-localKingTime)/1000));
-                // نقل المتحدي إلى الملك
                 roomRef.child('king').set({name: E('challengerName').textContent, score: 0, lastBeat: firebase.database.ServerValue.TIMESTAMP});
                 roomRef.child('challenger').remove();
                 localKingTime = Date.now();
             } else {
-                // فقط إزالة المتحدي
                 roomRef.child('challenger').remove();
             }
             E('btnStart').disabled = (myRole !== 'king');
