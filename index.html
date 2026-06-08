@@ -163,7 +163,6 @@
         const db = firebase.database();
         const roomRef = db.ref("rooms/throne");
 
-        // الصوت
         const Sound = {
             ctx: null, muted: false,
             init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
@@ -183,23 +182,99 @@
         const rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
 
         let myRole=null, myName='';
+        let heartbeatInterval=null;
         let gameActive=false, localKingTime=Date.now();
-        let champions=[];
-        try{const s=localStorage.getItem('throneChamps');if(s)champions=JSON.parse(s);}catch(e){}
-        function saveChamps(){localStorage.setItem('throneChamps',JSON.stringify(champions));}
-        function addChampion(name,sec){
-            if(!name||name==='@الملك'||name==='@المتسابق'||sec<5)return;
-            let m=Math.floor(sec/60),s=sec%60,dur=m>0?`${m}د ${s}ث`:`${s} ث`;
-            champions.unshift({name,duration:dur,reignSeconds:sec,timestamp:Date.now()});
-            if(champions.length>20)champions.pop();
-            saveChamps();renderChamps();
-        }
-        function renderChamps(){
-            let l=E('championsList');if(!l)return;
-            if(!champions.length){l.innerHTML='<div style="color:#95a5a6;text-align:center;">لا يوجد أبطال بعد</div>';return;}
-            l.innerHTML=champions.map((c,i)=>`<div class="champion-entry"><span>${i+1}. ${c.name}</span><span>⏱️ ${c.duration}</span></div>`).join('');
+
+        // ==================== دوال إدارة الغرفة ====================
+        async function joinRoom(){
+            myName = E('playerNameInput').value.trim();
+            if(!myName) return;
+            myName = myName.startsWith('@') ? myName : '@' + myName;
+
+            const snap = await roomRef.once('value');
+            const room = snap.val() || {};
+
+            // التحقق من وجود لاعبين غير نشطين (آخر نبض > 30 ثانية)
+            const now = Date.now();
+            if (room.king && room.king.lastBeat && (now - room.king.lastBeat > 30000)) {
+                await roomRef.child('king').remove();
+                delete room.king;
+            }
+            if (room.challenger && room.challenger.lastBeat && (now - room.challenger.lastBeat > 30000)) {
+                await roomRef.child('challenger').remove();
+                delete room.challenger;
+            }
+
+            if (!room.king) {
+                myRole = 'king';
+                await roomRef.child('king').set({
+                    name: myName,
+                    score: 0,
+                    lastBeat: firebase.database.ServerValue.TIMESTAMP
+                });
+                // عند قطع الاتصال، احذف الملك
+                roomRef.child('king').onDisconnect().remove();
+            } else if (!room.challenger) {
+                myRole = 'challenger';
+                await roomRef.child('challenger').set({
+                    name: myName,
+                    score: 0,
+                    lastBeat: firebase.database.ServerValue.TIMESTAMP
+                });
+                roomRef.child('challenger').onDisconnect().remove();
+            } else {
+                alert('الغرفة ممتلئة حالياً. حاول مرة أخرى بعد قليل.');
+                return;
+            }
+
+            // بدء نبض القلب كل 5 ثوان
+            heartbeatInterval = setInterval(() => {
+                if (myRole === 'king') {
+                    roomRef.child('king').update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
+                } else if (myRole === 'challenger') {
+                    roomRef.child('challenger').update({ lastBeat: firebase.database.ServerValue.TIMESTAMP });
+                }
+            }, 5000);
+
+            E('loginScreen').classList.remove('active');
+            E('arenaScreen').classList.add('active');
+
+            // مراقبة الغرفة
+            roomRef.on('value', snap => {
+                const r = snap.val() || {};
+                if (r.king) {
+                    E('kingName').textContent = r.king.name;
+                    E('kingScore').textContent = r.king.score || 0;
+                } else {
+                    E('kingName').textContent = '@الملك';
+                    E('kingScore').textContent = '0';
+                }
+                if (r.challenger) {
+                    E('challengerName').textContent = r.challenger.name;
+                    E('challengerScore').textContent = r.challenger.score || 0;
+                    E('btnStart').disabled = (myRole !== 'king');
+                } else {
+                    E('challengerName').textContent = 'في الانتظار...';
+                    E('challengerScore').textContent = '0';
+                    E('btnStart').disabled = true;
+                }
+                // إذا غادر اللاعبان، إعادة تعيين الواجهة
+                if (!r.king && !r.challenger) {
+                    // يمكن إظهار رسالة للمستخدم بأن الغرفة أصبحت فارغة
+                    E('kingName').textContent = '@الملك';
+                    E('challengerName').textContent = 'في الانتظار...';
+                }
+            });
+
+            // تنظيف عند مغادرة الصفحة
+            window.addEventListener('beforeunload', () => {
+                if (myRole === 'king') roomRef.child('king').remove();
+                if (myRole === 'challenger') roomRef.child('challenger').remove();
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+            });
         }
 
+        // ==================== الألعاب (كما هي بدون تغيير) ====================
         const colorList=[{name:'أحمر',code:'#e74c3c'},{name:'أزرق',code:'#3498db'},{name:'أخضر',code:'#2ecc71'},{name:'أصفر',code:'#f1c40f'},{name:'بنفسجي',code:'#9b59b6'},{name:'فيروزي',code:'#1abc9c'}];
         const dirs=[{arrow:'⬆️',name:'أعلى',opp:'أسفل'},{arrow:'⬇️',name:'أسفل',opp:'أعلى'},{arrow:'⬅️',name:'يسار',opp:'يمين'},{arrow:'➡️',name:'يمين',opp:'يسار'}];
         const tfQ=[{q:'الشمس تشرق من الشرق',a:true},{q:'السماء خضراء',a:false},{q:'الماء يغلي عند 100°',a:true},{q:'الأسماك تطير',a:false},{q:'2+2=4',a:true},{q:'الزرافة حيوان بحري',a:false},{q:'النار باردة',a:false},{q:'الذهب معدن',a:true},{q:'الأسبوع 7 أيام',a:true},{q:'10×10=1000',a:false}];
@@ -220,27 +295,6 @@
             codeWinner:null
         };
 
-        // ==================== تهيئة الغرفة ====================
-        async function joinRoom(){
-            myName=E('playerNameInput').value.trim();
-            if(!myName)return;
-            myName=myName.startsWith('@')?myName:'@'+myName;
-            const snap=await roomRef.once('value');
-            const room=snap.val()||{};
-            if(!room.king){myRole='king';await roomRef.child('king').set({name:myName,score:0});}
-            else if(!room.challenger){myRole='challenger';await roomRef.child('challenger').set({name:myName,score:0});}
-            else{alert('المعركة قائمة... انتظر دورك.');return;}
-            E('loginScreen').classList.remove('active');
-            E('arenaScreen').classList.add('active');
-            roomRef.on('value',s=>{
-                const r=s.val()||{};
-                if(r.king){E('kingName').textContent=r.king.name;E('kingScore').textContent=r.king.score||0;}
-                if(r.challenger){E('challengerName').textContent=r.challenger.name;E('challengerScore').textContent=r.challenger.score||0;E('btnStart').disabled=(myRole!=='king');}
-                else{E('challengerName').textContent='في الانتظار...';E('btnStart').disabled=true;}
-            });
-        }
-
-        // ==================== الألعاب (مختصرة) ====================
         function initStroop(z){state['stroop'+z]={r:0,sc:0,bonus:0};nextStroop(z);}
         function nextStroop(z){let d=state['stroop'+z];d.r++;if(d.r>games[0].rounds){finish(z,d.sc+d.bonus);return;}let nc=colorList[rand(0,5)],dc;do{dc=colorList[rand(0,5)];}while(dc.name===nc.name);d.correct=dc.name;let opts=[dc];while(opts.length<4){let rc=colorList[rand(0,5)];if(!opts.find(o=>o.name===rc.name))opts.push(rc);}opts=shuffle(opts);E(z+'Game').innerHTML=`<div style="text-align:center;"><div class="stroop-word" style="color:${dc.code};">${nc.name}</div><div class="stroop-btns">${opts.map(c=>`<button class="stroop-btn" style="background:${c.code};">${c.name}</button>`).join('')}</div><div style="color:#95a5a6;margin-top:10px;">${d.r}/${games[0].rounds}</div></div>`;let btns=E(z+'Game').querySelectorAll('.stroop-btn');btns.forEach((b,i)=>{b.addEventListener('click',()=>{ansStroop(z,opts[i].name);});});}
         function ansStroop(z,ans){if(!state.running)return;let d=state['stroop'+z];if(ans===d.correct){d.sc+=15;d.bonus+=Math.floor(state.timeLeft/2);Sound.correct();}else Sound.wrong();nextStroop(z);}
@@ -249,7 +303,6 @@
         function nextDir(z){let d=state['dir'+z];d.r++;if(d.r>games[1].rounds){finish(z,d.sc+d.bonus);return;}let dir=dirs[rand(0,3)];d.correct=dir.opp;let btns=shuffle([...dirs]);E(z+'Game').innerHTML=`<div style="text-align:center;"><div class="dir-arrow">${dir.arrow}</div><div style="font-size:1.3rem;color:var(--gold);">عكس</div><div class="dir-btns">${btns.map(dd=>`<button class="dir-btn">${dd.arrow}</button>`).join('')}</div><div style="color:#95a5a6;">${d.r}/${games[1].rounds}</div></div>`;let btns2=E(z+'Game').querySelectorAll('.dir-btn');btns2.forEach((b,i)=>{b.addEventListener('click',()=>{ansDir(z,btns[i].name);});});}
         function ansDir(z,ans){if(!state.running)return;let d=state['dir'+z];if(ans===d.correct){d.sc+=15;d.bonus+=Math.floor(state.timeLeft/2);Sound.correct();}else Sound.wrong();nextDir(z);}
 
-        // Code Break كاملة مع المزامنة
         function initCodeBreak(z){
             if(z==='king'||!state.sharedSecret)state.sharedSecret=[rand(0,9),rand(0,9),rand(0,9),rand(0,9)];
             state['code'+z]={secret:state.sharedSecret,attempts:[],current:[null,null,null,null],locked:[false,false,false,false],sc:0};
@@ -289,7 +342,6 @@
         function spawnTarget(z){let d=state['sniper'+z];if(!d||!state.running)return;let x=rand(15,85),y=rand(15,70),size=rand(50,80);E(z+'Game').innerHTML=`<div class="sniper-area"><div class="target" id="targetDiv" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;"><div style="text-align:center;line-height:${size}px;font-size:${size*0.5}px;">🎯</div></div></div><div style="color:#95a5a6;">أهداف: ${d.sc}</div>`;d.active=true;d.timeout=setTimeout(()=>{if(d.active){d.active=false;Sound.wrong();spawnTarget(z);}},2000);document.getElementById('targetDiv').addEventListener('click',()=>hitTarget(z));}
         function hitTarget(z){if(!state.running)return;let d=state['sniper'+z];if(!d||!d.active)return;clearTimeout(d.timeout);d.active=false;d.sc+=15;d.bonus+=Math.floor(state.timeLeft/2);Sound.correct();setTimeout(()=>spawnTarget(z),500);}
 
-        // ==================== إنهاء الجولة ====================
         function finish(z,score){
             if(z==='king'){state.kingRound=score;state.kingDone=true;}
             else{state.challengerRound=score;state.challengerDone=true;}
@@ -315,7 +367,6 @@
             showTutorial(state.round-1,()=>startRound());
         };
 
-        // ==================== تدفق اللعبة ====================
         function startGame(){
             if(state.running||myRole!=='king')return;
             Sound.init();state.running=true;state.round=1;state.kingTotal=0;state.challengerTotal=0;
@@ -341,10 +392,20 @@
             E('victoryMsg').textContent=kingWins?'👑 الملك يحافظ على عرشه!':'⚔️ لدينا ملك جديد!';
             E('victoryDetail').innerHTML=`🤴 ${E('kingName').textContent}: ${state.kingTotal}<br>🗡️ ${E('challengerName').textContent}: ${state.challengerTotal}`;
             E('victoryOverlay').classList.remove('hidden');Sound.victory();
-            if(!kingWins){addChampion(E('kingName').textContent,Math.floor((Date.now()-localKingTime)/1000));roomRef.child('king').set({name:E('challengerName').textContent,score:0});roomRef.child('challenger').remove();localKingTime=Date.now();}
-            else{roomRef.child('challenger').remove();}
-            E('btnStart').disabled=(myRole!=='king');
-            updateScores();renderChamps();
+            if(!kingWins){
+                // إضافة الملك الخاسر إلى السجل
+                addChampion(E('kingName').textContent, Math.floor((Date.now()-localKingTime)/1000));
+                // نقل المتحدي إلى الملك
+                roomRef.child('king').set({name: E('challengerName').textContent, score: 0, lastBeat: firebase.database.ServerValue.TIMESTAMP});
+                roomRef.child('challenger').remove();
+                localKingTime = Date.now();
+            } else {
+                // فقط إزالة المتحدي
+                roomRef.child('challenger').remove();
+            }
+            E('btnStart').disabled = (myRole !== 'king');
+            updateScores();
+            renderChamps();
         }
         function updateScores(){E('kingScore').textContent=state.kingTotal;E('challengerScore').textContent=state.challengerTotal;}
         function updateDots(){document.querySelectorAll('.r-dot').forEach((d,i)=>{d.classList.remove('active','done');if(i+1===state.round)d.classList.add('active');else if(i+1<state.round)d.classList.add('done');});}
@@ -357,8 +418,24 @@
         window.skipTutorial=function(){clearInterval(state.tutInterval);E('tutorialOverlay').classList.add('hidden');Sound.start();if(state._cb){let f=state._cb;state._cb=null;f();}};
         window.closeVictory=function(){E('victoryOverlay').classList.add('hidden');};
 
-        document.getElementById('joinBtn').addEventListener('click',joinRoom);
-        E('btnStart').addEventListener('click',startGame);
+        let champions=[];
+        try{const s=localStorage.getItem('throneChamps');if(s)champions=JSON.parse(s);}catch(e){}
+        function saveChamps(){localStorage.setItem('throneChamps',JSON.stringify(champions));}
+        function addChampion(name,sec){
+            if(!name||name==='@الملك'||name==='@المتسابق'||sec<5)return;
+            let m=Math.floor(sec/60),s=sec%60,dur=m>0?`${m}د ${s}ث`:`${s} ث`;
+            champions.unshift({name,duration:dur,reignSeconds:sec,timestamp:Date.now()});
+            if(champions.length>20)champions.pop();
+            saveChamps();renderChamps();
+        }
+        function renderChamps(){
+            let l=E('championsList');if(!l)return;
+            if(!champions.length){l.innerHTML='<div style="color:#95a5a6;text-align:center;">لا يوجد أبطال بعد</div>';return;}
+            l.innerHTML=champions.map((c,i)=>`<div class="champion-entry"><span>${i+1}. ${c.name}</span><span>⏱️ ${c.duration}</span></div>`).join('');
+        }
+
+        document.getElementById('joinBtn').addEventListener('click', joinRoom);
+        E('btnStart').addEventListener('click', startGame);
     </script>
 </body>
 </html>
