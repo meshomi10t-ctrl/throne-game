@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - المسار الخماسي الثابت</title>
+    <title>🏰 بطولة ساحة النزاع - تحديث السهم المعاكس والمزامنة</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -33,10 +33,9 @@
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
         
-        /* شبكة تحدي الشيء المختلف */
-        .grid-odd { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; margin-top: 10px; }
-        .odd-btn { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; font-size: 28px; cursor: pointer; transition: 0.1s; }
-        .odd-btn:active { transform: scale(0.92); }
+        /* واجهة السهم الكبير */
+        .arrow-display { font-size: 65px; margin: 10px 0; font-weight: bold; color: #fff; animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
         
         .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
         .leaderboard-table th, .leaderboard-table td { padding: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -123,7 +122,10 @@ let myRoundPoints = 0;
 let opponentRoundPoints = 0;
 let kingStreak = 0; 
 let secretCode = ""; 
-let oddTargetIndex = 0; 
+
+// متغيرات لعبة السهم المعاكس المتزامنة أونلاين
+let arrowTargetDirection = ""; 
+let arrowCommandMode = ""; 
 
 const peerConfig = {
     host: '0.peerjs.com', port: 443, secure: true,
@@ -187,7 +189,7 @@ function setupConnection() {
             E('startGameBtn').style.display = 'block';
         } else {
             E('roomTitle').textContent = 'تم حجز مقعدك كمتحدي!';
-            E('statusText').textContent = 'الملك يطلق الجولة الأولى الآن...';
+            E('statusText').textContent = 'بانتظار إطلاق الملك صافرة البداية...';
         }
     });
 
@@ -210,10 +212,16 @@ function setupConnection() {
             kingStreak = data.currentStreak;
             E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
         }
+        
+        // حل أزمة توقف الشاشة للمتسابق: الانتقال الإجباري المباشر لساحة القتال للطرفين فور البداية
         if (data.type === 'triggerNextGame') {
+            E('roomScreen').classList.remove('active');
+            E('arenaScreen').classList.add('active');
+            
             currentRoundNum = data.roundNum;
             secretCode = data.extraData || "";
-            oddTargetIndex = data.oddIndex !== undefined ? data.oddIndex : 0;
+            arrowTargetDirection = data.arrowDir || "";
+            arrowCommandMode = data.arrowCmd || "";
             runGameStartLogic();
         }
         if (data.type === 'roundPointsUpdate') {
@@ -243,7 +251,8 @@ function setupConnection() {
             resetTournamentData();
             E('roomScreen').classList.add('active');
             E('arenaScreen').classList.remove('active');
-            E('statusText').textContent = "أنت الملك المستضيف الجديد! بانتظار متحدي...";
+            E('statusText').textContent = "أنت الملك الجديد! بانتظار متحدي يدخل مجلسك الخاص يدوياً أو عبر الرابط.";
+            E('startGameBtn').style.display = "none";
         }
     });
 
@@ -257,7 +266,7 @@ E('startGameBtn').addEventListener('click', () => {
     resetTournamentData();
     E('roomScreen').classList.remove('active');
     E('arenaScreen').classList.add('active');
-    kingFireNextRound(); // تشغيل الجولة الأولى تلقائياً
+    kingFireNextRound(); 
 });
 
 function resetTournamentData() {
@@ -269,16 +278,31 @@ function resetTournamentData() {
     E('challengerScore').textContent = "0";
 }
 
-// دالة الملك لتجهيز حزم البيانات وإطلاق الجولة بشكل متزامن
 function kingFireNextRound() {
     let extra = "";
-    let randomOddIdx = 0;
+    let randomDir = "";
+    let randomCmd = "";
     
     if(currentRoundNum === 5) { extra = Math.floor(1000 + Math.random() * 9000).toString(); secretCode = extra; }
-    if(currentRoundNum === 4) { randomOddIdx = Math.floor(Math.random() * 9); oddTargetIndex = randomOddIdx; }
+    
+    // إعدادات التحكم المتزامنة للعبة السهم المعاكس (الجولة 4)
+    if(currentRoundNum === 4) {
+        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"];
+        const cmds = ["امتثل", "خالف"];
+        randomDir = dirs[Math.floor(Math.random() * dirs.length)];
+        randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
+        arrowTargetDirection = randomDir;
+        arrowCommandMode = randomCmd;
+    }
     
     if (conn && conn.open) {
-        conn.send({ type: 'triggerNextGame', roundNum: currentRoundNum, extraData: extra, oddIndex: randomOddIdx });
+        conn.send({ 
+            type: 'triggerNextGame', 
+            roundNum: currentRoundNum, 
+            extraData: extra, 
+            arrowDir: randomDir, 
+            arrowCmd: randomCmd 
+        });
     }
     runGameStartLogic();
 }
@@ -295,11 +319,10 @@ function runGameStartLogic() {
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
     clearInterval(gameTimer);
 
-    // ربط الجولة باللعبة المحددة لها بالترتيب
     if (currentRoundNum === 1) startClickGame();
     else if (currentRoundNum === 2) startColorGame();
     else if (currentRoundNum === 3) startMathGame();
-    else if (currentRoundNum === 4) startOddGame();
+    else if (currentRoundNum === 4) startArrowGame(); // تشغيل اللعبة البديلة هنا
     else if (currentRoundNum === 5) startGuessGame();
 }
 
@@ -356,42 +379,52 @@ function startMathGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
-// [الجولة 4. تحدي الشيء المختلف]
-function startOddGame() {
-    E('currentGameTitle').textContent = "الشيء المختلف 🕵️‍♂️"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-    const emojiPool = [
-        { normal: '😂', odd: '😁' }, { normal: '🍏', odd: '🍐' }, 
-        { normal: '🐱', odd: '🦊' }, { normal: '🎈', odd: '🏮' },
-        { normal: '⚽', odd: '🏀' }, { normal: '🔒', odd: '🔓' }
-    ];
-    let currentSet = emojiPool[Math.floor(Math.random() * emojiPool.length)];
-
-    function buildGrid() {
-        E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa; margin-bottom:5px;">اعثر على الرمز المختلف واضغط عليه بسرعة!</p><div class="grid-odd" id="oddGridBox"></div>`;
-        for(let i = 0; i < 9; i++) {
-            let b = document.createElement('button'); b.className = 'odd-btn';
-            if(i === oddTargetIndex) {
-                b.textContent = currentSet.odd;
-                b.onclick = () => {
-                    myRoundPoints += 4; syncScoresUI();
-                    conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
-                    if(myRole === 'king') { 
-                        oddTargetIndex = Math.floor(Math.random() * 9);
-                        if (conn && conn.open) conn.send({ type: 'triggerNextGame', roundNum: 4, oddIndex: oddTargetIndex });
-                        buildGrid();
-                    } 
-                };
-            } else {
-                b.textContent = currentSet.normal;
-                b.onclick = () => {
-                    myRoundPoints = Math.max(0, myRoundPoints - 2); syncScoresUI();
-                    conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
-                };
-            }
-            E('oddGridBox').appendChild(b);
-        }
+// [الجولة 4. تحدي السهم المعاكس الجديد بدلاً من الشيء المختلف 🏹]
+function startArrowGame() {
+    E('currentGameTitle').textContent = "السهم المعاكس 🏹"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+    
+    function renderArrowUI() {
+        let cmdColor = arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
+        E('gameArea').innerHTML = `
+            <p style="font-size:13px; color:#aaa;">انظر للأمر والسهم ونفذ الخيار الأصح:</p>
+            <div style="background:rgba(255,255,255,0.05); padding:5px 25px; border-radius:10px; font-size:24px; font-weight:bold; color:${cmdColor};">${arrowCommandMode}</div>
+            <div class="arrow-display">${arrowTargetDirection}</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkArrowAnswer('⬅️')">يمين (للخلف) ⬅️</button>
+                <button class="option-btn" onclick="checkArrowAnswer('➡️')">يسار (للأمام) ➡️</button>
+                <button class="option-btn" onclick="checkArrowAnswer('⬆️')">فوق ⬆️</button>
+                <button class="option-btn" onclick="checkArrowAnswer('⬇️')">تحت ⬇️</button>
+            </div>
+        `;
     }
-    buildGrid();
+    
+    window.checkArrowAnswer = function(playerChoice) {
+        let isCorrect = false;
+        // حساب الإجابة بناءً على نظام الامتثال أو المخالفة
+        if (arrowCommandMode === "امتثل") {
+            if (playerChoice === arrowTargetDirection) isCorrect = true;
+        } else { // حالة خالف (العكس تماماً)
+            if (arrowTargetDirection === "➡️" && playerChoice === "⬅️") isCorrect = true;
+            if (arrowTargetDirection === "⬅️" && playerChoice === "➡️") isCorrect = true;
+            if (arrowTargetDirection === "⬆️" && playerChoice === "⬇️") isCorrect = true;
+            if (arrowTargetDirection === "⬇️" && playerChoice === "⬆️") isCorrect = true;
+        }
+
+        if (isCorrect) myRoundPoints += 4; else myRoundPoints = Math.max(0, myRoundPoints - 2);
+        syncScoresUI();
+        conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
+        
+        // إعداد السهم التالي بشكل متزامن من خلال الملك المستضيف
+        if(myRole === 'king') {
+            const dirs = ["➡️", "⬅️", "⬆️", "⬇️"]; const cmds = ["امتثل", "خالف"];
+            arrowTargetDirection = dirs[Math.floor(Math.random() * dirs.length)];
+            arrowCommandMode = cmds[Math.floor(Math.random() * cmds.length)];
+            if (conn && conn.open) conn.send({ type: 'triggerNextGame', roundNum: 4, arrowDir: arrowTargetDirection, arrowCmd: arrowCommandMode });
+            renderArrowUI();
+        }
+    };
+
+    renderArrowUI();
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
 }
 
@@ -451,7 +484,6 @@ function executeTournamentSettlement() {
     let finalWinnerRole = "king";
     if (kingTotalScore > challengerTotalScore) finalWinnerRole = "king";
     else if (challengerTotalScore > kingTotalScore) finalWinnerRole = "challenger";
-    // في حال التعادل بالنقاط التراكمية تماماً، الأولوية لحامي العرش (الملك) للبقاء
 
     if (myRole === 'king') {
         if (finalWinnerRole === 'king') {
@@ -467,7 +499,6 @@ function executeTournamentSettlement() {
             conn.send({ type: 'finalKickout', msg: `💀 سقطت قواك الكلية في مجموع النقاط! تم إقصاؤك من مجلس الملك ${myName} بعد صراع مرير دام لـ 5 جولات كاملة.` });
             resetTournamentData();
         } else {
-            // المتحدي تجاوز الملك في النقاط الكلية -> يتوج المتحدي ويطرد الملك القديم نفسه
             conn.send({ type: 'becameKing' });
             alert(`💀 سقط العرش! تمت الإطاحة بك بمجموع النقاط (${kingTotalScore} مقابل ${challengerTotalScore}). سيتم إخراجك الآن.`);
             location.reload();
