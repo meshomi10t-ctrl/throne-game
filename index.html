@@ -35,8 +35,8 @@
         .reaction-zone { width: 100%; height: 180px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; cursor: pointer; transition: 0.1s; }
         
         /* صندوق اختيار الألعاب للملك */
-        .game-select-box { display: none; background: rgba(0,0,0,0.9); border: 2px solid var(--gold); border-radius: 15px; padding: 15px; position: absolute; width: 90%; z-index: 10; }
-        .game-select-box button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .game-select-box { display: none; background: rgba(0,0,0,0.95); border: 2px solid var(--gold); border-radius: 15px; padding: 15px; position: absolute; width: 90%; z-index: 20; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .game-select-box button { width: 100%; padding: 12px; margin: 6px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -62,9 +62,11 @@
     </div>
     
     <button class="btn btn-green" id="startGameBtn" style="display:none;">🚀 بدء التحدي</button>
-    
+</div>
+
+<div class="screen" id="arenaScreen">
     <div class="game-select-box" id="gameSelectBox">
-        <h3 style="color:var(--gold); margin-bottom:10px;">اختر نوع التحدي:</h3>
+        <h3 style="color:var(--gold); margin-bottom:10px;">اختر التحدي التالي:</h3>
         <button style="background: #e74c3c; color: white;" onclick="selectGame(1)">1. تحدي النقر السريع 👑</button>
         <button style="background: #3498db; color: white;" onclick="selectGame(2)">2. تحدي اللون الصحيح 🎨</button>
         <button style="background: #2ecc71; color: white;" onclick="selectGame(3)">3. تحدي ردة الفعل (أخضر/أحمر) ⏱️</button>
@@ -72,9 +74,7 @@
         <button style="background: #f1c40f; color: black;" onclick="selectGame(5)">5. فك الرقم السري (4 أرقام) 🔒</button>
         <button style="background: #555; color: white; margin-top:10px;" onclick="E('gameSelectBox').style.display='none'">إلغاء</button>
     </div>
-</div>
 
-<div class="screen" id="arenaScreen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <span style="font-size:20px; color:var(--gold);" id="currentGameTitle">👑 ساحة النزاع</span>
         <span style="background:var(--red); padding:5px 15px; border-radius:20px; font-size: 14px;">🔴 مباشر</span>
@@ -97,7 +97,7 @@ let peer = null, conn = null, myRole = '', myName = '';
 let myScore = 0, opponentScore = 0;
 let gameTimer = null, reactionTimeout = null;
 let currentActiveGame = 1;
-let secretCode = ""; // خاص بلعبة التخمين
+let secretCode = ""; 
 
 const peerConfig = {
     host: '0.peerjs.com', port: 443, secure: true,
@@ -180,6 +180,11 @@ function setupConnection() {
                 if (myRole === 'king') E('startGameBtn').style.display = 'block';
             }
         }
+        if (data.type === 'prepareNextRound') {
+            // استقبال أمر الاستعداد لجولة جديدة عند المتحدي وتصفير شاشته القديمة
+            E('gameArea').innerHTML = `<p style="color:var(--gold); font-weight:bold;">جاري اختيار التحدي من قِبل الملك... 🤔</p>`;
+            E('timerDisplay').textContent = "⏱️ --";
+        }
         if (data.type === 'startGame') {
             currentActiveGame = data.gameId;
             secretCode = data.extraData || "";
@@ -195,24 +200,25 @@ function setupConnection() {
             endGameLogic(data.winnerName + " ضغط أولاً وفاز بالنقرة!");
         }
         if (data.type === 'guessCorrect') {
-            opponentScore = 100; // قيمة للفوز المباشر
+            opponentScore = 100; 
             endGameLogic(`🎉 ${data.winnerName} فك الشفرة بنجاح! الرقم هو ${secretCode}`);
         }
     });
 }
 
 E('startGameBtn').addEventListener('click', () => {
-    E('gameSelectBox').style.display = 'block'; // فتح قائمة الألعاب للملك
+    E('roomScreen').classList.remove('active');
+    E('arenaScreen').classList.add('active');
+    E('gameSelectBox').style.display = 'block'; 
 });
 
 function selectGame(id) {
     E('gameSelectBox').style.display = 'none';
     currentActiveGame = id;
     
-    // إذا كانت اللعبة هي الخامسة (تخمين الرقم السري)، يولد الملك الرقم ويرسله للمتحدي
     let extra = "";
     if(id === 5) {
-        extra = Math.floor(1000 + Math.random() * 9000).toString(); // 4 خانات عشوائية
+        extra = Math.floor(1000 + Math.random() * 9000).toString(); 
         secretCode = extra;
     }
     
@@ -233,8 +239,6 @@ function updateScoreDisplays() {
 }
 
 function runGameStartLogic() {
-    E('roomScreen').classList.remove('active');
-    E('arenaScreen').classList.add('active');
     myScore = 0; opponentScore = 0; updateScoreDisplays();
     clearInterval(gameTimer); clearTimeout(reactionTimeout);
 
@@ -275,7 +279,7 @@ function startColorGame() {
 
     function nextColorRound() {
         let textWord = colors[Math.floor(Math.random() * colors.length)];
-        let targetColor = colors[Math.floor(Math.random() * colors.length)]; // هذا هو المطلوب مطابقتة
+        let targetColor = colors[Math.floor(Math.random() * colors.length)]; 
         
         E('gameArea').innerHTML = `
             <p style="font-size:14px; color:#aaa; margin-bottom:5px;">إختر الزر الذي يطابق لون الخط الحالي:</p>
@@ -310,7 +314,7 @@ function startReactionGame() {
     E('gameArea').innerHTML = `<div class="reaction-zone" id="reactZone" style="background:#e74c3c;">إنتظر اللون الأخضر... 🛑</div>`;
     
     let canClick = false;
-    let randomDelay = 2000 + Math.random() * 4000; // وقت عشوائي بين 2 و 6 ثواني
+    let randomDelay = 2000 + Math.random() * 4000; 
 
     reactionTimeout = setTimeout(() => {
         canClick = true;
@@ -403,7 +407,6 @@ function startGuessGame() {
 
 function endGameLogic(customMsg = "") {
     clearInterval(gameTimer); clearTimeout(reactionTimeout);
-    if(E('actionBtn')) E('actionBtn').disabled = true;
     
     let winMessage = "";
     if(customMsg) {
@@ -417,11 +420,16 @@ function endGameLogic(customMsg = "") {
     E('gameArea').innerHTML = `
         <h2 style="color:var(--gold); margin-bottom:10px;">انتهى التحدي!</h2>
         <p style="font-size:16px; margin-bottom:15px; padding:0 10px;">${winMessage}</p>
-        ${myRole === 'king' ? '<button class="btn btn-green" id="replayMenuBtn" style="width:auto; padding:10px 25px;">🔄 مواجهة جديدة</button>' : '<p style="color:#aaa; font-size:13px;">في انتظار أن يختار الملك التحدي القادم...</p>'}
+        ${myRole === 'king' ? '<button class="btn btn-green" id="replayMenuBtn" style="width:auto; padding:10px 25px;">🔄 مواجهة جديدة</button>' : '<p style="color:#aaa; font-size:13px;" id="challengerWaitText">في انتظار أن يختار الملك التحدي القادم...</p>'}
     `;
 
     if(myRole === 'king') {
         E('replayMenuBtn').addEventListener('click', () => {
+            // إرسال إشارة فورية للمتحدي لتنظيف شاشته والاستعداد
+            if (conn && conn.open) {
+                conn.send({ type: 'prepareNextRound' });
+            }
+            // فتح صندوق الألعاب للملك ليختار مجدداً
             E('gameSelectBox').style.display = 'block';
         });
     }
