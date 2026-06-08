@@ -27,7 +27,7 @@
 </head>
 <body>
 
-<!-- شاشة البداية (الاسم والدور) -->
+<!-- شاشة البداية -->
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
     <div class="title">تحدي العرش</div>
@@ -35,13 +35,13 @@
     <button class="btn btn-green" id="joinBtn">🚀 انضم كمتسابق</button>
 </div>
 
-<!-- شاشة الغرفة (في انتظار الخصم) -->
+<!-- شاشة الغرفة (ملك أو متحدي) -->
 <div class="screen" id="roomScreen">
-    <div class="logo">🔗</div>
-    <div class="title" id="roomTitle">أنت الملك! شارك هذا المعرف</div>
+    <div class="logo" id="roomIcon">👑</div>
+    <div class="title" id="roomTitle">أنت الملك!</div>
     <div class="room-id" id="roomIdDisplay">.......</div>
-    <div class="status" id="statusText">في انتظار الخصم...</div>
-    <p>أو أدخل معرف غرفة للانضمام:</p>
+    <div class="status" id="statusText">شارك هذا المعرف مع الخصم</div>
+    <p>أو أدخل معرف غرفة للانضمام كمتحدي:</p>
     <input id="remoteRoomId" placeholder="معرف الغرفة">
     <button class="btn btn-purple" id="manualConnectBtn">🔗 انضم للغرفة</button>
     <button class="btn btn-green" id="startGameBtn" style="display:none;">🚀 بدء التحدي</button>
@@ -68,38 +68,53 @@ const E = id => document.getElementById(id);
 let peer, conn, myRole, myName;
 let roomId = new URLSearchParams(window.location.search).get('room');
 
-// الزر الرئيسي
+// إذا دخل المتحدي عبر رابط معرف الغرفة، نعرض شاشة الغرفة مباشرة بعد إدخال الاسم
+if (roomId) {
+    E('loginScreen').classList.remove('active');
+    E('roomScreen').classList.add('active');
+    E('roomTitle').textContent = 'الانضمام كمتحدي';
+    E('roomIcon').textContent = '🗡️';
+    E('roomIdDisplay').style.display = 'none';
+    E('remoteRoomId').value = roomId;
+    E('manualConnectBtn').style.display = 'none'; // سيتم الاتصال تلقائياً
+    // ننتظر حتى يضغط المستخدم "انضم كمتسابق" على شاشة الدخول؟ لا، نحتاج لاسمه.
+    // لذا سنضيف حقلاً للاسم في هذه الشاشة إذا لزم الأمر. لكن الأسهل: نطلب الاسم قبل الانتقال.
+    // سأعدل: إذا كان هناك roomId، نطلب الاسم أولاً، ثم ننضم.
+    // لذا سأضيف شاشة صغيرة لإدخال الاسم في هذه الحالة.
+    let name = prompt('أدخل اسمك للانضمام كمتحدي:');
+    if (name) {
+        myName = name.startsWith('@') ? name : '@' + name;
+        startAsChallenger(roomId);
+    } else {
+        // العودة للبداية
+        location.href = location.pathname;
+    }
+}
+
+// الزر الرئيسي (للملك فقط)
 document.getElementById('joinBtn').addEventListener('click', () => {
     myName = E('playerName').value.trim();
     if (!myName) return;
     myName = myName.startsWith('@') ? myName : '@' + myName;
-
-    if (roomId) {
-        // يوجد معرف في الرابط: انضم كمتحدي
-        startAsChallenger(roomId);
-    } else {
-        // لا يوجد معرف: كن ملكًا
-        startAsKing();
-    }
+    // الملك لا يعتمد على roomId أبداً
+    startAsKing();
 });
 
-// زر الاتصال اليدوي (إذا لم يكن هناك معرف في الرابط)
+// زر الاتصال اليدوي (للمتحدي الذي يدخل بدون رابط)
 document.getElementById('manualConnectBtn').addEventListener('click', () => {
     const remoteId = E('remoteRoomId').value.trim();
-    if (remoteId) {
-        startAsChallenger(remoteId);
-    }
+    if (!remoteId) return;
+    myName = prompt('أدخل اسمك:');
+    if (!myName) return;
+    myName = myName.startsWith('@') ? myName : '@' + myName;
+    startAsChallenger(remoteId);
 });
 
 function startAsKing() {
     peer = new Peer();
     peer.on('open', (id) => {
         myRole = 'king';
-        // تحديث رابط الصفحة ليشمل معرف الغرفة (دون إعادة تحميل)
-        window.history.replaceState({}, '', `?room=${id}`);
-        roomId = id;
-        showRoomScreen(id);
-        // استقبال اتصال المتحدي
+        showRoomScreen(id, true);
         peer.on('connection', (c) => {
             conn = c;
             setupConnection();
@@ -112,23 +127,32 @@ function startAsChallenger(remoteId) {
     peer = new Peer();
     conn = peer.connect(remoteId);
     setupConnection();
-    // إظهار شاشة الغرفة مع رسالة "جارٍ الاتصال..."
-    showRoomScreen(remoteId);
-    E('roomTitle').textContent = 'جارٍ الاتصال بالغرفة...';
-    E('statusText').textContent = 'محاولة الاتصال...';
+    showRoomScreen(remoteId, false);
+    E('roomTitle').textContent = 'متصل بالغرفة! في انتظار بدء الملك...';
+    E('statusText').textContent = 'أنت المتحدي. انتظر بدء التحدي.';
 }
 
-function showRoomScreen(id) {
+function showRoomScreen(id, isKing) {
     E('loginScreen').classList.remove('active');
     E('roomScreen').classList.add('active');
-    if (id) E('roomIdDisplay').textContent = id;
+    if (isKing) {
+        E('roomIdDisplay').textContent = id;
+        E('roomTitle').textContent = 'أنت الملك! شارك هذا المعرف';
+        E('statusText').textContent = 'في انتظار انضمام الخصم...';
+        E('roomIcon').textContent = '👑';
+        E('remoteRoomId').style.display = 'none';
+        E('manualConnectBtn').style.display = 'none';
+    } else {
+        E('roomIdDisplay').style.display = 'none';
+        E('roomIcon').textContent = '🗡️';
+        E('remoteRoomId').style.display = 'none';
+        E('manualConnectBtn').style.display = 'none';
+    }
 }
 
 function setupConnection() {
     conn.on('open', () => {
-        // إرسال بيانات اللاعب
         conn.send({ type: 'name', name: myName, role: myRole });
-
         conn.on('data', (data) => {
             if (data.type === 'name') {
                 if (data.role === 'king') {
@@ -136,30 +160,21 @@ function setupConnection() {
                 } else {
                     E('challengerName').textContent = data.name;
                 }
-                // تحديث شاشة الغرفة
                 if (myRole === 'king' && data.role === 'challenger') {
                     E('statusText').textContent = 'الخصم متصل!';
                     E('startGameBtn').style.display = 'block';
                 }
-                if (myRole === 'challenger' && data.role === 'king') {
-                    E('roomTitle').textContent = 'متصل بالغرفة! في انتظار بدء الملك...';
-                    E('statusText').textContent = 'أنت المتحدي. انتظر بدء التحدي.';
-                }
             }
             if (data.type === 'startGame') {
-                // بدء اللعبة على جهاز المتحدي
                 startGame();
             }
         });
-
-        // إذا كان المتحدي، أرسل اسمه بعد فتح الاتصال مباشرة
         if (myRole === 'challenger') {
-            // تم الإرسال في السطر الأول
+            // إعلام الملك أنني موجود
         }
     });
 }
 
-// زر بدء التحدي (يظهر للملك فقط)
 document.getElementById('startGameBtn').addEventListener('click', () => {
     if (conn) conn.send({ type: 'startGame' });
     startGame();
@@ -170,8 +185,8 @@ function startGame() {
     E('arenaScreen').classList.add('active');
     E('kingName').textContent = myRole === 'king' ? myName : E('kingName').textContent;
     E('challengerName').textContent = myRole === 'challenger' ? myName : E('challengerName').textContent;
-    // سيتم إكمال الجولات لاحقًا
-    alert('اللعبة بدأت! (سيتم إضافة الجولات لاحقًا)');
+    // سيتم إضافة الجولات لاحقاً
+    alert('اللعبة بدأت! (سيتم إضافة الجولات لاحقاً)');
 }
 </script>
 </body>
