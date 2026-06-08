@@ -120,10 +120,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script>
-        // استخدام GUN كقاعدة بيانات لا مركزية (مجانية، بدون إعدادات)
+        // الاتصال بـ GUN (خادم عام مجاني)
         const gun = Gun(['https://gun-manhattan.herokuapp.com/gun']);
         const room = gun.get('throne_room_shared');
 
+        // الصوتيات
         const Sound = {
             ctx: null, muted: false,
             init() { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} },
@@ -143,15 +144,15 @@
         const rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
 
         let myRole=null, myName='';
-        let gameActive=false;
+        let heartbeatInterval=null;
 
-        // ==================== نظام الغرفة المشتركة ====================
+        // ==================== نظام الغرفة المشتركة عبر GUN ====================
         function joinRoom() {
             myName = E('playerNameInput').value.trim();
             if (!myName) return;
             myName = myName.startsWith('@') ? myName : '@' + myName;
 
-            // الاستماع لتغيرات الغرفة
+            // مراقبة التغييرات في الغرفة
             room.open((data) => {
                 if (!data) return;
                 const r = data;
@@ -170,17 +171,17 @@
                 }
             });
 
-            // قراءة الحالة الحالية
+            // قراءة الحالة الحالية للغرفة لتعيين الدور
             room.once((data) => {
                 const r = data || {};
                 if (!r.king) {
                     myRole = 'king';
                     room.get('king').put({ name: myName, score: 0 });
-                    E('kingName').textContent = myName;
+                    console.log('أصبحت ملكاً');
                 } else if (!r.challenger) {
                     myRole = 'challenger';
                     room.get('challenger').put({ name: myName, score: 0 });
-                    E('challengerName').textContent = myName;
+                    console.log('أصبحت متحدياً');
                 } else {
                     alert('الغرفة ممتلئة حالياً. حاول مرة أخرى.');
                     return;
@@ -190,7 +191,32 @@
             });
         }
 
+        // تنظيف عند مغادرة الصفحة
+        window.addEventListener('beforeunload', () => {
+            if (myRole) room.get(myRole).put(null);
+        });
+
         document.getElementById('joinBtn').addEventListener('click', joinRoom);
+
+        // ==================== مؤقت لطرد اللاعبين غير النشطين ====================
+        setInterval(() => {
+            if (myRole) {
+                room.get(myRole).get('lastBeat').put(Date.now());
+            }
+        }, 3000);
+
+        // حذف اللاعبين غير النشطين (أكثر من 10 ثوانٍ)
+        setInterval(() => {
+            room.once((data) => {
+                const r = data || {};
+                const now = Date.now();
+                for (const role of ['king', 'challenger']) {
+                    if (r[role] && r[role].lastBeat && (now - r[role].lastBeat > 10000)) {
+                        room.get(role).put(null);
+                    }
+                }
+            });
+        }, 5000);
     </script>
 </body>
 </html>
