@@ -181,14 +181,14 @@ function setupConnection() {
             }
         }
         if (data.type === 'prepareNextRound') {
-            // استقبال أمر الاستعداد لجولة جديدة عند المتحدي وتصفير شاشته القديمة
+            // تصفير سريع لشاشة المتحدي تمهيداً للجولة التالية لكي لا يحصل تداخل
             E('gameArea').innerHTML = `<p style="color:var(--gold); font-weight:bold;">جاري اختيار التحدي من قِبل الملك... 🤔</p>`;
             E('timerDisplay').textContent = "⏱️ --";
         }
         if (data.type === 'startGame') {
             currentActiveGame = data.gameId;
             secretCode = data.extraData || "";
-            runGameStartLogic();
+            runGameStartLogic(); // تشغيل اللعبة ونقل الشاشة تلقائياً
         }
         if (data.type === 'scoreUpdate') {
             opponentScore = data.score;
@@ -206,6 +206,7 @@ function setupConnection() {
     });
 }
 
+// ضغطة زر الملك الأولى من شاشة الانتظار
 E('startGameBtn').addEventListener('click', () => {
     E('roomScreen').classList.remove('active');
     E('arenaScreen').classList.add('active');
@@ -238,7 +239,13 @@ function updateScoreDisplays() {
     }
 }
 
+// 💡 هنا تكمن قوة الإصلاح: نقل كلا الطرفين فوراً للساحة قبل بناء كود الألعاب
 function runGameStartLogic() {
+    // نضمن إغلاق أي شاشات سابقة وفتح شاشة الساحة للمتسابق والملك معاً فوراً
+    E('loginScreen').classList.remove('active');
+    E('roomScreen').classList.remove('active');
+    E('arenaScreen').classList.add('active');
+
     myScore = 0; opponentScore = 0; updateScoreDisplays();
     clearInterval(gameTimer); clearTimeout(reactionTimeout);
 
@@ -425,11 +432,9 @@ function endGameLogic(customMsg = "") {
 
     if(myRole === 'king') {
         E('replayMenuBtn').addEventListener('click', () => {
-            // إرسال إشارة فورية للمتحدي لتنظيف شاشته والاستعداد
             if (conn && conn.open) {
                 conn.send({ type: 'prepareNextRound' });
             }
-            // فتح صندوق الألعاب للملك ليختار مجدداً
             E('gameSelectBox').style.display = 'block';
         });
     }
