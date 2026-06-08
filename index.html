@@ -460,4 +460,47 @@ function executeTournamentSettlement() {
             E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
             
             E('gameArea').innerHTML = `
-                <h2 style="color:var(--gold);">👑 انتصار كاسح وحماية
+                <h2 style="color:var(--gold);">👑 انتصار كاسح وحماية العرش!</h2>
+                <p>لقد دمرت محاولات المتحدي في المجموع الكلي للنقاط!</p>
+                <p style="color:var(--green); margin-top:10px;">سلسلة صمودك الحالية: ${kingStreak} بطولات متتالية</p>
+            `;
+            conn.send({ type: 'finalKickout', msg: `💀 سقطت قواك الكلية في مجموع النقاط! تم إقصاؤك من مجلس الملك ${myName} بعد صراع مرير دام لـ 5 جولات كاملة.` });
+            resetTournamentData();
+        } else {
+            // المتحدي تجاوز الملك في النقاط الكلية -> يتوج المتحدي ويطرد الملك القديم نفسه
+            conn.send({ type: 'becameKing' });
+            alert(`💀 سقط العرش! تمت الإطاحة بك بمجموع النقاط (${kingTotalScore} مقابل ${challengerTotalScore}). سيتم إخراجك الآن.`);
+            location.reload();
+        }
+    }
+}
+
+function saveToLeaderboard(name, streak) {
+    let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
+    let playerIdx = board.findIndex(p => p.name === name);
+    if (playerIdx !== -1) {
+        if (streak > board[playerIdx].streak) { board[playerIdx].streak = streak; }
+    } else {
+        board.push({ name: name, streak: streak });
+    }
+    board.sort((a, b) => b.streak - a.streak);
+    localStorage.setItem('throne_leaderboard', JSON.stringify(board));
+    updateLeaderboardUI();
+}
+
+function updateLeaderboardUI() {
+    let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
+    let html = "";
+    if(board.length === 0) {
+        html = `<tr><td colspan="3" style="color:#777;">لا يوجد أبطال مسجلين حتى الآن. كن الأول!</td></tr>`;
+    } else {
+        board.slice(0, 5).forEach((p, idx) => {
+            let crown = idx === 0 ? '🥇 👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : '•'));
+            html += `<tr><td>${crown} ${idx+1}</td><td style="color:var(--gold); font-weight:bold;">${p.name}</td><td>${p.streak} جولات صمود</td></tr>`;
+        });
+    }
+    E('leaderboardBody').innerHTML = html;
+}
+</script>
+</body>
+</html>
