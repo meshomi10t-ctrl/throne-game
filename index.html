@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - نسخة الاتصال المستقر القطعي</title>
+    <title>🏰 بطولة ساحة النزاع - النسخة السحابية المستقرة</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -24,60 +24,35 @@
         .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
         .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
         .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; position: relative; }
-        .streak-badge { position: absolute; top: -10px; right: -5px; background: var(--red); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
         .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
         .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        
-        /* عناصر الألعاب */
         .game-click-btn { background: linear-gradient(135deg, #e74c3c, #9b59b6); border: none; color: white; font-size: 20px; font-weight: bold; padding: 20px 30px; border-radius: 50px; cursor: pointer; width: 90%; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
-        
-        /* واجهة السهم الكبير */
         .arrow-display { font-size: 65px; margin: 10px 0; font-weight: bold; color: #fff; animation: pulse 0.5s infinite alternate; }
         @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
-        
-        .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
-        .leaderboard-table th, .leaderboard-table td { padding: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .leaderboard-table th { background: rgba(241, 196, 15, 0.2); color: var(--gold); }
     </style>
 </head>
 <body>
 
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
-    <div class="title">بطولة ساحة النزاع</div>
-    <p id="loginSubtitle" style="margin-bottom: 10px; color: #ccc; font-size: 14px;"></p>
+    <div class="title">بطولة ساحة النزاع السحابية</div>
     <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
-    <button class="btn btn-green" id="joinBtn">🚀 دخول المجلس</button>
-    
-    <div style="margin-top:25px; border-top: 1px solid rgba(255,255,255,0.2); padding-top:15px;">
-        <h3 style="color:var(--gold); font-size:16px;">📜 سجل أبطال العرش التاريخي</h3>
-        <table class="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>الترتيب</th>
-                    <th>البطل</th>
-                    <th>حماية العرش (متتالي)</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboardBody"></tbody>
-        </table>
+    <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة (مثال: 555)">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+        <button class="btn btn-green" id="kingBtn">🤴 دخول كملك</button>
+        <button class="btn btn-purple" id="challengerBtn">🗡️ دخول كمتحدي</button>
     </div>
+    <div class="status" id="loginStatus"></div>
 </div>
 
-<div class="screen" id="roomScreen">
-    <div class="logo">👑</div>
-    <div class="title" id="roomTitle">جاري تهيئة العرش...</div>
-    <div class="room-id" id="roomIdDisplay">...</div>
-    <div class="status" id="statusText">جاري تأمين الغرفة...</div>
-    
-    <div id="manualConnectArea">
-        <p style="margin-top:15px; color:#aaa;">أو انضم لغرفة قائمة يدوياً:</p>
-        <input id="remoteRoomId" placeholder="اكتب رقم الغرفة هنا..." type="number">
-        <button class="btn btn-purple" id="manualConnectBtn">🔗 دخول النزاع</button>
-    </div>
-    <button class="btn btn-green" id="startGameBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
+<div class="screen" id="waitingScreen">
+    <div class="logo">⏳</div>
+    <div class="title" id="waitingTitle">في غرف الانتظار...</div>
+    <div class="room-id" id="roomIdDisplay">000</div>
+    <div class="status" id="waitingStatus">جاري المزامنة مع السيرفر السحابي...</div>
+    <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
 </div>
 
 <div class="screen" id="arenaScreen">
@@ -85,280 +60,154 @@
         <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 5</span>
         <span style="background:var(--red); padding:3px 12px; border-radius:20px; font-size: 13px;" id="currentGameTitle">انتظار...</span>
     </div>
-    
     <div class="timer" id="timerDisplay">⏱️ --</div>
-    
     <div class="arena">
-        <div class="player-box" id="kingBox">
-            <div class="streak-badge" id="kingStreakDisplay">صمود: 0</div>
-            <div style="font-size:30px;">🤴</div>
-            <div id="kingName" style="font-size:14px; overflow:hidden;">@الملك</div>
-            <div style="font-size:32px; color:var(--gold); font-weight:bold;" id="kingScore">0</div>
+        <div class="player-box">
+            <div>🤴 الملك</div><div id="kingNameDisplay" style="font-size:13px; color:#aaa;">@الملك</div>
+            <div style="font-size:32px; color:var(--gold); font-weight:bold;" id="kingScoreDisplay">0</div>
         </div>
-        <div class="player-box" id="challengerBox">
-            <div class="streak-badge" id="challengerStreakDisplay" style="display:none;">صمود: 0</div>
-            <div style="font-size:30px;">🗡️</div>
-            <div id="challengerName" style="font-size:14px; overflow:hidden;">في الانتظار...</div>
-            <div style="font-size:32px; color:var(--blue); font-weight:bold;" id="challengerScore">0</div>
+        <div class="player-box">
+            <div>🗡️ المتحدي</div><div id="challengerNameDisplay" style="font-size:13px; color:#aaa;">@المتحدي</div>
+            <div style="font-size:32px; color:var(--blue); font-weight:bold;" id="challengerScoreDisplay">0</div>
         </div>
     </div>
-    
-    <div class="game-area" id="gameArea">
-        <p style="color:#aaa;">في انتظار تدشين الجولة...</p>
-    </div>
+    <div class="game-area" id="gameArea"><p style="color:#aaa;">في انتظار إشارة انطلاق الجولة الأولى...</p></div>
 </div>
 
-<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
 const E = id => document.getElementById(id);
-let peer = null, conn = null, myRole = '', myName = '';
-let gameTimer = null;
 
-let currentRoundNum = 1;
-let kingTotalScore = 0;
-let challengerTotalScore = 0;
-
-let myRoundPoints = 0;
-let opponentRoundPoints = 0;
-let kingStreak = 0; 
-let secretCode = ""; 
-
-let arrowTargetDirection = ""; 
-let arrowCommandMode = ""; 
-
-// تحديث إعدادات الـ ICE Servers بخوادم قوقل الرسمية والأكثر استقراراً في الشرق الأوسط لتفادي الحظر والتعليق
-const stablePeerConfig = {
-    debug: 1,
-    config: { 
-        'iceServers': [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' }
-        ],
-        'sdpSemantics': 'unified-plan'
-    }
+// إعدادات اتصال سحابي عامة ومفتوحة للجميع دون قيود للتشغيل الفوري والآمن
+const firebaseConfig = {
+    databaseURL: "https://html-games-p2p-default-rtdb.firebaseio.com/"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-updateLeaderboardUI();
+let myName = "", myRole = "", roomId = "";
+let gameTimer = null, currentRoundNum = 1;
+let myRoundPoints = 0;
+let roomRef = null;
 
-let urlRoomId = new URLSearchParams(window.location.search).get('room');
-if (urlRoomId) { E('loginSubtitle').textContent = `تنبيه: ستدخل لتحدي العرش في الغرفة [ ${urlRoomId} ]`; }
+// المتغيرات الخاصة باللعبة البديلة
+let arrowTargetDirection = "", arrowCommandMode = "", secretCode = "";
 
-E('joinBtn').addEventListener('click', () => {
+// الدخول كملك
+E('kingBtn').addEventListener('click', () => { if(validateLogin()) loginAs('king'); });
+// الدخول كمتحدي
+E('challengerBtn').addEventListener('click', () => { if(validateLogin()) loginAs('challenger'); });
+
+function validateLogin() {
     myName = E('playerName').value.trim();
-    if (!myName) return alert('أدخل اسمك أولاً!');
+    roomId = E('roomNumberInput').value.trim();
+    if(!myName || !roomId) { alert("الرجاء كتابة الاسم ورقم الغرفة أولاً!"); return false; }
     myName = myName.startsWith('@') ? myName : '@' + myName;
-    E('joinBtn').disabled = true;
-    if (urlRoomId) startAsChallenger(urlRoomId); else startAsKing();
-});
-
-E('manualConnectBtn').addEventListener('click', () => {
-    const remoteId = E('remoteRoomId').value.trim();
-    if (!remoteId || remoteId.length < 3) return alert('أدخل معرف غرفة صحيح!');
-    if(!myName) myName = E('playerName').value.trim() || '@متحدي';
-    if(!myName.startsWith('@')) myName = '@' + myName;
-    startAsChallenger(remoteId);
-});
-
-function startAsKing() {
-    myRole = 'king'; kingStreak = 0;
-    E('loginScreen').classList.remove('active'); E('roomScreen').classList.add('active');
-    
-    // توليد معرف رقمي عشوائي نقي وقصير للغرفة
-    const customRoomId = Math.floor(1000 + Math.random() * 9000).toString();
-    
-    peer = new Peer(customRoomId, stablePeerConfig);
-    
-    peer.on('open', (id) => {
-        E('roomIdDisplay').textContent = id;
-        E('roomTitle').textContent = 'أنت الملك المستضيف!';
-        E('statusText').textContent = 'في انتظار تقدم متحدي لعرشك...';
-        E('kingName').textContent = myName;
-        E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
-    });
-
-    peer.on('connection', (c) => { 
-        conn = c; 
-        setupConnection(); 
-    });
-
-    peer.on('error', (err) => {
-        console.error(err);
-        E('statusText').textContent = "حدث خطأ بالشبكة، جاري إعادة التهيئة تلقائياً...";
-        setTimeout(() => { startAsKing(); }, 1500);
-    });
+    return true;
 }
 
-function startAsChallenger(remoteId) {
-    myRole = 'challenger';
-    E('loginScreen').classList.remove('active'); E('roomScreen').classList.add('active');
-    E('roomIdDisplay').style.display = 'none'; E('manualConnectArea').style.display = 'none';
-    E('roomTitle').textContent = 'جاري اختراق واجهة الملك...';
-    E('challengerName').textContent = myName;
+function loginAs(role) {
+    myRole = role;
+    roomRef = db.ref('rooms/' + roomId);
     
-    peer = new Peer(stablePeerConfig);
-    
-    peer.on('open', () => { 
-        // محاولة ربط قوية ومباشرة مع خيارات ضمان عدم الفشل
-        conn = peer.connect(remoteId, { 
-            reliable: true,
-            serialization: 'json'
-        }); 
-        setupConnection(); 
-    });
-    
-    peer.on('error', (err) => { 
-        console.error(err);
-        alert('تعذر الوصول للملك! تأكد أن الملك متصل بالإنترنت ولم يغلق الغرفة حالياً.'); 
-        location.reload(); 
-    });
-}
+    E('loginScreen').classList.remove('active');
+    E('waitingScreen').classList.add('active');
+    E('roomIdDisplay').textContent = roomId;
 
-function setupConnection() {
-    // تفعيل مهلة أمان لضمان فتح القناة فوراً
-    let connectionTimeout = setTimeout(() => {
-        if(myRole === 'challenger' && (!conn || !conn.open)) {
-            E('statusText').textContent = "الاتصال يأخذ وقتاً أطول... جاري إعادة المحاولة الفورية...";
+    if (myRole === 'king') {
+        E('waitingTitle').textContent = "أنت الملك المستضيف";
+        E('waitingStatus').textContent = "في انتظار دخول المتحدي بنفس رقم الغرفة...";
+        
+        // تصفير وتهيئة بيانات الغرفة السحابية
+        roomRef.set({
+            kingName: myName,
+            challengerName: "",
+            gameState: "waiting", // حالة الغرفة الافتراضية
+            roundNum: 1,
+            kingPoints: 0,
+            challengerPoints: 0,
+            arrowDir: "",
+            arrowCmd: "",
+            secretCode: ""
+        });
+    } else {
+        E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
+        E('waitingStatus').textContent = "جاري حجز مقعدك وربط شاشتك مع الملك...";
+        roomRef.update({ challengerName: myName });
+    }
+
+    // التنصت السحابي المباشر (تحديث فوري لكل الشاشات بدون P2P وبدون تعليق)
+    roomRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if(!data) return;
+
+        // تحديث الأسماء بداخل ساحة اللعب
+        E('kingNameDisplay').textContent = data.kingName || "@الملك";
+        E('challengerNameDisplay').textContent = data.challengerName || "في الانتظار...";
+
+        // إظهار زر البدء للملك فقط عند توفر الطرفين
+        if (myRole === 'king' && data.challengerName !== "" && data.gameState === "waiting") {
+            E('kingStartBtn').style.display = "block";
+            E('waitingStatus').textContent = `المتحدي ${data.challengerName} متصل الآن! اضغط للبدء.`;
         }
-    }, 4000);
 
-    conn.on('open', () => {
-        clearTimeout(connectionTimeout);
-        conn.send({ type: 'initData', name: myName, role: myRole, currentStreak: kingStreak });
-        if (myRole === 'king') {
-            E('statusText').textContent = 'تم رصد المتحدي بنجاح! جاهز للانطلاق.';
-            E('startGameBtn').style.display = 'block';
-        } else {
-            E('roomTitle').textContent = 'اتصالك بالملك مـؤمّـن مئة بالمئة! ✅';
-            E('statusText').textContent = 'بانتظار أن يطلق الملك جولة النقر السريع الأولى...';
-        }
-    });
+        // تحديث النقاط المباشرة المعروضة في الشاشتين من السيرفر
+        E('kingScoreDisplay').textContent = data.kingPoints || 0;
+        E('challengerScoreDisplay').textContent = data.challengerPoints || 0;
 
-    conn.on('data', (data) => {
-        if (data.type === 'initData') {
-            if (data.role === 'king') {
-                E('kingName').textContent = data.name;
-                kingStreak = data.currentStreak;
-                E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
-            } else {
-                E('challengerName').textContent = data.name;
-                if (myRole === 'king') {
-                    conn.send({ type: 'syncStreak', currentStreak: kingStreak });
-                    E('statusText').textContent = `المتحدي ${data.name} في الساحة المباشرة!`;
-                    E('startGameBtn').style.display = 'block';
-                }
+        // فك تعليق المتسابق والانتقال التلقائي الإجباري الفوري عند تغيير حالة اللعبة
+        if (data.gameState === "playing") {
+            if (E('waitingScreen').classList.contains('active')) {
+                E('waitingScreen').classList.remove('active');
+                E('arenaScreen').classList.add('active');
+            }
+            
+            // في حال رصد تغيير في الجولة أو اللعبة
+            if (currentRoundNum !== data.roundNum || E('currentGameTitle').textContent === "انتظار...") {
+                currentRoundNum = data.roundNum;
+                arrowTargetDirection = data.arrowDir;
+                arrowCommandMode = data.arrowCmd;
+                secretCode = data.secretCode;
+                runGameStartLogic();
             }
         }
-        if (data.type === 'syncStreak') {
-            kingStreak = data.currentStreak;
-            E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
-        }
-        
-        if (data.type === 'triggerNextGame') {
-            // تدمير شاشة الانتظار المعلقة نهائياً ونقل كلا الطرفين لساحة النزاع فوراً
-            E('roomScreen').classList.remove('active');
-            E('loginScreen').classList.remove('active');
-            E('arenaScreen').classList.add('active');
-            
-            currentRoundNum = data.roundNum;
-            secretCode = data.extraData || "";
-            arrowTargetDirection = data.arrowDir || "";
-            arrowCommandMode = data.arrowCmd || "";
-            runGameStartLogic();
-        }
-        if (data.type === 'roundPointsUpdate') {
-            opponentRoundPoints = data.points;
-            syncScoresUI();
-        }
-        if (data.type === 'guessCorrect') {
-            opponentRoundPoints = 15; 
-            syncScoresUI();
-            endRoundLogic(`🎉 ${data.winnerName} فك الشفرة السرية! الرقم هو ${secretCode}`);
-        }
-        if (data.type === 'finalKickout') {
-            alert(data.msg);
-            location.reload(); 
-        }
-        if (data.type === 'becameKing') {
-            alert("👑 تحية للملك الجديد! تربع على العرش بنجاح!");
-            myRole = 'king';
-            kingStreak = 1; 
-            saveToLeaderboard(myName, kingStreak);
-            
-            E('kingName').textContent = myName;
-            E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
-            E('challengerName').textContent = "في انتظار متحدي جديد...";
-            E('challengerScore').textContent = "0";
-            
-            resetTournamentData();
-            E('roomScreen').classList.add('active');
-            E('arenaScreen').classList.remove('active');
-            E('statusText').textContent = "أنت الملك المستضيف الحالي! شارك كود الغرفة بالأسفل.";
-            E('startGameBtn').style.display = "none";
-        }
-    });
 
-    conn.on('close', () => {
-        alert('انقطع الاتصال أو غادر الطرف الآخر الساحة!');
-        location.reload();
+        // في حال انتهاء اللعبة بالكامل وإصدار تصفية كيك آوت
+        if (data.gameState === "ended") {
+            alert(data.endMessage || "انتهت البطولة!");
+            location.reload();
+        }
     });
 }
 
-E('startGameBtn').addEventListener('click', () => {
-    resetTournamentData();
-    E('roomScreen').classList.remove('active');
-    E('arenaScreen').classList.add('active');
-    kingFireNextRound(); 
+// ضغطة زر ابدأ من الملك
+E('kingStartBtn').addEventListener('click', () => {
+    roomRef.update({ gameState: "playing" });
+    kingFireNextRound();
 });
 
-function resetTournamentData() {
-    currentRoundNum = 1;
-    kingTotalScore = 0;
-    challengerTotalScore = 0;
-    E('roundDisplay').textContent = `🚩 الجولة: 1 / 5`;
-    E('kingScore').textContent = "0";
-    E('challengerScore').textContent = "0";
-}
-
 function kingFireNextRound() {
-    let extra = "";
-    let randomDir = "";
-    let randomCmd = "";
-    
-    if(currentRoundNum === 5) { extra = Math.floor(1000 + Math.random() * 9000).toString(); secretCode = extra; }
-    
+    let extra = "", randomDir = "", randomCmd = "";
+    if(currentRoundNum === 5) extra = Math.floor(1000 + Math.random() * 9000).toString();
     if(currentRoundNum === 4) {
-        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"];
-        const cmds = ["امتثل", "خالف"];
+        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
         randomDir = dirs[Math.floor(Math.random() * dirs.length)];
         randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
-        arrowTargetDirection = randomDir;
-        arrowCommandMode = randomCmd;
     }
     
-    if (conn && conn.open) {
-        conn.send({ 
-            type: 'triggerNextGame', 
-            roundNum: currentRoundNum, 
-            extraData: extra, 
-            arrowDir: randomDir, 
-            arrowCmd: randomCmd 
-        });
-    }
-    runGameStartLogic();
-}
-
-function syncScoresUI() {
-    let liveKingScore = kingTotalScore + (myRole === 'king' ? myRoundPoints : opponentRoundPoints);
-    let liveChallengerScore = challengerTotalScore + (myRole === 'challenger' ? myRoundPoints : opponentRoundPoints);
-    E('kingScore').textContent = liveKingScore;
-    E('challengerScore').textContent = liveChallengerScore;
+    // إرسال تفاصيل الجولة الجديدة للسيرفر السحابي ليقرأها المتسابق فوراً
+    roomRef.update({
+        roundNum: currentRoundNum,
+        arrowDir: randomDir,
+        arrowCmd: randomCmd,
+        secretCode: extra
+    });
 }
 
 function runGameStartLogic() {
-    myRoundPoints = 0; opponentRoundPoints = 0; syncScoresUI();
+    myRoundPoints = 0;
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
     clearInterval(gameTimer);
 
@@ -369,207 +218,141 @@ function runGameStartLogic() {
     else if (currentRoundNum === 5) startGuessGame();
 }
 
-// [جولة 1. تحدي النقر السريع]
+// [الجولات الخمس المزامنة سحابياً بالكامل]
 function startClickGame() {
-    E('currentGameTitle').textContent = "النقر السريع 👑"; let timeLeft = 10; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+    E('currentGameTitle').textContent = "النقر السريع 👑"; let timeLeft = 10;
     E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 🔥</button>`;
     E('actionBtn').addEventListener('click', () => {
-        myRoundPoints++; syncScoresUI();
-        conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
+        myRoundPoints++;
+        submitPointsToCloud(1);
     });
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
-// [جولة 2. تحدي تطابق اللون الصحيح]
 function startColorGame() {
-    E('currentGameTitle').textContent = "تطابق اللون 🎨"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-    const colors = [{name: 'أحمر', value: '#e74c3c'}, {name: 'أزرق', value: '#3498db'}, {name: 'أخضر', value: '#2ecc71'}, {name: 'أصفر', value: '#f1c40f'}];
-    function nextRound() {
-        let textWord = colors[Math.floor(Math.random() * colors.length)];
-        let targetColor = colors[Math.floor(Math.random() * colors.length)]; 
-        E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">اختر زر الملاءمة للون الخط وليس الكلمة:</p><h1 style="font-size:32px; color:${targetColor.value}; margin:10px 0;">${textWord.name}</h1><div class="options-grid" id="optionsBox"></div>`;
+    E('currentGameTitle').textContent = "تطابق اللون 🎨"; let timeLeft = 12;
+    const colors = [{name:'أحمر',val:'#e74c3c'}, {name:'أزرق',val:'#3498db'}, {name:'أخضر',val:'#2ecc71'}, {name:'أصفر',val:'#f1c40f'}];
+    function next() {
+        let text = colors[Math.floor(Math.random()*4)], target = colors[Math.floor(Math.random()*4)];
+        E('gameArea').innerHTML = `<p style="font-size:12px;color:#aaa;">طابق لون الخط وليس الكلمة:</p><h1 style="font-size:32px;color:${target.val};margin:10px 0;">${text.name}</h1><div class="options-grid" id="opt"></div>`;
         colors.forEach(c => {
-            let b = document.createElement('button'); b.className = 'option-btn'; b.style.backgroundColor = c.value; b.textContent = c.name;
+            let b = document.createElement('button'); b.className='option-btn'; b.style.backgroundColor=c.val; b.textContent=c.name;
             b.onclick = () => {
-                if(c.value === targetColor.value) myRoundPoints += 2; else myRoundPoints = Math.max(0, myRoundPoints - 1);
-                syncScoresUI(); conn.send({ type: 'roundPointsUpdate', points: myRoundPoints }); nextRound();
+                if(c.val===target.val) { myRoundPoints+=2; submitPointsToCloud(2); }
+                next();
             };
-            E('optionsBox').appendChild(b);
+            E('opt').appendChild(b);
         });
     }
-    nextRound();
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
+    next();
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
-// [جولة 3. تحدي الحساب السريع]
 function startMathGame() {
-    E('currentGameTitle').textContent = "الحساب الفوري 🧠"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-    function genMath() {
-        let n1 = Math.floor(2 + Math.random() * 10), n2 = Math.floor(2 + Math.random() * 10);
-        let isPlus = Math.random() > 0.5; let ans = isPlus ? (n1 + n2) : (n1 * n2);
-        E('gameArea').innerHTML = `<h1 style="font-size:32px; color:var(--gold);">${n1} ${isPlus ? '+' : '×'} ${n2} = ؟</h1><div class="options-grid" id="mathOpt"></div>`;
-        let choices = [ans, ans + 3, ans - 1, n1 + n2 + 2].filter((v, i, a) => a.indexOf(v) === i).sort(() => Math.random() - 0.5);
+    E('currentGameTitle').textContent = "الحساب الفوري 🧠"; let timeLeft = 12;
+    function next() {
+        let n1 = Math.floor(2+Math.random()*9), n2 = Math.floor(2+Math.random()*9), isPlus = Math.random()>0.5;
+        let ans = isPlus ? (n1+n2) : (n1*n2);
+        E('gameArea').innerHTML = `<h1 style="font-size:32px;color:var(--gold);">${n1} ${isPlus?'+':'×'} ${n2} = ؟</h1><div class="options-grid" id="mOpt"></div>`;
+        let choices = [ans, ans+2, ans-1, n1+n2+3].filter((v,i,a)=>a.indexOf(v)===i).sort(()=>Math.random()-0.5);
         choices.forEach(v => {
-            let b = document.createElement('button'); b.className = 'option-btn'; b.textContent = v;
+            let b = document.createElement('button'); b.className='option-btn'; b.textContent=v;
             b.onclick = () => {
-                if(parseInt(v) === ans) myRoundPoints += 3; else myRoundPoints = Math.max(0, myRoundPoints - 1);
-                syncScoresUI(); conn.send({ type: 'roundPointsUpdate', points: myRoundPoints }); genMath();
+                if(parseInt(v)===ans) { myRoundPoints+=3; submitPointsToCloud(3); }
+                next();
             };
-            E('mathOpt').appendChild(b);
+            E('mOpt').appendChild(b);
         });
     }
-    genMath();
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
+    next();
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
-// [جولة 4. تحدي السهم المعاكس 🏹]
 function startArrowGame() {
-    E('currentGameTitle').textContent = "السهم المعاكس 🏹"; let timeLeft = 12; E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-    
-    function renderArrowUI() {
-        let cmdColor = arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
+    E('currentGameTitle').textContent = "السهم المعاكس 🏹"; let timeLeft = 12;
+    function render() {
+        let clr = arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
         E('gameArea').innerHTML = `
-            <p style="font-size:13px; color:#aaa;">انظر للأمر والسهم ونفذ الخيار الأصح وعكسه:</p>
-            <div style="background:rgba(255,255,255,0.05); padding:5px 25px; border-radius:10px; font-size:24px; font-weight:bold; color:${cmdColor};">${arrowCommandMode}</div>
+            <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">${arrowCommandMode}</div>
             <div class="arrow-display">${arrowTargetDirection}</div>
             <div class="options-grid">
-                <button class="option-btn" onclick="checkArrowAnswer('⬅️')">يمين ⬅️</button>
-                <button class="option-btn" onclick="checkArrowAnswer('➡️')">يسار ➡️</button>
-                <button class="option-btn" onclick="checkArrowAnswer('⬆️')">فوق ⬆️</button>
-                <button class="option-btn" onclick="checkArrowAnswer('⬇️')">تحت ⬇️</button>
+                <button class="option-btn" onclick="checkArrow('⬅️')">يمين ⬅️</button>
+                <button class="option-btn" onclick="checkArrow('➡️')">يسار ➡️</button>
+                <button class="option-btn" onclick="checkArrow('⬆️')">فوق ⬆️</button>
+                <button class="option-btn" onclick="checkArrow('⬇️')">تحت ⬇️</button>
             </div>
         `;
     }
-    
-    window.checkArrowAnswer = function(playerChoice) {
-        let isCorrect = false;
-        if (arrowCommandMode === "امتثل") {
-            if (playerChoice === arrowTargetDirection) isCorrect = true;
-        } else { 
-            if (arrowTargetDirection === "➡️" && playerChoice === "⬅️") isCorrect = true;
-            if (arrowTargetDirection === "⬅️" && playerChoice === "➡️") isCorrect = true;
-            if (arrowTargetDirection === "⬆️" && playerChoice === "⬇️") isCorrect = true;
-            if (arrowTargetDirection === "⬇️" && playerChoice === "⬆️") isCorrect = true;
+    window.checkArrow = function(choice) {
+        let ok = false;
+        if(arrowCommandMode === "امتثل") ok = (choice === arrowTargetDirection);
+        else {
+            if(arrowTargetDirection==="➡️" && choice==="⬅️") ok=true; if(arrowTargetDirection==="⬅️" && choice==="➡️") ok=true;
+            if(arrowTargetDirection==="⬆️" && choice==="⬇️") ok=true; if(arrowTargetDirection==="⬇️" && choice==="⬆️") ok=true;
         }
-
-        if (isCorrect) myRoundPoints += 4; else myRoundPoints = Math.max(0, myRoundPoints - 2);
-        syncScoresUI();
-        conn.send({ type: 'roundPointsUpdate', points: myRoundPoints });
+        if(ok) { myRoundPoints+=4; submitPointsToCloud(4); }
         
         if(myRole === 'king') {
-            const dirs = ["➡️", "⬅️", "⬆️", "⬇️"]; const cmds = ["امتثل", "خالف"];
-            arrowTargetDirection = dirs[Math.floor(Math.random() * dirs.length)];
-            arrowCommandMode = cmds[Math.floor(Math.random() * cmds.length)];
-            if (conn && conn.open) conn.send({ type: 'triggerNextGame', roundNum: 4, arrowDir: arrowTargetDirection, arrowCmd: arrowCommandMode });
-            renderArrowUI();
+            const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
+            let d = dirs[Math.floor(Math.random()*4)], c = cmds[Math.floor(Math.random()*2)];
+            roomRef.update({ arrowDir: d, arrowCmd: c });
         }
     };
-
-    renderArrowUI();
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) { clearInterval(gameTimer); endRoundLogic(); } }, 1000);
+    render();
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
-// [جولة 5. تخمين وفك الرقم السري]
 function startGuessGame() {
-    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; E('timerDisplay').textContent = `⏱️ نشط`;
-    E('gameArea').innerHTML = `<p style="font-size:13px; color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة دفعة واحدة:</p><input id="guessInput" type="number" placeholder="من 1000 إلى 9999" style="width:80%; margin:5px 0;"><button class="btn btn-purple" id="guessBtn" style="padding:10px;">إرسال التخمين 🔍</button><p id="guessHint" style="margin-top:5px; font-weight:bold; color:var(--gold);"></p>`;
-    E('guessBtn').addEventListener('click', () => {
-        let val = E('guessInput').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام كاملة!');
-        if (val === secretCode) {
-            myRoundPoints = 15; syncScoresUI(); conn.send({ type: 'guessCorrect', winnerName: myName }); endRoundLogic(`🎉 فككت الشفرة بنجاح! الرقم هو ${secretCode}`);
+    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; E('timerDisplay').textContent = `⏱️ مفتوح`;
+    E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة:</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
+    E('gBtn').addEventListener('click', () => {
+        let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
+        if(val === secretCode) {
+            myRoundPoints = 15; submitPointsToCloud(15);
+            roomRef.update({ gameState: "ended", endMessage: `🎉 فاز الخصم بفك الشفرة السرية! الرقم هو [ ${secretCode} ]` });
         } else {
-            E('guessHint').textContent = parseInt(val) < parseInt(secretCode) ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
-            E('guessInput').value = "";
+            E('gHint').textContent = parseInt(val) < parseInt(secretCode) ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
+            E('gIn').value = "";
         }
     });
 }
 
-function endRoundLogic(customMsg = "") {
+function submitPointsToCloud(amt) {
+    roomRef.get().then((snapshot) => {
+        const data = snapshot.val();
+        if(!data) return;
+        if(myRole === 'king') {
+            roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
+        } else {
+            roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
+        }
+    });
+}
+
+function endRoundLogic() {
     clearInterval(gameTimer);
-    
-    kingTotalScore += (myRole === 'king' ? myRoundPoints : opponentRoundPoints);
-    challengerTotalScore += (myRole === 'challenger' ? myRoundPoints : opponentRoundPoints);
-    
-    E('kingScore').textContent = kingTotalScore;
-    E('challengerScore').textContent = challengerTotalScore;
-    
-    let roundWinnerNotice = customMsg ? customMsg : (myRoundPoints > opponentRoundPoints ? "أنت فزت بنقاط هذه الجولة! 🗡️" : "الخصم كسب الجولة! 🛡️");
-    if(myRoundPoints === opponentRoundPoints && !customMsg) roundWinnerNotice = "تعادل في نقاط هذه الجولة! 🤝";
-
     if (currentRoundNum < 5) {
-        E('gameArea').innerHTML = `
-            <h3 style="color:var(--gold);">انتهت الجولة ${currentRoundNum}!</h3>
-            <p style="font-size:15px; margin:10px 0;">${roundWinnerNotice}</p>
-            <div id="actionContainer" style="width:100%;"></div>
-        `;
-        
+        E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
         if (myRole === 'king') {
-            const btn = document.createElement('button');
-            btn.className = "btn btn-green"; btn.style.width = "auto"; btn.style.padding = "8px 20px"; btn.textContent = "⚔️ الجولة التالية تلقائياً";
-            btn.onclick = function() {
-                currentRoundNum++;
-                kingFireNextRound();
-            };
-            E('actionContainer').appendChild(btn);
-        } else {
-            E('actionContainer').innerHTML = `<p style="color:#aaa; font-size:13px;">في انتظار سحب الملك للجولة التالية...</p>`;
-        }
+            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ دفع الجولة التالية تلقائياً";
+            btn.onclick = () => { currentRoundNum++; kingFireNextRound(); };
+            E('actCont').appendChild(btn);
+        } else { E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية من اللعب السحابي...</p>`; }
     } else {
-        executeTournamentSettlement();
+        settleTournament();
     }
 }
 
-function executeTournamentSettlement() {
-    let finalWinnerRole = "king";
-    if (kingTotalScore > challengerTotalScore) finalWinnerRole = "king";
-    else if (challengerTotalScore > kingTotalScore) finalWinnerRole = "challenger";
-
-    if (myRole === 'king') {
-        if (finalWinnerRole === 'king') {
-            kingStreak++;
-            saveToLeaderboard(myName, kingStreak);
-            E('kingStreakDisplay').textContent = `صمود: ${kingStreak}`;
-            
-            E('gameArea').innerHTML = `
-                <h2 style="color:var(--gold);">👑 انتصار كاسح وحماية العرش!</h2>
-                <p>لقد حسمت الـ 5 جولات الكلية لصالحك!</p>
-                <p style="color:var(--green); margin-top:10px;">سلسلة صمودك الحالية: ${kingStreak} بطولات متتالية</p>
-            `;
-            conn.send({ type: 'finalKickout', msg: `💀 سقطت قواك الكلية في مجموع النقاط! تم إقصاؤك من مجلس الملك ${myName} بعد صراع مرير دام لـ 5 جولات كاملة.` });
-            resetTournamentData();
-        } else {
-            conn.send({ type: 'becameKing' });
-            alert(`💀 سقط العرش! تمت الإطاحة بك بمجموع النقاط (${kingTotalScore} مقابل ${challengerTotalScore}). سيتم إخراجك الآن.`);
-            location.reload();
-        }
-    }
-}
-
-function saveToLeaderboard(name, streak) {
-    let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
-    let playerIdx = board.findIndex(p => p.name === name);
-    if (playerIdx !== -1) {
-        if (streak > board[playerIdx].streak) { board[playerIdx].streak = streak; }
-    } else {
-        board.push({ name: name, streak: streak });
-    }
-    board.sort((a, b) => b.streak - a.streak);
-    localStorage.setItem('throne_leaderboard', JSON.stringify(board));
-    updateLeaderboardUI();
-}
-
-function updateLeaderboardUI() {
-    let board = JSON.parse(localStorage.getItem('throne_leaderboard')) || [];
-    let html = "";
-    if(board.length === 0) {
-        html = `<tr><td colspan="3" style="color:#777;">لا يوجد أبطال مسجلين حتى الآن. كن الأول!</td></tr>`;
-    } else {
-        board.slice(0, 5).forEach((p, idx) => {
-            let crown = idx === 0 ? '🥇 👑' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : '•'));
-            html += `<tr><td>${crown} ${idx+1}</td><td style="color:var(--gold); font-weight:bold;">${p.name}</td><td>${p.streak} جولات صمود</td></tr>`;
+function settleTournament() {
+    if(myRole === 'king') {
+        roomRef.get().then((snapshot) => {
+            const data = snapshot.val();
+            let kP = data.kingPoints || 0;
+            let cP = data.challengerPoints || 0;
+            let finalMsg = kP >= cP ? `👑 انتصر الملك وحمى عرشه بمجموع ${kP} مقابل ${cP}` : `⚔️ سقط العرش! تمكن المتحدي من الإطاحة بالملك بمجموع ${cP} مقابل ${kP}`;
+            roomRef.update({ gameState: "ended", endMessage: finalMsg });
         });
     }
-    E('leaderboardBody').innerHTML = html;
 }
 </script>
 </body>
