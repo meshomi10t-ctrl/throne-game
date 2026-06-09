@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - السيرفر الخاص</title>
+    <title>🏰 بطولة ساحة النزاع - النسخة النهائية المستقرة</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -35,7 +35,6 @@
 </head>
 <body>
 
-<!-- شاشة البداية -->
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
     <div class="title">بطولة ساحة النزاع السحابية</div>
@@ -47,7 +46,6 @@
     </div>
 </div>
 
-<!-- شاشة الانتظار -->
 <div class="screen" id="waitingScreen">
     <div class="logo">⏳</div>
     <div class="title" id="waitingTitle">غرفة الانتظار</div>
@@ -56,7 +54,6 @@
     <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
 </div>
 
-<!-- الساحة المباشرة -->
 <div class="screen" id="arenaScreen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 5</span>
@@ -82,7 +79,7 @@
 <script>
 const E = id => document.getElementById(id);
 
-// ⚠️ ضع رابط قاعدة البيانات الخاص بك بين القوسين بالأسفل بدلاً من العبارة المكتوبة
+// ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل
 const firebaseConfig = {
     databaseURL: "https://kkkooo-8a13b-default-rtdb.firebaseio.com/" 
 };
@@ -91,7 +88,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let myName = "", myRole = "", roomId = "";
-let gameTimer = null, currentRoundNum = 1;
+let gameTimer = null, currentRoundNum = 0; // تبدأ من 0 لضمان المزامنة الأولى الصحيحة
 let myRoundPoints = 0;
 let roomRef = null;
 
@@ -156,7 +153,9 @@ function loginAs(role) {
                 E('waitingScreen').classList.remove('active');
                 E('arenaScreen').classList.add('active');
             }
-            if (currentRoundNum !== data.roundNum || E('currentGameTitle').textContent === "انتظار...") {
+            
+            // إصلاح المزامنة: الانتقال الفوري والمشترك عند تغير رقم الجولة
+            if (currentRoundNum !== data.roundNum) {
                 currentRoundNum = data.roundNum;
                 arrowTargetDirection = data.arrowDir;
                 arrowCommandMode = data.arrowCmd;
@@ -174,19 +173,21 @@ function loginAs(role) {
 
 E('kingStartBtn').addEventListener('click', () => {
     roomRef.update({ gameState: "playing" });
-    kingFireNextRound();
+    kingFireNextRound(1);
 });
 
-function kingFireNextRound() {
+function kingFireNextRound(targetRound) {
     let extra = "", randomDir = "", randomCmd = "";
-    if(currentRoundNum === 5) extra = Math.floor(1000 + Math.random() * 9000).toString();
-    if(currentRoundNum === 4) {
+    if(targetRound === 5) extra = Math.floor(1000 + Math.random() * 9000).toString();
+    if(targetRound === 4) {
         const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
         randomDir = dirs[Math.floor(Math.random() * dirs.length)];
         randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
     }
+    
+    // يحدّث السيرفر بالجولة الجديدة لتنتقل شاشة المتحدي والملك معاً
     roomRef.update({
-        roundNum: currentRoundNum,
+        roundNum: targetRound,
         arrowDir: randomDir,
         arrowCmd: randomCmd,
         secretCode: extra
@@ -282,11 +283,16 @@ function startGuessGame() {
     E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة:</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
     E('gBtn').addEventListener('click', () => {
         let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
-        if(val === secretCode) {
+        
+        // إصلاح جذري: تحويل النص لأرقام حقيقية لضمان صحة المقارنة والتلميحات
+        let guessNum = parseInt(val);
+        let targetNum = parseInt(secretCode);
+
+        if(guessNum === targetNum) {
             myRoundPoints = 15; submitPointsToCloud(15);
             roomRef.update({ gameState: "ended", endMessage: `🎉 فاز الخصم بفك الشفرة السرية! الرقم هو [ ${secretCode} ]` });
         } else {
-            E('gHint').textContent = parseInt(val) < parseInt(secretCode) ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
+            E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
             E('gIn').value = "";
         }
     });
@@ -306,7 +312,8 @@ function endRoundLogic() {
         E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
         if (myRole === 'king') {
             const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية";
-            btn.onclick = () => { currentRoundNum++; kingFireNextRound(); };
+            // نمرر رقم الجولة التالية مباشرة بشكل صريح
+            btn.onclick = () => { kingFireNextRound(currentRoundNum + 1); };
             E('actCont').appendChild(btn);
         } else { E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; }
     } else { settleTournament(); }
