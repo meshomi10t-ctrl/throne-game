@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - النسخة السحابية المستقرة</title>
+    <title>🏰 بطولة ساحة النزاع - السيرفر الخاص</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -35,6 +35,7 @@
 </head>
 <body>
 
+<!-- شاشة البداية -->
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
     <div class="title">بطولة ساحة النزاع السحابية</div>
@@ -44,17 +45,18 @@
         <button class="btn btn-green" id="kingBtn">🤴 دخول كملك</button>
         <button class="btn btn-purple" id="challengerBtn">🗡️ دخول كمتحدي</button>
     </div>
-    <div class="status" id="loginStatus"></div>
 </div>
 
+<!-- شاشة الانتظار -->
 <div class="screen" id="waitingScreen">
     <div class="logo">⏳</div>
-    <div class="title" id="waitingTitle">في غرف الانتظار...</div>
+    <div class="title" id="waitingTitle">غرفة الانتظار</div>
     <div class="room-id" id="roomIdDisplay">000</div>
-    <div class="status" id="waitingStatus">جاري المزامنة مع السيرفر السحابي...</div>
+    <div class="status" id="waitingStatus">جاري الاتصال بسيرفرك الخاص...</div>
     <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
 </div>
 
+<!-- الساحة المباشرة -->
 <div class="screen" id="arenaScreen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 5</span>
@@ -80,10 +82,11 @@
 <script>
 const E = id => document.getElementById(id);
 
-// إعدادات اتصال سحابي عامة ومفتوحة للجميع دون قيود للتشغيل الفوري والآمن
+// ⚠️ ضع رابط قاعدة البيانات الخاص بك بين القوسين بالأسفل بدلاً من العبارة المكتوبة
 const firebaseConfig = {
-    databaseURL: "https://html-games-p2p-default-rtdb.firebaseio.com/"
+    databaseURL: "https://kkkooo-8a13b-default-rtdb.firebaseio.com/" 
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -92,12 +95,9 @@ let gameTimer = null, currentRoundNum = 1;
 let myRoundPoints = 0;
 let roomRef = null;
 
-// المتغيرات الخاصة باللعبة البديلة
 let arrowTargetDirection = "", arrowCommandMode = "", secretCode = "";
 
-// الدخول كملك
 E('kingBtn').addEventListener('click', () => { if(validateLogin()) loginAs('king'); });
-// الدخول كمتحدي
 E('challengerBtn').addEventListener('click', () => { if(validateLogin()) loginAs('challenger'); });
 
 function validateLogin() {
@@ -118,13 +118,11 @@ function loginAs(role) {
 
     if (myRole === 'king') {
         E('waitingTitle').textContent = "أنت الملك المستضيف";
-        E('waitingStatus').textContent = "في انتظار دخول المتحدي بنفس رقم الغرفة...";
-        
-        // تصفير وتهيئة بيانات الغرفة السحابية
+        E('waitingStatus').textContent = "في انتظار دخول المتحدي السيرفر...";
         roomRef.set({
             kingName: myName,
             challengerName: "",
-            gameState: "waiting", // حالة الغرفة الافتراضية
+            gameState: "waiting",
             roundNum: 1,
             kingPoints: 0,
             challengerPoints: 0,
@@ -134,37 +132,30 @@ function loginAs(role) {
         });
     } else {
         E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
-        E('waitingStatus').textContent = "جاري حجز مقعدك وربط شاشتك مع الملك...";
+        E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
         roomRef.update({ challengerName: myName });
     }
 
-    // التنصت السحابي المباشر (تحديث فوري لكل الشاشات بدون P2P وبدون تعليق)
     roomRef.on('value', (snapshot) => {
         const data = snapshot.val();
         if(!data) return;
 
-        // تحديث الأسماء بداخل ساحة اللعب
         E('kingNameDisplay').textContent = data.kingName || "@الملك";
         E('challengerNameDisplay').textContent = data.challengerName || "في الانتظار...";
 
-        // إظهار زر البدء للملك فقط عند توفر الطرفين
         if (myRole === 'king' && data.challengerName !== "" && data.gameState === "waiting") {
             E('kingStartBtn').style.display = "block";
-            E('waitingStatus').textContent = `المتحدي ${data.challengerName} متصل الآن! اضغط للبدء.`;
+            E('waitingStatus').textContent = `المتحدي ${data.challengerName} متصل بسيرفرك! اضغط للبدء.`;
         }
 
-        // تحديث النقاط المباشرة المعروضة في الشاشتين من السيرفر
         E('kingScoreDisplay').textContent = data.kingPoints || 0;
         E('challengerScoreDisplay').textContent = data.challengerPoints || 0;
 
-        // فك تعليق المتسابق والانتقال التلقائي الإجباري الفوري عند تغيير حالة اللعبة
         if (data.gameState === "playing") {
             if (E('waitingScreen').classList.contains('active')) {
                 E('waitingScreen').classList.remove('active');
                 E('arenaScreen').classList.add('active');
             }
-            
-            // في حال رصد تغيير في الجولة أو اللعبة
             if (currentRoundNum !== data.roundNum || E('currentGameTitle').textContent === "انتظار...") {
                 currentRoundNum = data.roundNum;
                 arrowTargetDirection = data.arrowDir;
@@ -174,7 +165,6 @@ function loginAs(role) {
             }
         }
 
-        // في حال انتهاء اللعبة بالكامل وإصدار تصفية كيك آوت
         if (data.gameState === "ended") {
             alert(data.endMessage || "انتهت البطولة!");
             location.reload();
@@ -182,7 +172,6 @@ function loginAs(role) {
     });
 }
 
-// ضغطة زر ابدأ من الملك
 E('kingStartBtn').addEventListener('click', () => {
     roomRef.update({ gameState: "playing" });
     kingFireNextRound();
@@ -196,8 +185,6 @@ function kingFireNextRound() {
         randomDir = dirs[Math.floor(Math.random() * dirs.length)];
         randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
     }
-    
-    // إرسال تفاصيل الجولة الجديدة للسيرفر السحابي ليقرأها المتسابق فوراً
     roomRef.update({
         roundNum: currentRoundNum,
         arrowDir: randomDir,
@@ -218,14 +205,10 @@ function runGameStartLogic() {
     else if (currentRoundNum === 5) startGuessGame();
 }
 
-// [الجولات الخمس المزامنة سحابياً بالكامل]
 function startClickGame() {
     E('currentGameTitle').textContent = "النقر السريع 👑"; let timeLeft = 10;
     E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 🔥</button>`;
-    E('actionBtn').addEventListener('click', () => {
-        myRoundPoints++;
-        submitPointsToCloud(1);
-    });
+    E('actionBtn').addEventListener('click', () => { myRoundPoints++; submitPointsToCloud(1); });
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
@@ -237,10 +220,7 @@ function startColorGame() {
         E('gameArea').innerHTML = `<p style="font-size:12px;color:#aaa;">طابق لون الخط وليس الكلمة:</p><h1 style="font-size:32px;color:${target.val};margin:10px 0;">${text.name}</h1><div class="options-grid" id="opt"></div>`;
         colors.forEach(c => {
             let b = document.createElement('button'); b.className='option-btn'; b.style.backgroundColor=c.val; b.textContent=c.name;
-            b.onclick = () => {
-                if(c.val===target.val) { myRoundPoints+=2; submitPointsToCloud(2); }
-                next();
-            };
+            b.onclick = () => { if(c.val===target.val) { myRoundPoints+=2; submitPointsToCloud(2); } next(); };
             E('opt').appendChild(b);
         });
     }
@@ -257,10 +237,7 @@ function startMathGame() {
         let choices = [ans, ans+2, ans-1, n1+n2+3].filter((v,i,a)=>a.indexOf(v)===i).sort(()=>Math.random()-0.5);
         choices.forEach(v => {
             let b = document.createElement('button'); b.className='option-btn'; b.textContent=v;
-            b.onclick = () => {
-                if(parseInt(v)===ans) { myRoundPoints+=3; submitPointsToCloud(3); }
-                next();
-            };
+            b.onclick = () => { if(parseInt(v)===ans) { myRoundPoints+=3; submitPointsToCloud(3); } next(); };
             E('mOpt').appendChild(b);
         });
     }
@@ -291,11 +268,9 @@ function startArrowGame() {
             if(arrowTargetDirection==="⬆️" && choice==="⬇️") ok=true; if(arrowTargetDirection==="⬇️" && choice==="⬆️") ok=true;
         }
         if(ok) { myRoundPoints+=4; submitPointsToCloud(4); }
-        
         if(myRole === 'king') {
             const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
-            let d = dirs[Math.floor(Math.random()*4)], c = cmds[Math.floor(Math.random()*2)];
-            roomRef.update({ arrowDir: d, arrowCmd: c });
+            roomRef.update({ arrowDir: dirs[Math.floor(Math.random()*4)], arrowCmd: cmds[Math.floor(Math.random()*2)] });
         }
     };
     render();
@@ -319,13 +294,9 @@ function startGuessGame() {
 
 function submitPointsToCloud(amt) {
     roomRef.get().then((snapshot) => {
-        const data = snapshot.val();
-        if(!data) return;
-        if(myRole === 'king') {
-            roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
-        } else {
-            roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
-        }
+        const data = snapshot.val(); if(!data) return;
+        if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
+        else roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
     });
 }
 
@@ -334,21 +305,18 @@ function endRoundLogic() {
     if (currentRoundNum < 5) {
         E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
         if (myRole === 'king') {
-            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ دفع الجولة التالية تلقائياً";
+            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية";
             btn.onclick = () => { currentRoundNum++; kingFireNextRound(); };
             E('actCont').appendChild(btn);
-        } else { E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية من اللعب السحابي...</p>`; }
-    } else {
-        settleTournament();
-    }
+        } else { E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; }
+    } else { settleTournament(); }
 }
 
 function settleTournament() {
     if(myRole === 'king') {
         roomRef.get().then((snapshot) => {
             const data = snapshot.val();
-            let kP = data.kingPoints || 0;
-            let cP = data.challengerPoints || 0;
+            let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
             let finalMsg = kP >= cP ? `👑 انتصر الملك وحمى عرشه بمجموع ${kP} مقابل ${cP}` : `⚔️ سقط العرش! تمكن المتحدي من الإطاحة بالملك بمجموع ${cP} مقابل ${kP}`;
             roomRef.update({ gameState: "ended", endMessage: finalMsg });
         });
