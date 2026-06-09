@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - النسخة النهائية المستقرة</title>
+    <title>🏰 بطولة ساحة النزاع - الإصدار الملكي النهائي</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
         .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
         .screen.active { display:block; }
         .logo { font-size:50px; animation: float 2s infinite; }
@@ -17,20 +17,30 @@
         input:focus { outline: none; border-color: #fff; }
         .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
         .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #555 !important; cursor: not-allowed; opacity: 0.6; }
         .btn-green { background:var(--green); }
         .btn-purple { background:#8e44ad; }
         .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
         .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
         .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
-        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; position: relative; }
+        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; }
         .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
-        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         .game-click-btn { background: linear-gradient(135deg, #e74c3c, #9b59b6); border: none; color: white; font-size: 20px; font-weight: bold; padding: 20px 30px; border-radius: 50px; cursor: pointer; width: 90%; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
         .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
-        .arrow-display { font-size: 65px; margin: 10px 0; font-weight: bold; color: #fff; animation: pulse 0.5s infinite alternate; }
-        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+        .arrow-display { font-size: 65px; margin: 5px 0; font-weight: bold; color: #fff; animation: pulse 0.4s infinite alternate; }
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.12); } }
+
+        /* لوحة إعلان الفائز النهائية السينمائية */
+        .winner-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 15, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+        .winner-modal.active { display: flex; animation: fadeIn 0.5s ease-out forwards; }
+        .winner-card { background: linear-gradient(135deg, #1e1e38 0%, #0f0f26 100%); border: 3px solid var(--gold); border-radius: 25px; padding: 30px; text-align: center; max-width: 450px; width: 100%; box-shadow: 0 0 30px rgba(241, 196, 15, 0.3); transform: scale(0.7); opacity: 0; animation: popUp 0.5s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popUp { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .winner-crown { font-size: 70px; margin-bottom: 10px; animation: crownFloat 1.5s infinite ease-in-out alternate; }
+        @keyframes crownFloat { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-10px) rotate(5deg); } }
+        .winner-text { font-size: 24px; font-weight: bold; color: #fff; margin: 15px 0; line-height: 1.6; }
+        .winner-score-box { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -73,6 +83,21 @@
     <div class="game-area" id="gameArea"><p style="color:#aaa;">في انتظار إشارة انطلاق الجولة الأولى...</p></div>
 </div>
 
+<div class="winner-modal" id="winnerModal">
+    <div class="winner-card">
+        <div class="winner-crown" id="winnerCrown">🏆</div>
+        <h2 style="color: var(--gold); font-size: 28px;">👑 نهاية الملحمة 👑</h2>
+        <div class="winner-text" id="winnerText">جاري حساب النقاط وتحديد سيد العرش...</div>
+        <div class="winner-score-box">
+            <div style="display: flex; justify-content: space-around; font-size: 18px;">
+                <div>🤴 الملك: <span id="finalKingScore" style="color:var(--gold); font-weight:bold;">0</span></div>
+                <div>🗡️ المتحدي: <span id="finalChallengerScore" style="color:var(--blue); font-weight:bold;">0</span></div>
+            </div>
+        </div>
+        <button class="btn btn-green" onclick="location.reload()">⚔️ بدء بطولة جديدة</button>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -88,7 +113,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let myName = "", myRole = "", roomId = "";
-let gameTimer = null, currentRoundNum = 0; // تبدأ من 0 لضمان المزامنة الأولى الصحيحة
+let gameTimer = null, currentRoundNum = 0; 
 let myRoundPoints = 0;
 let roomRef = null;
 
@@ -123,8 +148,8 @@ function loginAs(role) {
             roundNum: 1,
             kingPoints: 0,
             challengerPoints: 0,
-            arrowDir: "",
-            arrowCmd: "",
+            arrowDir: "⬇️",
+            arrowCmd: "امتثل",
             secretCode: ""
         });
     } else {
@@ -154,8 +179,8 @@ function loginAs(role) {
                 E('arenaScreen').classList.add('active');
             }
             
-            // إصلاح المزامنة: الانتقال الفوري والمشترك عند تغير رقم الجولة
-            if (currentRoundNum !== data.roundNum) {
+            // في حال تغيرت الجولة، أو حدث تغيير في بيانات السهم ولعبة التخمين
+            if (currentRoundNum !== data.roundNum || arrowTargetDirection !== data.arrowDir || arrowCommandMode !== data.arrowCmd || secretCode !== data.secretCode) {
                 currentRoundNum = data.roundNum;
                 arrowTargetDirection = data.arrowDir;
                 arrowCommandMode = data.arrowCmd;
@@ -165,8 +190,20 @@ function loginAs(role) {
         }
 
         if (data.gameState === "ended") {
-            alert(data.endMessage || "انتهت البطولة!");
-            location.reload();
+            clearInterval(gameTimer);
+            // إظهار اللوحة الاحترافية بدلاً من شاشة الـ alert التقليدية البسيطة
+            E('finalKingScore').textContent = data.kingPoints || 0;
+            E('finalChallengerScore').textContent = data.challengerPoints || 0;
+            E('winnerText').textContent = data.endMessage;
+            
+            if(data.endMessage.includes("انتصر الملك")) {
+                E('winnerCrown').textContent = "👑";
+                E('winnerModal').style.borderColor = "var(--gold)";
+            } else {
+                E('winnerCrown').textContent = "⚔️";
+                E('winnerModal').style.borderColor = "var(--blue)";
+            }
+            E('winnerModal').classList.add('active');
         }
     });
 }
@@ -177,15 +214,16 @@ E('kingStartBtn').addEventListener('click', () => {
 });
 
 function kingFireNextRound(targetRound) {
-    let extra = "", randomDir = "", randomCmd = "";
+    let extra = "", randomDir = "⬇️", randomCmd = "امتثل";
     if(targetRound === 5) extra = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // سحب سهم عشوائي عند الانتقال لجولة الأسهم أو أثناء اللعب فيها
     if(targetRound === 4) {
         const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
         randomDir = dirs[Math.floor(Math.random() * dirs.length)];
         randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
     }
     
-    // يحدّث السيرفر بالجولة الجديدة لتنتقل شاشة المتحدي والملك معاً
     roomRef.update({
         roundNum: targetRound,
         arrowDir: randomDir,
@@ -197,12 +235,16 @@ function kingFireNextRound(targetRound) {
 function runGameStartLogic() {
     myRoundPoints = 0;
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
-    clearInterval(gameTimer);
+    
+    // منع تضارب العدادات الزمنية
+    if(currentRoundNum !== 4 && currentRoundNum !== 5) {
+        clearInterval(gameTimer);
+    }
 
     if (currentRoundNum === 1) startClickGame();
     else if (currentRoundNum === 2) startColorGame();
     else if (currentRoundNum === 3) startMathGame();
-    else if (currentRoundNum === 4) startArrowGame(); 
+    else if (currentRoundNum === 4) renderArrowGameUI(); 
     else if (currentRoundNum === 5) startGuessGame();
 }
 
@@ -246,89 +288,70 @@ function startMathGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
-function startArrowGame() {
-    E('currentGameTitle').textContent = "السهم المعاكس 🏹"; let timeLeft = 12;
-    function render() {
-        let clr = arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
-        E('gameArea').innerHTML = `
-            <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">${arrowCommandMode}</div>
-            <div class="arrow-display">${arrowTargetDirection}</div>
-            <div class="options-grid">
-                <button class="option-btn" onclick="checkArrow('⬅️')">يمين ⬅️</button>
-                <button class="option-btn" onclick="checkArrow('➡️')">يسار ➡️</button>
-                <button class="option-btn" onclick="checkArrow('⬆️')">فوق ⬆️</button>
-                <button class="option-btn" onclick="checkArrow('⬇️')">تحت ⬇️</button>
-            </div>
-        `;
+// 🎯 إصلاح السهم: بناء وتحديث الواجهة بناء على القراءة المباشرة القادمة من الفايربيس
+function renderArrowGameUI() {
+    E('currentGameTitle').textContent = "السهم المعاكس 🏹";
+    let clr = arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
+    
+    E('gameArea').innerHTML = `
+        <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">${arrowCommandMode}</div>
+        <div class="arrow-display">${arrowTargetDirection}</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="checkArrow('⬅️')">يمين ⬅️</button>
+            <button class="option-btn" onclick="checkArrow('➡️')">يسار ➡️</button>
+            <button class="option-btn" onclick="checkArrow('⬆️')">فوق ⬆️</button>
+            <button class="option-btn" onclick="checkArrow('⬇️')">تحت ⬇️</button>
+        </div>
+    `;
+
+    // تشغيل التايمر الخاص بالجولة لمرة واحدة فقط دون تكرار
+    if(!gameTimer) {
+        let timeLeft = 12;
+        gameTimer = setInterval(() => {
+            timeLeft--;
+            E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+            if (timeLeft <= 0) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+                endRoundLogic();
+            }
+        }, 1000);
     }
-    window.checkArrow = function(choice) {
-        let ok = false;
-        if(arrowCommandMode === "امتثل") ok = (choice === arrowTargetDirection);
-        else {
-            if(arrowTargetDirection==="➡️" && choice==="⬅️") ok=true; if(arrowTargetDirection==="⬅️" && choice==="➡️") ok=true;
-            if(arrowTargetDirection==="⬆️" && choice==="⬇️") ok=true; if(arrowTargetDirection==="⬇️" && choice==="⬆️") ok=true;
-        }
-        if(ok) { myRoundPoints+=4; submitPointsToCloud(4); }
-        if(myRole === 'king') {
-            const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
-            roomRef.update({ arrowDir: dirs[Math.floor(Math.random()*4)], arrowCmd: cmds[Math.floor(Math.random()*2)] });
-        }
-    };
-    render();
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
+window.checkArrow = function(choice) {
+    let ok = false;
+    if(arrowCommandMode === "امتثل") {
+        ok = (choice === arrowTargetDirection);
+    } else {
+        if(arrowTargetDirection==="➡️" && choice==="⬅️") ok=true; 
+        if(arrowTargetDirection==="⬅️" && choice==="➡️") ok=true;
+        if(arrowTargetDirection==="⬆️" && choice==="⬇️") ok=true; 
+        if(arrowTargetDirection==="⬇️" && choice==="⬆️") ok=true;
+    }
+    
+    if(ok) { submitPointsToCloud(4); }
+    
+    // يقوم الملك بضخ تجميعة أسهم جديدة فورية للفايربيس ليعيد الطرفان رسم الشاشة فورا بسهم جديد!
+    if(myRole === 'king') {
+        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
+        roomRef.update({ 
+            arrowDir: dirs[Math.floor(Math.random()*4)], 
+            arrowCmd: cmds[Math.floor(Math.random()*2)] 
+        });
+    }
+};
+
 function startGuessGame() {
-    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; E('timerDisplay').textContent = `⏱️ مفتوح`;
+    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
+    E('timerDisplay').textContent = `⏱️ مفتوح`;
     E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة:</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
     E('gBtn').addEventListener('click', () => {
         let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
         
-        // إصلاح جذري: تحويل النص لأرقام حقيقية لضمان صحة المقارنة والتلميحات
         let guessNum = parseInt(val);
         let targetNum = parseInt(secretCode);
 
         if(guessNum === targetNum) {
-            myRoundPoints = 15; submitPointsToCloud(15);
-            roomRef.update({ gameState: "ended", endMessage: `🎉 فاز الخصم بفك الشفرة السرية! الرقم هو [ ${secretCode} ]` });
-        } else {
-            E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
-            E('gIn').value = "";
-        }
-    });
-}
-
-function submitPointsToCloud(amt) {
-    roomRef.get().then((snapshot) => {
-        const data = snapshot.val(); if(!data) return;
-        if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
-        else roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
-    });
-}
-
-function endRoundLogic() {
-    clearInterval(gameTimer);
-    if (currentRoundNum < 5) {
-        E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
-        if (myRole === 'king') {
-            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية";
-            // نمرر رقم الجولة التالية مباشرة بشكل صريح
-            btn.onclick = () => { kingFireNextRound(currentRoundNum + 1); };
-            E('actCont').appendChild(btn);
-        } else { E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; }
-    } else { settleTournament(); }
-}
-
-function settleTournament() {
-    if(myRole === 'king') {
-        roomRef.get().then((snapshot) => {
-            const data = snapshot.val();
-            let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
-            let finalMsg = kP >= cP ? `👑 انتصر الملك وحمى عرشه بمجموع ${kP} مقابل ${cP}` : `⚔️ سقط العرش! تمكن المتحدي من الإطاحة بالملك بمجموع ${cP} مقابل ${kP}`;
-            roomRef.update({ gameState: "ended", endMessage: finalMsg });
-        });
-    }
-}
-</script>
-</body>
-</html>
+            submitPointsToCloud(15);
+            let winMsg = myRole === 'king' ? `🎉 نجح الملك في فك
