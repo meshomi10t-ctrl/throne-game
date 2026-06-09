@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - الإصدار الملكي النهائي</title>
+    <title>🏰 بطولة ساحة النزاع - الإصدار الملكي المستقر</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -113,7 +113,8 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let myName = "", myRole = "", roomId = "";
-let gameTimer = null, currentRoundNum = 0; 
+let gameTimer = null, arrowTimer = null; // فصل عداد الأسهم تماماً لمنع أي تعليق
+let currentRoundNum = 0; 
 let myRoundPoints = 0;
 let roomRef = null;
 
@@ -179,7 +180,6 @@ function loginAs(role) {
                 E('arenaScreen').classList.add('active');
             }
             
-            // في حال تغيرت الجولة، أو حدث تغيير في بيانات السهم ولعبة التخمين
             if (currentRoundNum !== data.roundNum || arrowTargetDirection !== data.arrowDir || arrowCommandMode !== data.arrowCmd || secretCode !== data.secretCode) {
                 currentRoundNum = data.roundNum;
                 arrowTargetDirection = data.arrowDir;
@@ -191,7 +191,7 @@ function loginAs(role) {
 
         if (data.gameState === "ended") {
             clearInterval(gameTimer);
-            // إظهار اللوحة الاحترافية بدلاً من شاشة الـ alert التقليدية البسيطة
+            clearInterval(arrowTimer);
             E('finalKingScore').textContent = data.kingPoints || 0;
             E('finalChallengerScore').textContent = data.challengerPoints || 0;
             E('winnerText').textContent = data.endMessage;
@@ -217,7 +217,6 @@ function kingFireNextRound(targetRound) {
     let extra = "", randomDir = "⬇️", randomCmd = "امتثل";
     if(targetRound === 5) extra = Math.floor(1000 + Math.random() * 9000).toString();
     
-    // سحب سهم عشوائي عند الانتقال لجولة الأسهم أو أثناء اللعب فيها
     if(targetRound === 4) {
         const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
         randomDir = dirs[Math.floor(Math.random() * dirs.length)];
@@ -236,10 +235,9 @@ function runGameStartLogic() {
     myRoundPoints = 0;
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
     
-    // منع تضارب العدادات الزمنية
-    if(currentRoundNum !== 4 && currentRoundNum !== 5) {
-        clearInterval(gameTimer);
-    }
+    // تصفير العدادات عند الانتقال النظيف بين المراحل
+    clearInterval(gameTimer);
+    gameTimer = null;
 
     if (currentRoundNum === 1) startClickGame();
     else if (currentRoundNum === 2) startColorGame();
@@ -288,7 +286,6 @@ function startMathGame() {
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
 }
 
-// 🎯 إصلاح السهم: بناء وتحديث الواجهة بناء على القراءة المباشرة القادمة من الفايربيس
 function renderArrowGameUI() {
     E('currentGameTitle').textContent = "السهم المعاكس 🏹";
     let clr = arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
@@ -304,15 +301,15 @@ function renderArrowGameUI() {
         </div>
     `;
 
-    // تشغيل التايمر الخاص بالجولة لمرة واحدة فقط دون تكرار
-    if(!gameTimer) {
-        let timeLeft = 12;
-        gameTimer = setInterval(() => {
-            timeLeft--;
-            E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-            if (timeLeft <= 0) {
-                clearInterval(gameTimer);
-                gameTimer = null;
+    // استخدام مؤقت منفصل تماماً ومستقل للجولة الرابعة لتجنب التجميد والتعارض
+    if(!arrowTimer) {
+        let arrowTimeLeft = 12;
+        arrowTimer = setInterval(() => {
+            arrowTimeLeft--;
+            E('timerDisplay').textContent = `⏱️ ${arrowTimeLeft}`;
+            if (arrowTimeLeft <= 0) {
+                clearInterval(arrowTimer);
+                arrowTimer = null;
                 endRoundLogic();
             }
         }, 1000);
@@ -332,7 +329,6 @@ window.checkArrow = function(choice) {
     
     if(ok) { submitPointsToCloud(4); }
     
-    // يقوم الملك بضخ تجميعة أسهم جديدة فورية للفايربيس ليعيد الطرفان رسم الشاشة فورا بسهم جديد!
     if(myRole === 'king') {
         const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
         roomRef.update({ 
@@ -343,6 +339,10 @@ window.checkArrow = function(choice) {
 };
 
 function startGuessGame() {
+    // تصفير تايمر الأسهم لضمان عدم استمراره في الخلفية
+    clearInterval(arrowTimer); 
+    arrowTimer = null;
+
     E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
     E('timerDisplay').textContent = `⏱️ مفتوح`;
     E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة:</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
@@ -354,4 +354,48 @@ function startGuessGame() {
 
         if(guessNum === targetNum) {
             submitPointsToCloud(15);
-            let winMsg = myRole === 'king' ? `🎉 نجح الملك في فك
+            let winMsg = myRole === 'king' ? `🎉 نجح الملك في فك الشفرة وحماية العرش! الرقم هو [ ${secretCode} ]` : `⚔️ نجح المتحدي في سرقة الشفرة السرية وإسقاط الملك! الرقم هو [ ${secretCode} ]`;
+            roomRef.update({ gameState: "ended", endMessage: winMsg });
+        } else {
+            E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
+            E('gIn').value = "";
+        }
+    });
+}
+
+function submitPointsToCloud(amt) {
+    roomRef.get().then((snapshot) => {
+        const data = snapshot.val(); if(!data) return;
+        if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
+        else roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
+    });
+}
+
+function endRoundLogic() {
+    E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
+    if (currentRoundNum < 5) {
+        if (myRole === 'king') {
+            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية";
+            btn.onclick = () => { kingFireNextRound(currentRoundNum + 1); };
+            E('actCont').appendChild(btn);
+        } else { 
+            E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; 
+        }
+    } else { 
+        settleTournament(); 
+    }
+}
+
+function settleTournament() {
+    if(myRole === 'king') {
+        roomRef.get().then((snapshot) => {
+            const data = snapshot.val();
+            let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
+            let finalMsg = kP >= cP ? `انتصر الملك وحمى عرشه بنجاح ساحق!` : `سقط العرش العظيم! تمكن المتحدي من الإطاحة بالملك!`;
+            roomRef.update({ gameState: "ended", endMessage: finalMsg });
+        });
+    }
+}
+</script>
+</body>
+</html>
