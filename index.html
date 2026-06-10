@@ -52,6 +52,7 @@
 </head>
 <body>
 
+<!-- شاشة البداية -->
 <div class="screen active" id="loginScreen">
     <div class="logo">👑</div>
     <div class="title">بطولة ساحة النزاع السحابية</div>
@@ -69,6 +70,7 @@
     </div>
 </div>
 
+<!-- شاشة الانتظار -->
 <div class="screen" id="waitingScreen">
     <div class="logo">⏳</div>
     <div class="title" id="waitingTitle">غرفة الانتظار</div>
@@ -79,6 +81,7 @@
     <button class="btn btn-red" onclick="location.reload()" id="leaveWaitingBtn" style="margin-top: 15px; border-radius: 20px; padding: 10px;">🚪 مغادرة الغرفة</button>
 </div>
 
+<!-- الساحة المباشرة -->
 <div class="screen" id="arenaScreen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 6</span>
@@ -99,6 +102,7 @@
     <div class="game-area" id="gameArea"><p style="color:#aaa;">في انتظار إشارة انطلاق الجولة الأولى...</p></div>
 </div>
 
+<!-- اللوحة السينمائية المستقلة لنتيجة البطولة الكبرى -->
 <div class="winner-modal" id="winnerModal">
     <div class="winner-card">
         <div class="winner-crown" id="winnerCrown">🏆</div>
@@ -125,12 +129,12 @@ const firebaseConfig = {
     databaseURL: "https://kkkooo-8a13b-default-rtdb.firebaseio.com/" 
 };
 
-let db;
-if(firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") || !firebaseConfig.databaseURL.startsWith("https://")) {
-    console.error("Firebase URL Missing");
-} else {
+let db = null;
+if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") && firebaseConfig.databaseURL.startsWith("https://")) {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+} else {
+    console.error("Firebase databaseURL parameter is missing or invalid.");
 }
 
 let myName = "", myRole = "", roomId = "";
@@ -159,8 +163,8 @@ E('roomNumberInput').addEventListener('input', () => {
     }
 });
 
-E('kingBtn').addEventListener('click', () => { if(validateLogin()) loginAs('king'); });
-E('challengerBtn').addEventListener('click', () => { if(validateLogin()) loginAs('challenger'); });
+E('kingBtn').addEventListener('click', () => { if(validateLogin(false)) loginAs('king'); });
+E('challengerBtn').addEventListener('click', () => { if(validateLogin(false)) loginAs('challenger'); });
 E('spectatorBtn').addEventListener('click', () => { if(validateLogin(true)) loginAs('spectator'); });
 
 function validateLogin(isSpectator = false) {
@@ -172,7 +176,7 @@ function validateLogin(isSpectator = false) {
     roomId = E('roomNumberInput').value.trim();
     if(isSpectator && !roomId) { alert("الرجاء كتابة رقم الغرفة أولاً للمشاهدة!"); return false; }
     if(!isSpectator && (!myName || !roomId)) { alert("الرجاء كتابة الاسم ورقم الغرفة أولاً!"); return false; }
-    myName = myName.startsWith('@') ? myName : '@' + myName;
+    if(!isSpectator) myName = myName.startsWith('@') ? myName : '@' + myName;
     return true;
 }
 
@@ -341,17 +345,15 @@ E('kingStartBtn').addEventListener('click', () => {
 function kingFireNextRound(targetRound) {
     let extra = "", randomDir = "⬇️", randomCmd = "امتثل";
     
-    // الجولة 5: شفرة التخمين المكونة من 4 أرقام
     if(targetRound === 5) extra = Math.floor(1000 + Math.random() * 9000).toString();
     
-    // الجولة 6 الجديدة: توليد تسلسل عشوائي من 4 رموز تعبيرية لحفظها بالذاكرة
     if(targetRound === 6) {
         const memoryPool = ["🦁", "🦊", "🐼", "🐙", "🐸", "🐵", "🦄", "🐝"];
         let sequence = [];
         for(let i=0; i<4; i++) {
             sequence.push(memoryPool[Math.floor(Math.random() * memoryPool.length)]);
         }
-        extra = sequence.join(''); // يتم دمج الرموز وحفظها كسلسلة في السيرفر
+        extra = sequence.join(''); 
     }
     
     if(targetRound === 4) {
@@ -380,7 +382,7 @@ function runGameStartLogic() {
     else if (currentRoundNum === 3) startMathGame();
     else if (currentRoundNum === 4) renderArrowGameUI(); 
     else if (currentRoundNum === 5) startGuessGame();
-    else if (currentRoundNum === 6) startMemoryGame(); // تشغيل جولة الذاكرة السادسة
+    else if (currentRoundNum === 6) startMemoryGame(); 
 }
 
 function startClickGame() {
@@ -514,7 +516,6 @@ function startGuessGame() {
             let targetNum = parseInt(secretCode);
 
             if(guessNum === targetNum) {
-                // بدلاً من إنهاء اللعبة بالكامل، نقوم بإنهاء الجولة الحالية الخامسة فقط والانتقال للتالية السادسة
                 if(myRole === 'king') {
                     roomRef.get().then((snapshot) => {
                         let currentPoints = snapshot.val().kingPoints || 0;
@@ -536,7 +537,6 @@ function startGuessGame() {
     }
 }
 
-// 🧠 الجولة السادسة الجديدة تماماً: اختبار الذاكرة البصرية الفوري
 function startMemoryGame() {
     E('currentGameTitle').textContent = "صدمة الذاكرة 🧠";
     let timeLeft = 12;
@@ -545,19 +545,14 @@ function startMemoryGame() {
     if(myRole === 'spectator') {
         E('gameArea').innerHTML = `<p style="font-size:18px; color:#aaa;">يتم عرض تسلسل الرموز للاعبين لحفظها فوراً... 🤔</p>`;
     } else {
-        // الخطوة 1: عرض الرموز السحرية لمدة 2.5 ثانية كاملة للحفظ
         E('gameArea').innerHTML = `
             <p style="color:#aaa; font-size:14px; margin-bottom:10px;">احفظ هذا الترتيب فوراً قبل اختفائه!</p>
             <h1 style="font-size:45px; letter-spacing:8px; color:var(--gold);" id="memoryDisplay">${secretCode}</h1>
         `;
 
         setTimeout(() => {
-            // الخطوة 2: إخفاء الرموز وعرض خيارات الإدخال للاعبين للحل والنزاع
             let splitEmojis = [];
-            // تفكيك الرموز لرموز مستقلة لإنشاء أزرار النقر للحل
             for (let char of secretCode) { splitEmojis.push(char); }
-            
-            // خلط الرموز لعمل خيارات صعبة ومربكة
             let buttonsPool = [...splitEmojis, "🦄", "🐼", "🦁"].sort(() => Math.random() - 0.5);
             
             E('gameArea').innerHTML = `
@@ -574,5 +569,65 @@ function startMemoryGame() {
                     currentAnswer += emoji;
                     E('userMemoryAnswer').textContent = currentAnswer;
 
-                    // في حال تطابق الإجابة تماماً مع السيرفر، يكسب 40 نقطة فورية وتنتهي البطولة الكبرى!
-                    if(currentAnswer === secretCode)
+                    if(currentAnswer === secretCode) {
+                        E('gameArea').innerHTML = `<h2 style="color:var(--green);">🎯 إجابة عبقرية صحيحة بالكامل! (+40)</h2>`;
+                        submitPointsToCloud(40);
+                    }
+                };
+                E('memoryButtonsArea').appendChild(b);
+            });
+
+            E('clearMemoryBtn').onclick = () => { currentAnswer = ""; E('userMemoryAnswer').textContent = ""; };
+
+        }, 2500); 
+    }
+
+    gameTimer = setInterval(() => {
+        timeLeft--;
+        E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+        if (timeLeft <= 0) endRoundLogic();
+    }, 1000);
+}
+
+function submitPointsToCloud(amt) {
+    if(myRole === 'spectator') return;
+    roomRef.get().then((snapshot) => {
+        const data = snapshot.val(); if(!data) return;
+        if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
+        else roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
+    });
+}
+
+function endRoundLogic() {
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><p style="color:#aaa; font-size:14px; margin-top:10px;">في انتظار سحب الملك للمرحلة التالية لتبدأ في البث...</p>`;
+        return;
+    }
+    
+    E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
+    if (currentRoundNum < 6) { 
+        if (myRole === 'king') {
+            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية";
+            btn.onclick = () => { kingFireNextRound(currentRoundNum + 1); };
+            E('actCont').appendChild(btn);
+        } else { 
+            E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; 
+        }
+    } else { 
+        settleTournament(); 
+    }
+}
+
+function settleTournament() {
+    if(myRole === 'king') {
+        roomRef.get().then((snapshot) => {
+            const data = snapshot.val();
+            let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
+            let finalMsg = kP >= cP ? `انتصر الملك وحمى عرشه بنجاح ساحق بعد 6 جولات ملحمية!` : `سقط العرش العظيم! تمكن المتحدي من الإطاحة بالملك في جولة الذاكرة الحاسمة!`;
+            roomRef.update({ gameState: "ended", endMessage: finalMsg });
+        });
+    }
+}
+</script>
+</body>
+</html>
