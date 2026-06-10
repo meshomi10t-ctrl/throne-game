@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - الإصدار الملكي المستقر</title>
+    <title>🏰 بطولة ساحة النزاع - نظام صراع العروش المستمر</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -31,6 +31,11 @@
         .arrow-display { font-size: 65px; margin: 5px 0; font-weight: bold; color: #fff; animation: pulse 0.4s infinite alternate; }
         @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.12); } }
 
+        /* سجل الأبطال المتطور */
+        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
+        .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
+        .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+
         /* لوحة إعلان الفائز النهائية السينمائية */
         .winner-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 15, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
         .winner-modal.active { display: flex; animation: fadeIn 0.5s ease-out forwards; }
@@ -54,12 +59,17 @@
         <button class="btn btn-green" id="kingBtn">🤴 دخول كملك</button>
         <button class="btn btn-purple" id="challengerBtn">🗡️ دخول كمتحدي</button>
     </div>
+    <div class="leaderboard-box">
+        <div class="leaderboard-title">🏆 سجل ملوك العرش الأسطوريين 🏆</div>
+        <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">اكتب رقم الغرفة أعلاه لعرض الأبطال...</p></div>
+    </div>
 </div>
 
 <div class="screen" id="waitingScreen">
     <div class="logo">⏳</div>
     <div class="title" id="waitingTitle">غرفة الانتظار</div>
     <div class="room-id" id="roomIdDisplay">000</div>
+    <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
     <div class="status" id="waitingStatus">جاري الاتصال بسيرفرك الخاص...</div>
     <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
 </div>
@@ -72,11 +82,11 @@
     <div class="timer" id="timerDisplay">⏱️ --</div>
     <div class="arena">
         <div class="player-box">
-            <div>🤴 الملك</div><div id="kingNameDisplay" style="font-size:13px; color:#aaa;">@الملك</div>
+            <div>🤴 الملك المستقر</div><div id="kingNameDisplay" style="font-size:13px; color:#aaa;">@الملك</div>
             <div style="font-size:32px; color:var(--gold); font-weight:bold;" id="kingScoreDisplay">0</div>
         </div>
         <div class="player-box">
-            <div>🗡️ المتحدي</div><div id="challengerNameDisplay" style="font-size:13px; color:#aaa;">@المتحدي</div>
+            <div>🗡️ المتحدي الجديد</div><div id="challengerNameDisplay" style="font-size:13px; color:#aaa;">@المتحدي</div>
             <div style="font-size:32px; color:var(--blue); font-weight:bold;" id="challengerScoreDisplay">0</div>
         </div>
     </div>
@@ -94,7 +104,7 @@
                 <div>🗡️ المتحدي: <span id="finalChallengerScore" style="color:var(--blue); font-weight:bold;">0</span></div>
             </div>
         </div>
-        <button class="btn btn-green" onclick="location.reload()">⚔️ بدء بطولة جديدة</button>
+        <button class="btn btn-green" id="actionModalBtn">🔄 المتابعة</button>
     </div>
 </div>
 
@@ -106,19 +116,38 @@ const E = id => document.getElementById(id);
 
 // ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل
 const firebaseConfig = {
-    databaseURL: "https://kkkooo-8a13b-default-rtdb.firebaseio.com/" 
+    databaseURL: "YOUR_DATABASE_URL_HERE" 
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let myName = "", myRole = "", roomId = "";
-let gameTimer = null, arrowTimer = null; // فصل عداد الأسهم تماماً لمنع أي تعليق
+let gameTimer = null, arrowTimer = null; 
 let currentRoundNum = 0; 
 let myRoundPoints = 0;
 let roomRef = null;
 
 let arrowTargetDirection = "", arrowCommandMode = "", secretCode = "";
+let currentWinnerRole = ""; // لتحديد الفائز محلياً عند نهاية الجولة
+
+// جلب سجل الأبطال عند كتابة رقم الغرفة
+E('roomNumberInput').addEventListener('input', () => {
+    let rId = E('roomNumberInput').value.trim();
+    if(rId) {
+        db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
+            let html = "";
+            let items = [];
+            snap.forEach(child => { items.push({name: child.key, score: child.val()}); });
+            items.reverse(); 
+            if(items.length === 0) html = "<p style='color:#aaa; text-align:center; font-size:13px;'>لا يوجد أبطال مسجلين بعد في هذه الغرفة.</p>";
+            items.forEach((item, index) => {
+                html += `<div class="leaderboard-item"><span>${index+1}. ${item.name} 👑</span><span>صمد لـ ${item.score} بطولات متتالية</span></div>`;
+            });
+            E('leaderboardList').innerHTML = html;
+        });
+    }
+});
 
 E('kingBtn').addEventListener('click', () => { if(validateLogin()) loginAs('king'); });
 E('challengerBtn').addEventListener('click', () => { if(validateLogin()) loginAs('challenger'); });
@@ -142,9 +171,8 @@ function loginAs(role) {
     if (myRole === 'king') {
         E('waitingTitle').textContent = "أنت الملك المستضيف";
         E('waitingStatus').textContent = "في انتظار دخول المتحدي السيرفر...";
-        roomRef.set({
+        roomRef.update({
             kingName: myName,
-            challengerName: "",
             gameState: "waiting",
             roundNum: 1,
             kingPoints: 0,
@@ -153,10 +181,21 @@ function loginAs(role) {
             arrowCmd: "امتثل",
             secretCode: ""
         });
+        // تفعيل عداد الصمود للملك الجديد لو لم يكن موجوداً
+        roomRef.child('kingStreak').get().then(s => { if(!s.exists()) roomRef.update({kingStreak: 0}); });
     } else {
-        E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
-        E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
-        roomRef.update({ challengerName: myName });
+        // ميكانيكية التحقق الفوري: الدخول للمقعد الشاغر فقط!
+        roomRef.get().then((snapshot) => {
+            const data = snapshot.val();
+            if(data && data.challengerName && data.challengerName !== "") {
+                alert("عذراً، المقعد ممتلئ والتحدي قائم حالياً! انتظر طرد الخاسر.");
+                location.reload();
+            } else {
+                E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
+                E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
+                roomRef.update({ challengerName: myName });
+            }
+        });
     }
 
     roomRef.on('value', (snapshot) => {
@@ -165,10 +204,14 @@ function loginAs(role) {
 
         E('kingNameDisplay').textContent = data.kingName || "@الملك";
         E('challengerNameDisplay').textContent = data.challengerName || "في الانتظار...";
+        E('streakDisplay').textContent = `🔥 سلسلة الصمود الحالية للملك: ${data.kingStreak || 0} بطولات`;
 
         if (myRole === 'king' && data.challengerName !== "" && data.gameState === "waiting") {
             E('kingStartBtn').style.display = "block";
             E('waitingStatus').textContent = `المتحدي ${data.challengerName} متصل بسيرفرك! اضغط للبدء.`;
+        } else if (myRole === 'king' && data.challengerName === "") {
+            E('kingStartBtn').style.display = "none";
+            E('waitingStatus').textContent = "تم طرد الخاسر! في انتظار دخول متحدي جديد عبر الكود...";
         }
 
         E('kingScoreDisplay').textContent = data.kingPoints || 0;
@@ -189,23 +232,83 @@ function loginAs(role) {
             }
         }
 
+        // ميكانيكية الطرد والبقاء عند انتهاء الجولة
         if (data.gameState === "ended") {
             clearInterval(gameTimer);
             clearInterval(arrowTimer);
+            
             E('finalKingScore').textContent = data.kingPoints || 0;
             E('finalChallengerScore').textContent = data.challengerPoints || 0;
             E('winnerText').textContent = data.endMessage;
             
-            if(data.endMessage.includes("انتصر الملك")) {
+            let kingWon = data.kingPoints >= data.challengerPoints;
+            currentWinnerRole = kingWon ? 'king' : 'challenger';
+
+            if(kingWon) {
                 E('winnerCrown').textContent = "👑";
                 E('winnerModal').style.borderColor = "var(--gold)";
             } else {
                 E('winnerCrown').textContent = "⚔️";
                 E('winnerModal').style.borderColor = "var(--blue)";
             }
+            
+            // تحديد وظيفة زر المتابعة بناءً على من فاز ومن خسر
+            if((myRole === 'king' && kingWon) || (myRole === 'challenger' && !kingWon)) {
+                // الفائز يضغط للمتابعة في الغرفة
+                E('actionModalBtn').textContent = "👑 البقاء في الغرفة وحماية العرش";
+                E('actionModalBtn').onclick = () => { proceedAsWinner(data); };
+            } else {
+                // الخاسر يضغط ليتم طرده للخارج
+                E('actionModalBtn').textContent = "🚪 مغادرة الغرفة (لقد خسرت الجولة)";
+                E('actionModalBtn').onclick = () => { proceedAsLoser(); };
+            }
+
             E('winnerModal').classList.add('active');
         }
     });
+}
+
+function proceedAsWinner(data) {
+    E('winnerModal').classList.remove('active');
+    E('arenaScreen').classList.remove('active');
+    E('waitingScreen').classList.add('active');
+    
+    if(currentWinnerRole === 'king') {
+        if(myRole === 'king') {
+            let nextStreak = (data.kingStreak || 0) + 1;
+            roomRef.update({
+                gameState: "waiting",
+                roundNum: 1,
+                kingPoints: 0,
+                challengerPoints: 0,
+                challengerName: "", // طرد المتحدي الخاسر فوراً لتفريغ المقعد
+                kingStreak: nextStreak
+            });
+            // تحديث سجل الأبطال السحابي باسم الملك
+            roomRef.child('leaderboard').child(data.kingName.replace('@','')).set(nextStreak);
+        }
+    } else {
+        // المتحدي فاز وأصبح هو الملك الجديد للغرفة!
+        if(myRole === 'challenger') {
+            myRole = 'king'; // قلب الدور محلياً
+            E('waitingTitle').textContent = "أنت الملك المستضيف الجديد";
+            roomRef.update({
+                kingName: myName,
+                gameState: "waiting",
+                roundNum: 1,
+                kingPoints: 0,
+                challengerPoints: 0,
+                challengerName: "", // تفريغ مقعد المتحدي للخصم القادم
+                kingStreak: 1
+            });
+            roomRef.child('leaderboard').child(myName.replace('@','')).set(1);
+        }
+    }
+}
+
+function proceedAsLoser() {
+    // تصفير وخرج الخاسر نهائياً لشاشة البداية وإعادة تحميل نظيفة للبيانات
+    location.reload();
 }
 
 E('kingStartBtn').addEventListener('click', () => {
@@ -235,7 +338,6 @@ function runGameStartLogic() {
     myRoundPoints = 0;
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 5`;
     
-    // تصفير العدادات عند الانتقال النظيف بين المراحل
     clearInterval(gameTimer);
     gameTimer = null;
 
@@ -301,7 +403,6 @@ function renderArrowGameUI() {
         </div>
     `;
 
-    // استخدام مؤقت منفصل تماماً ومستقل للجولة الرابعة لتجنب التجميد والتعارض
     if(!arrowTimer) {
         let arrowTimeLeft = 12;
         arrowTimer = setInterval(() => {
@@ -339,13 +440,12 @@ window.checkArrow = function(choice) {
 };
 
 function startGuessGame() {
-    // تصفير تايمر الأسهم لضمان عدم استمراره في الخلفية
     clearInterval(arrowTimer); 
     arrowTimer = null;
 
     E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
     E('timerDisplay').textContent = `⏱️ مفتوح`;
-    E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 15 نقطة:</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
+    E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 50 نقطة كبرى! 🌟</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
     E('gBtn').addEventListener('click', () => {
         let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
         
@@ -353,9 +453,25 @@ function startGuessGame() {
         let targetNum = parseInt(secretCode);
 
         if(guessNum === targetNum) {
-            submitPointsToCloud(15);
-            let winMsg = myRole === 'king' ? `🎉 نجح الملك في فك الشفرة وحماية العرش! الرقم هو [ ${secretCode} ]` : `⚔️ نجح المتحدي في سرقة الشفرة السرية وإسقاط الملك! الرقم هو [ ${secretCode} ]`;
-            roomRef.update({ gameState: "ended", endMessage: winMsg });
+            if(myRole === 'king') {
+                roomRef.get().then((snapshot) => {
+                    let currentPoints = snapshot.val().kingPoints || 0;
+                    let finalPoints = currentPoints + 50;
+                    let challengerPoints = snapshot.val().challengerPoints || 0;
+                    
+                    let winMsg = finalPoints >= challengerPoints ? `👑 نجح الملك في فك الشفرة وحمى عرشه بنجاح ساحق بمجموع ${finalPoints}! الرقم هو [ ${secretCode} ]` : `⚔️ رغم فك الملك للشفرة، إلا أن المتحدي أسقطه بفارق النقاط التراكمية! الرقم هو [ ${secretCode} ]`;
+                    roomRef.update({ kingPoints: finalPoints, gameState: "ended", endMessage: winMsg });
+                });
+            } else {
+                roomRef.get().then((snapshot) => {
+                    let currentPoints = snapshot.val().challengerPoints || 0;
+                    let finalPoints = currentPoints + 50;
+                    let kingPoints = snapshot.val().kingPoints || 0;
+                    
+                    let winMsg = finalPoints > kingPoints ? `⚔️ نجح المتحدي في سرقة الشفرة (+50) وأطاح بالملك عن عرشه! الرقم هو [ ${secretCode} ]` : `👑 رغم فك المتحدي للشفرة، إلا أن صدارة الملك بالنقاط السابقة حمت عرشه العظيم! الرقم هو [ ${secretCode} ]`;
+                    roomRef.update({ challengerPoints: finalPoints, gameState: "ended", endMessage: winMsg });
+                });
+            }
         } else {
             E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
             E('gIn').value = "";
