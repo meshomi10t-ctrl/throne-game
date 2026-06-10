@@ -122,12 +122,12 @@ const E = id => document.getElementById(id);
 
 // ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل بالسطر 135
 const firebaseConfig = {
-    databaseURL: "YOUR_DATABASE_URL_HERE" 
+    databaseURL: "https://kkkooo-8a13b-default-rtdb.firebaseio.com/" 
 };
 
 let db;
 // فحص وقائي لمنع تجمد الأزرار عند نسيان الرابط التجريبي
-if(firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") || !firebaseConfig.databaseURL.startsWith("https://")) {
+if(firebaseConfig.databaseURL.includes("https://kkkooo-8a13b-default-rtdb.firebaseio.com/") || !firebaseConfig.databaseURL.startsWith("https://")) {
     console.error("Firebase URL Missing");
 } else {
     firebase.initializeApp(firebaseConfig);
