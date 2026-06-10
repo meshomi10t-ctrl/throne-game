@@ -75,7 +75,7 @@
     <div class="room-id" id="roomIdDisplay">000</div>
     <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
     <div class="status" id="waitingStatus">جاري الاتصال بسيرفرك الخاص...</div>
-    <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ جولات النزاع</button>
+    <button class="btn btn-green" id="kingStartBtn" style="display:none !important;">🚀 ابدأ جولات النزاع</button>
     <button class="btn btn-red" onclick="location.reload()" id="leaveWaitingBtn" style="margin-top: 15px; border-radius: 20px; padding: 10px;">🚪 مغادرة الغرفة</button>
 </div>
 
@@ -126,7 +126,6 @@ const firebaseConfig = {
 };
 
 let db;
-// فحص وقائي لمنع تجمد الأزرار عند نسيان الرابط التجريبي
 if(firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") || !firebaseConfig.databaseURL.startsWith("https://")) {
     console.error("Firebase URL Missing");
 } else {
@@ -194,9 +193,11 @@ function loginAs(role) {
 
     if (myRole === 'king') {
         E('waitingTitle').textContent = "أنت الملك المستضيف";
-        E('waitingStatus').textContent = "في انتظار دخول المتحدي السيرفر...";
+        E('waitingStatus').textContent = "جاري تصفير المقاعد القديمة وتهيئة السيرفر...";
+        
         roomRef.update({
             kingName: myName,
+            challengerName: "", 
             gameState: "waiting",
             roundNum: 1,
             kingPoints: 0,
@@ -228,12 +229,13 @@ function loginAs(role) {
         E('challengerNameDisplay').textContent = data.challengerName || "في الانتظار...";
         E('streakDisplay').textContent = `🔥 سلسلة الصمود الحالية للملك: ${data.kingStreak || 0} بطولات`;
 
-        if (myRole === 'king' && data.challengerName !== "" && data.gameState === "waiting") {
-            E('kingStartBtn').style.display = "block";
+        // 🛡️ التعديل الأمني الحاسم لزر البدء: لا يظهر أبداً للملك إلا في وجود اسم تحدي حقيقي وصريح
+        if (myRole === 'king' && data.challengerName && data.challengerName !== "" && data.gameState === "waiting") {
+            E('kingStartBtn').style.setProperty('display', 'block', 'important'); // إجبار المتصفح على عرضه الآن
             E('waitingStatus').textContent = `المتحدي ${data.challengerName} متصل بسيرفرك! اضغط للبدء.`;
-        } else if (myRole === 'king' && data.challengerName === "") {
-            E('kingStartBtn').style.display = "none";
-            E('waitingStatus').textContent = "تم طرد الخاسر! في انتظار دخول متحدي جديد عبر الكود...";
+        } else if (myRole === 'king' && (!data.challengerName || data.challengerName === "")) {
+            E('kingStartBtn').style.setProperty('display', 'none', 'important'); // إجبار الزر على الاختفاء التام
+            E('waitingStatus').textContent = "في انتظار دخول المتحدي السيرفر عبر الكود...";
         }
 
         E('kingScoreDisplay').textContent = data.kingPoints || 0;
