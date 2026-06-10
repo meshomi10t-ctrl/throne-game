@@ -127,7 +127,7 @@ const firebaseConfig = {
 
 let db;
 // فحص وقائي لمنع تجمد الأزرار عند نسيان الرابط التجريبي
-if(firebaseConfig.databaseURL.includes("kkkooo-8a13b-default-rtdb.firebaseio.com/") || !firebaseConfig.databaseURL.startsWith("https://")) {
+if(firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") || !firebaseConfig.databaseURL.startsWith("https://")) {
     console.error("Firebase URL Missing");
 } else {
     firebase.initializeApp(firebaseConfig);
