@@ -122,7 +122,7 @@ const E = id => document.getElementById(id);
 
 // ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل بالسطر 156
 const firebaseConfig = {
-    databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" 
+    databaseURL: "YOUR_DATABASE_URL_HERE" 
 };
 
 let db = null;
@@ -131,11 +131,9 @@ try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
         console.log("Firebase initialized successfully.");
-    } else {
-        console.warn("Firebase URL is not set yet. Running in safe local-click mode.");
     }
 } catch(e) {
-    console.error("Firebase setup error captured safely:", e);
+    console.error("Firebase setup error:", e);
 }
 
 let myName = "", myRole = "", roomId = "";
@@ -153,7 +151,7 @@ E('roomNumberInput').addEventListener('input', () => {
     let rId = E('roomNumberInput').value.trim();
     if(rId && db) {
         try {
-            db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
+            db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).once('value').then(snap => {
                 let html = "";
                 let items = [];
                 if(snap && snap.exists()) {
@@ -168,12 +166,8 @@ E('roomNumberInput').addEventListener('input', () => {
                     });
                 }
                 E('leaderboardList').innerHTML = html;
-            }, err => {
-                console.log("Database connection error ignored.");
-            });
-        } catch(err) {
-            console.log("Leaderboard catch activated.");
-        }
+            }).catch(e => {});
+        } catch(err) {}
     }
 });
 
@@ -343,7 +337,6 @@ function loginAs(role) {
     });
 }
 
-// دالة تفحص وتقارن السلسلة المتتالية الحالية فقط مع الرقم القياسي التاريخي للاعب
 function updateLeaderboardIfHigher(playerCleanName, newStreakValue) {
     if(!roomRef || !playerCleanName) return;
     if(playerCleanName.startsWith("🤖") || playerCleanName.includes("الفارس_المجهول") || playerCleanName.includes("غازي_العرش") || playerCleanName.includes("المقاتل") || playerCleanName.includes("برق") || playerCleanName.includes("صائد") || playerCleanName.includes("المستبسل") || playerCleanName.includes("عازف") || playerCleanName.includes("العقرب")) return; 
@@ -352,13 +345,11 @@ function updateLeaderboardIfHigher(playerCleanName, newStreakValue) {
     leaderRef.get().then((snap) => {
         if (snap.exists()) {
             let recordMaxStreak = parseInt(snap.val()) || 0;
-            if (newStreakValue > recordMaxStreak) { 
-                leaderRef.set(newStreakValue); 
-            }
+            if (newStreakValue > recordMaxStreak) { leaderRef.set(newStreakValue); }
         } else {
             leaderRef.set(newStreakValue);
         }
-    }).catch(e => { leaderRef.set(newStreakValue); });
+    }).catch(e => {});
 }
 
 function proceedAsWinner(data) {
@@ -369,8 +360,6 @@ function proceedAsWinner(data) {
     if(currentWinnerRole === 'king') {
         if(myRole === 'king') {
             let nextStreak = (data.kingStreak || 0) + 1;
-            
-            // تحديث السجل فوراً بالسلسلة المتتالية الجديدة للملك المستمر
             updateLeaderboardIfHigher(data.kingName.replace('@',''), nextStreak);
 
             roomRef.update({
@@ -396,8 +385,6 @@ function proceedAsWinner(data) {
         if(myRole === 'challenger') {
             myRole = 'king'; 
             E('waitingTitle').textContent = "أنت الملك المستضيف الجديد";
-            
-            // المتحدي فاز؛ السلسلة المتتالية الجديدة له تبدأ من 1 فوز متتالي
             updateLeaderboardIfHigher(myName.replace('@',''), 1);
 
             roomRef.update({
@@ -589,4 +576,156 @@ function renderArrowGameUI() {
         `;
     } else {
         E('gameArea').innerHTML = `
-            <div style="background:rgba(255,255,255,0.05);padding:5
+            <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">${window.arrowCommandMode}</div>
+            <div class="arrow-display">${window.arrowTargetDirection}</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkArrow('⬅️')">يمين ⬅️</button>
+                <button class="option-btn" onclick="checkArrow('➡️')">يسار ➡️</button>
+                <button class="option-btn" onclick="checkArrow('⬆️')">فوق ⬆️</button>
+                <button class="option-btn" onclick="checkArrow('⬇️')">تحت ⬇️</button>
+            </div>
+        `;
+    }
+
+    if(!arrowTimer) {
+        let arrowTimeLeft = 12;
+        arrowTimer = setInterval(() => {
+            arrowTimeLeft--;
+            E('timerDisplay').textContent = `⏱️ ${arrowTimeLeft}`;
+            if (arrowTimeLeft <= 0) {
+                clearInterval(arrowTimer);
+                arrowTimer = null;
+                endRoundLogic();
+            }
+        }, 1000);
+    }
+}
+
+window.checkArrow = function(choice) {
+    if(myRole === 'spectator') return; 
+    let ok = false;
+    if(window.arrowCommandMode === "امتثل") {
+        ok = (choice === window.arrowTargetDirection);
+    } else {
+        if(window.arrowTargetDirection==="➡️" && choice==="⬅️") ok=true; 
+        if(window.arrowTargetDirection==="⬅️" && choice==="➡️") ok=true;
+        if(window.arrowTargetDirection==="⬆️" && choice==="⬇️") ok=true; 
+        if(window.arrowTargetDirection==="⬇️" && choice==="⬆️") ok=true;
+    }
+    
+    if(ok) { submitPointsToCloud(4); }
+    
+    if(myRole === 'king' && roomRef) {
+        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
+        roomRef.update({ 
+            arrowDir: dirs[Math.floor(Math.random()*4)], 
+            arrowCmd: cmds[Math.floor(Math.random()*2)] 
+        });
+    }
+};
+
+function startMemoryGame() {
+    E('currentGameTitle').textContent = "صدمة الذاكرة 🧠";
+    let timeLeft = 12;
+    E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `
+            <p style="color:#aaa; font-size:14px; margin-bottom:10px;">التسلسل الحالي يعرض للمتنافسين (من اليسار لليمين):</p>
+            <h1 style="font-size:45px; letter-spacing:8px; color:var(--gold); direction: ltr; unicode-bidi: bidi-override;" id="memoryDisplay">${window.secretCode}</h1>
+        `;
+    } else {
+        E('gameArea').innerHTML = `
+            <p style="color:#aaa; font-size:14px; margin-bottom:10px;">احفظ هذا الترتيب فوراً (ابدأ الحفظ من اليسار إلى اليمين ⬅️):</p>
+            <h1 style="font-size:45px; letter-spacing:8px; color:var(--gold); direction: ltr; unicode-bidi: bidi-override;" id="memoryDisplay">${window.secretCode}</h1>
+        `;
+
+        setTimeout(() => {
+            let splitEmojis = [];
+            for (let char of window.secretCode) { splitEmojis.push(char); }
+            let buttonsPool = [...splitEmojis, "🦄", "🐼", "🦁"].sort(() => Math.random() - 0.5);
+            
+            E('gameArea').innerHTML = `
+                <p style="color:#aaa; font-size:13px; margin-bottom:5px;">أعد تكوين التسلسل بالترتيب المظبوط (من اليسار إلى اليمين):</p>
+                <div style="font-size:24px; min-height:40px; color:var(--blue); font-weight:bold; margin-bottom:10px; direction: ltr; unicode-bidi: bidi-override;" id="userMemoryAnswer"></div>
+                <div class="options-grid" id="memoryButtonsArea"></div>
+                <button class="btn btn-red" style="margin-top:10px; padding:8px;" id="clearMemoryBtn">🔄 مسح وإعادة</button>
+            `;
+
+            let currentAnswer = "";
+            buttonsPool.forEach(emoji => {
+                let b = document.createElement('button'); b.className = 'option-btn'; b.style.fontSize = "26px"; b.textContent = emoji;
+                b.onclick = () => {
+                    currentAnswer += emoji;
+                    E('userMemoryAnswer').textContent = currentAnswer;
+
+                    if(currentAnswer === window.secretCode) {
+                        E('gameArea').innerHTML = `<h2 style="color:var(--green);">🎯 إجابة عبقرية صحيحة بالكامل! (+40)</h2>`;
+                        submitPointsToCloud(40);
+                    }
+                };
+                E('memoryButtonsArea').appendChild(b);
+            });
+
+            E('clearMemoryBtn').onclick = () => { currentAnswer = ""; E('userMemoryAnswer').textContent = ""; };
+
+        }, 2500); 
+    }
+
+    gameTimer = setInterval(() => {
+        timeLeft--;
+        E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+        if (timeLeft <= 0) endRoundLogic();
+    }, 1000);
+}
+
+function startGuessGame() {
+    clearTimeout(botActionTimer);
+    clearInterval(botActionTimer);
+    if(arrowTimer) clearInterval(arrowTimer); 
+    arrowTimer = null;
+
+    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
+    E('timerDisplay').textContent = `⏱️ مفتوح للأبد`; 
+    
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `<p style="font-size:18px; color:var(--gold); text-align:center; font-weight:bold; animation:pulse 0.6s infinite alternate;">🔒 النزاع في ذروته! اللاعبون يخمّنون الشفرة السرية لإنهاء البطولة الكبرى...!</p>`;
+    } else {
+        E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 50 نقطة وتحسم النزاع فوراً! 🌟</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
+        E('gBtn').addEventListener('click', () => {
+            let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
+            
+            let guessNum = parseInt(val);
+            let targetNum = parseInt(window.secretCode);
+
+            if(guessNum === targetNum) {
+                if(myRole === 'king') {
+                    roomRef.get().then((snapshot) => {
+                        if(snapshot.exists()) {
+                            let currentPoints = snapshot.val().kingPoints || 0;
+                            roomRef.update({ kingPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                        }
+                    });
+                } else {
+                    roomRef.get().then((snapshot) => {
+                        if(snapshot.exists()) {
+                            let currentPoints = snapshot.val().challengerPoints || 0;
+                            roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                        }
+                    });
+                }
+            } else {
+                E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
+                E('gIn').value = "";
+            }
+        });
+    }
+}
+
+function submitPointsToCloud(amt) {
+    if(myRole === 'spectator' || !roomRef) return;
+    roomRef.get().then((snapshot) => {
+        if(snapshot.exists()) {
+            const data = snapshot.val(); if(!data) return;
+            if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
+            else roomRef.update({ challengerPoints: (data
