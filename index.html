@@ -615,7 +615,7 @@ function renderArrowGameUI() {
 }
 
 window.checkArrow = function(choice) {
-    if(myRole === 'spectator') return; 
+    if(myRole === 'spectator' === true) return; 
     let ok = false;
     if(window.arrowCommandMode === "امتثل") {
         ok = (choice === window.arrowTargetDirection);
@@ -643,11 +643,14 @@ function startMemoryGame() {
     E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
 
     if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<p style="font-size:18px; color:#aaa;">يتم عرض تسلسل الرموز للاعبين لحفظها فوراً... 🤔</p>`;
+        E('gameArea').innerHTML = `
+            <p style="color:#aaa; font-size:14px; margin-bottom:10px;">التسلسل الحالي يعرض للمتنافسين (من اليسار لليمين):</p>
+            <h1 style="font-size:45px; letter-spacing:8px; color:var(--gold); direction: ltr; unicode-bidi: bidi-override;" id="memoryDisplay">${window.secretCode}</h1>
+        `;
     } else {
         E('gameArea').innerHTML = `
-            <p style="color:#aaa; font-size:14px; margin-bottom:10px;">احفظ هذا الترتيب فوراً قبل اختفائه!</p>
-            <h1 style="font-size:45px; letter-spacing:8px; color:var(--gold);" id="memoryDisplay">${window.secretCode}</h1>
+            <p style="color:#aaa; font-size:14px; margin-bottom:10px;">احفظ هذا الترتيب فوراً (ابدأ الحفظ من اليسار إلى اليمين ⬅️):</p>
+            <h1 style="font-size:45px; letter-spacing:8px; color:var(--gold); direction: ltr; unicode-bidi: bidi-override;" id="memoryDisplay">${window.secretCode}</h1>
         `;
 
         setTimeout(() => {
@@ -656,8 +659,8 @@ function startMemoryGame() {
             let buttonsPool = [...splitEmojis, "🦄", "🐼", "🦁"].sort(() => Math.random() - 0.5);
             
             E('gameArea').innerHTML = `
-                <p style="color:#aaa; font-size:13px; margin-bottom:5px;">أعد تكوين التسلسل بالترتيب المظبوط:</p>
-                <div style="font-size:24px; min-height:40px; color:var(--blue); font-weight:bold; margin-bottom:10px;" id="userMemoryAnswer"></div>
+                <p style="color:#aaa; font-size:13px; margin-bottom:5px;">أعد تكوين التسلسل بالترتيب المظبوط (من اليسار إلى اليمين):</p>
+                <div style="font-size:24px; min-height:40px; color:var(--blue); font-weight:bold; margin-bottom:10px; direction: ltr; unicode-bidi: bidi-override;" id="userMemoryAnswer"></div>
                 <div class="options-grid" id="memoryButtonsArea"></div>
                 <button class="btn btn-red" style="margin-top:10px; padding:8px;" id="clearMemoryBtn">🔄 مسح وإعادة</button>
             `;
@@ -674,108 +677,3 @@ function startMemoryGame() {
                         submitPointsToCloud(40);
                     }
                 };
-                E('memoryButtonsArea').appendChild(b);
-            });
-
-            E('clearMemoryBtn').onclick = () => { currentAnswer = ""; E('userMemoryAnswer').textContent = ""; };
-
-        }, 2500); 
-    }
-
-    gameTimer = setInterval(() => {
-        timeLeft--;
-        E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-        if (timeLeft <= 0) endRoundLogic();
-    }, 1000);
-}
-
-function startGuessGame() {
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    if(arrowTimer) clearInterval(arrowTimer); 
-    arrowTimer = null;
-
-    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
-    E('timerDisplay').textContent = `⏱️ مفتوح للأبد`; 
-    
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<p style="font-size:18px; color:var(--gold); text-align:center; font-weight:bold; animation:pulse 0.6s infinite alternate;">🔒 النزاع في ذروته! اللاعبون يخمّنون الشفرة السرية لإنهاء البطولة الكبرى...!</p>`;
-    } else {
-        E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 50 نقطة وتحسم النزاع فوراً! 🌟</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
-        E('gBtn').addEventListener('click', () => {
-            let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
-            
-            let guessNum = parseInt(val);
-            let targetNum = parseInt(window.secretCode);
-
-            if(guessNum === targetNum) {
-                if(myRole === 'king') {
-                    roomRef.get().then((snapshot) => {
-                        if(snapshot.exists()) {
-                            let currentPoints = snapshot.val().kingPoints || 0;
-                            roomRef.update({ kingPoints: currentPoints + 50 }).then(() => { settleTournament(); });
-                        }
-                    });
-                } else {
-                    roomRef.get().then((snapshot) => {
-                        if(snapshot.exists()) {
-                            let currentPoints = snapshot.val().challengerPoints || 0;
-                            roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
-                        }
-                    });
-                }
-            } else {
-                E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
-                E('gIn').value = "";
-            }
-        });
-    }
-}
-
-function submitPointsToCloud(amt) {
-    if(myRole === 'spectator' || !roomRef) return;
-    roomRef.get().then((snapshot) => {
-        if(snapshot.exists()) {
-            const data = snapshot.val(); if(!data) return;
-            if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
-            else roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
-        }
-    });
-}
-
-function endRoundLogic() {
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><p style="color:#aaa; font-size:14px; margin-top:10px;">في انتظار سحب الملك للمرحلة التالية لتبدأ في البث...</p>`;
-        return;
-    }
-    
-    E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
-    if (currentRoundNum < 6) { 
-        if (myRole === 'king') {
-            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية";
-            btn.onclick = () => { kingFireNextRound(currentRoundNum + 1); };
-            E('actCont').appendChild(btn);
-        } else { 
-            E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; 
-        }
-    }
-}
-
-function settleTournament() {
-    if(!roomRef) return;
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    roomRef.get().then((snapshot) => {
-        if(snapshot.exists()) {
-            const data = snapshot.val();
-            let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
-            let finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح المتحدي ${data.challengerName} بفك الشفرة واعتلاء العرش!`;
-            roomRef.update({ gameState: "ended", endMessage: finalMsg });
-        }
-    });
-}
-</script>
-</body>
-</html>
