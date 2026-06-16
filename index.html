@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - نظام النزاع المستمر مع طور البوتات</title>
+    <title>🏰 بطولة ساحة النزاع - نظام النزاع المستمر المتوازن</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -138,13 +138,13 @@ let gameTimer = null, arrowTimer = null, botActionTimer = null, botJoinTimeout =
 let currentRoundNum = 0; 
 let myRoundPoints = 0;
 let roomRef = null;
-let isBotActive = false; // هل الخصم الحالي عبارة عن بوت؟
+let isBotActive = false; 
 
 let arrowTargetDirection = "", arrowCommandMode = "", secretCode = "";
 let currentWinnerRole = ""; 
 
-// أسماء البوتات العشوائية
-const botNames = ["🤖_الفارس_المجهول", "🤖_غازي_العرش", "🤖_المقاتل_الشرس", "🤖_برق_الساحة", "🤖_صائد_الملوك", "🤖_الجنرال_الميكانيكي"];
+// أسماء بشرية عشوائية تماماً بدون أي دلالة على أنه بوت لضمان السرية التامة
+const botNames = ["@الفارس_المجهول", "@غازي_العرش", "@المقاتل_الشرس", "@برق_الساحة", "@صائد_الملوك", "@المستبسل_X", "@عازف_السيف", "@العقرب_الأسود"];
 
 E('roomNumberInput').addEventListener('input', () => {
     let rId = E('roomNumberInput').value.trim();
@@ -201,7 +201,7 @@ function loginAs(role) {
 
     if (myRole === 'king') {
         E('waitingTitle').textContent = "أنت الملك المستضيف";
-        E('waitingStatus').textContent = "جاري تصفير المقاعد وتهيئة السيرفر... (انتظار المتحدين لمدة 30 ثانية أو سيتم استدعاء بوت)";
+        E('waitingStatus').textContent = "جاري تصفير المقاعد وتهيئة السيرفر... بانتظار دخول متحدي...";
         
         roomRef.update({
             kingName: myName,
@@ -217,7 +217,7 @@ function loginAs(role) {
         });
         roomRef.child('kingStreak').get().then(s => { if(!s.exists()) roomRef.update({kingStreak: 0}); });
 
-        // بدء مؤقت الـ 30 ثانية لاستدعاء البوت إذا لم يدخل أحد
+        // بدء مؤقت الـ 30 ثانية لاستدعاء البوت السري
         clearTimeout(botJoinTimeout);
         botJoinTimeout = setTimeout(() => {
             roomRef.get().then((snapshot) => {
@@ -259,7 +259,7 @@ function loginAs(role) {
         if (myRole === 'king' && data.challengerName && data.challengerName !== "" && data.gameState === "waiting") {
             clearTimeout(botJoinTimeout);
             E('kingStartBtn').style.setProperty('display', 'block', 'important');
-            E('waitingStatus').textContent = isBotActive ? `🤖 تم استدعاء البوت المبرمج ${data.challengerName}! اضغط لبدء النزاع.` : `المتحدي الحقيقي ${data.challengerName} متصل! اضغط للبدء.`;
+            E('waitingStatus').textContent = `اللاعب ${data.challengerName} متصل بالساحة! اضغط لبدء النزاع.`;
         } else if (myRole === 'king' && (!data.challengerName || data.challengerName === "")) {
             E('kingStartBtn').style.setProperty('display', 'none', 'important');
         }
@@ -342,7 +342,6 @@ function proceedAsWinner(data) {
             });
             roomRef.child('leaderboard').child(data.kingName.replace('@','')).set(nextStreak);
             
-            // إعادة تفعيل عداد البوت للملك المستمر
             clearTimeout(botJoinTimeout);
             botJoinTimeout = setTimeout(() => {
                 roomRef.get().then((s) => {
@@ -416,7 +415,6 @@ function runGameStartLogic() {
     clearInterval(botActionTimer);
     gameTimer = null;
 
-    // تشغيل محاكي البوت البرمجي إذا كان البوت نشطاً وكان المشغل هو الملك
     if (isBotActive && myRole === 'king') { activateBotSimulation(); }
 
     if (currentRoundNum === 1) startClickGame();
@@ -427,41 +425,51 @@ function runGameStartLogic() {
     else if (currentRoundNum === 6) startGuessGame();  
 }
 
-// 🤖 محاكاة تصرفات البوت البرمجي الذكي وإرسال نقاطه للـ Firebase
+// 🤖 موازنة تصرفات البوت البرمجي ليصبح متطابقاً مع قدرات البشر (غير ضعيف وغير خارق)
 function activateBotSimulation() {
     if (currentRoundNum === 1) {
-        // البوت ينقر عشوائياً كل 300 إلى 600 ميلي ثانية
-        botActionTimer = setInterval(() => { submitBotPoints(1); }, Math.floor(300 + Math.random()*300));
+        // نقرات بشرية سريعة متقطعة (تأخير عشوائي بين 450ms إلى 750ms لمحاكاة حركة اليد)
+        function botClickLoop() {
+            if(currentRoundNum !== 1) return;
+            submitBotPoints(1);
+            let nextDelay = Math.floor(450 + Math.random() * 300);
+            botActionTimer = setTimeout(botClickLoop, nextDelay);
+        }
+        botClickLoop();
     } else if (currentRoundNum === 2) {
-        // البوت يحل الألوان بنسبة نجاح 70% كل ثانيتين
-        botActionTimer = setInterval(() => { if(Math.random() > 0.3) submitBotPoints(2); }, 2000);
-    } else if (currentRoundNum === 3) {
-        // البوت يحل الحساب بنسبة نجاح 65% كل 2.5 ثانية
-        botActionTimer = setInterval(() => { if(Math.random() > 0.35) submitBotPoints(3); }, 2500);
-    } else if (currentRoundNum === 4) {
-        // البوت يحل الأسهم عشوائياً كل ثانيتين
-        botActionTimer = setInterval(() => { if(Math.random() > 0.3) submitBotPoints(4); }, 2000);
-    } else if (currentRoundNum === 5) {
-        // جولة الذاكرة: البوت لديه فرصة 50% لحلها دفعة واحدة قبل نهاية الوقت
-        botActionTimer = setTimeout(() => { if(Math.random() > 0.5) submitBotPoints(40); }, 7000);
-    } else if (currentRoundNum === 6) {
-        // جولة الشفرة المفتوحة: البوت يحاول التخمين والتقرب من الحل الذكي كل 4 ثواني!
-        let botGuessedCorrectly = false;
+        // جولة الألوان: يحل كل 2 إلى 3 ثوانٍ بنسبة دقة 80% (يخطئ عمداً في الـ 20% المتبقية)
         botActionTimer = setInterval(() => {
-            if (botGuessedCorrectly) return;
+            if(Math.random() < 0.80) { submitBotPoints(2); }
+        }, Math.floor(2000 + Math.random() * 1000));
+    } else if (currentRoundNum === 3) {
+        // جولة الحساب: يحتاج وقت للتفكير (3 إلى 4 ثوانٍ) ونسبة دقة 75%
+        botActionTimer = setInterval(() => {
+            if(Math.random() < 0.75) { submitBotPoints(3); }
+        }, Math.floor(3000 + Math.random() * 1000));
+    } else if (currentRoundNum === 4) {
+        // جولة الأسهم: يستغرق 1.5 ثانية للرد مع دقة 85% لمحاكاة رد الفعل البشري
+        botActionTimer = setInterval(() => {
+            if(Math.random() < 0.85) { submitBotPoints(4); }
+        }, Math.floor(1500 + Math.random() * 800));
+    } else if (currentRoundNum === 5) {
+        // جولة الذاكرة: نسبة ذكائه وحفظه للسلسلة كاملة هي 60% وتظهر قبل نهاية الوقت بـ 4 ثوانٍ
+        botActionTimer = setTimeout(() => {
+            if(Math.random() < 0.60) { submitBotPoints(40); }
+        }, 8000);
+    } else if (currentRoundNum === 6) {
+        // جولة التخمين النهائية: البوت يرسل تخمينات منطقية قريبة كل 5 ثوانٍ، ولديه فرصة 12% لإصابة الرقم الفعلي في كل محاولة
+        botActionTimer = setInterval(() => {
             let targetNum = parseInt(secretCode);
-            // البوت يخمن رقم عشوائي قريب جداً أو يصيب الهدف مباشرة بنسبة 8% كل 4 ثواني
-            let botGuess = Math.random() > 0.92 ? targetNum : Math.floor(1000 + Math.random()*9000);
+            let botGuess = (Math.random() < 0.12) ? targetNum : Math.floor(1000 + Math.random() * 9000);
             
             if (botGuess === targetNum) {
-                botGuessedCorrectly = true;
                 clearInterval(botActionTimer);
                 roomRef.get().then((snapshot) => {
                     let currentPoints = snapshot.val().challengerPoints || 0;
                     roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
                 });
             }
-        }, 4000);
+        }, 5000);
     }
 }
 
@@ -639,6 +647,7 @@ function startMemoryGame() {
 }
 
 function startGuessGame() {
+    if(botActionTimer && currentRoundNum !== 6) { clearInterval(botActionTimer); }
     clearInterval(arrowTimer); 
     arrowTimer = null;
 
@@ -661,6 +670,11 @@ function startGuessGame() {
                         let currentPoints = snapshot.val().kingPoints || 0;
                         roomRef.update({ kingPoints: currentPoints + 50 }).then(() => { settleTournament(); });
                     });
+                } else {
+                    roomRef.get().then((snapshot) => {
+                        let currentPoints = snapshot.val().challengerPoints || 0;
+                        roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                    });
                 }
             } else {
                 E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
@@ -680,6 +694,7 @@ function submitPointsToCloud(amt) {
 }
 
 function endRoundLogic() {
+    clearTimeout(botActionTimer);
     clearInterval(botActionTimer);
     if(myRole === 'spectator') {
         E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><p style="color:#aaa; font-size:14px; margin-top:10px;">في انتظار سحب الملك للمرحلة التالية لتبدأ في البث...</p>`;
@@ -699,14 +714,12 @@ function endRoundLogic() {
 }
 
 function settleTournament() {
+    clearTimeout(botActionTimer);
     clearInterval(botActionTimer);
     roomRef.get().then((snapshot) => {
         const data = snapshot.val();
         let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
-        let finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح البوت المبرمج بفك الشفرة واعتلاء العرش!`;
-        if(!isBotActive) {
-            finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح المتحدي العبقري بفك الشفرة واعتلاء العرش!`;
-        }
+        let finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح المتحدي ${data.challengerName} بفك الشفرة واعتلاء العرش!`;
         roomRef.update({ gameState: "ended", endMessage: finalMsg });
     });
 }
