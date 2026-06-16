@@ -18,7 +18,6 @@
         .btn:active { transform: scale(0.98); }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
-        .btn-red { background:var(--red); }
         .btn-blue { background:var(--blue); }
         .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
         .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
@@ -83,7 +82,7 @@
 
 <script>
 const E = id => document.getElementById(id);
-const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
+const firebaseConfig = { databaseURL: "YOUR_DATABASE_URL_HERE" };
 let db = null;
 try { if(firebaseConfig.databaseURL !== "YOUR_DATABASE_URL_HERE") { firebase.initializeApp(firebaseConfig); db = firebase.database(); } } catch(e) {}
 
@@ -110,16 +109,18 @@ function startLoginProcess(role) {
     listenToRoomUpdates();
 }
 
-// دالة البوت (مستوى مقارب للبشر)
+// دالة تفعيل البوت
 function activateBot() {
-    console.log("البوت دخل المعركة بعد انتظار 30 ثانية");
-    // تأخير عشوائي بسيط ليشعر الملك أن البوت "يفكر"
-    setTimeout(() => {
-        roomRef.update({ 
-            challengerName: "🤖 البوت المقاتل",
-            gameState: "playing" 
-        });
-    }, 1500 + Math.random() * 2000); 
+    roomRef.once('value').then((snap) => {
+        const data = snap.val();
+        if (data && !data.challengerName && data.gameState === "waiting") {
+            roomRef.update({ 
+                challengerName: "🤖 البوت المقاتل",
+                gameState: "playing" 
+            });
+            console.log("تم استدعاء البوت للنزاع");
+        }
+    });
 }
 
 function listenToRoomUpdates() {
@@ -131,16 +132,18 @@ function listenToRoomUpdates() {
         E('challengerNameDisplay').textContent = data.challengerName || "-";
         E('streakDisplay').textContent = "🔥 أعلى صمود للملك: " + (data.kingStreak || 0);
 
-        // مراقبة وقت الانتظار للبوت
+        // مراقبة ذكية لحالة البوت
         if (myRole === 'king' && data.gameState === "waiting") {
             if (!data.challengerName) {
                 if (!botTimer) {
+                    console.log("بدء عداد البوت (30 ثانية)...");
                     botTimer = setTimeout(activateBot, 30000);
                 }
             } else {
-                // إذا دخل شخص حقيقي، نلغي البوت
-                clearTimeout(botTimer);
-                botTimer = null;
+                if (botTimer) {
+                    clearTimeout(botTimer);
+                    botTimer = null;
+                }
                 E('kingStartBtn').style.display = "block";
             }
         }
