@@ -142,19 +142,27 @@ let isBotActive = false;
 
 const botNames = ["@الفارس_المجهول", "@غازي_العرش", "@المقاتل_الشرس", "@برق_الساحة", "@صائد_الملوك", "@المستبسل_X", "@عازف_السيف", "@العقرب_الأسود"];
 
+// تم إصلاح المستمع هنا بإضافة فحص أمان خارجي لمنع انهيار الواجهة والأزرار
 E('roomNumberInput').addEventListener('input', () => {
     let rId = E('roomNumberInput').value.trim();
     if(rId && db) {
         db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
             let html = "";
             let items = [];
-            snap.forEach(child => { items.push({name: child.key, score: child.val()}); });
+            if(snap && snap.exists()) {
+                snap.forEach(child => { items.push({name: child.key, score: child.val()}); });
+            }
             items.reverse(); 
-            if(items.length === 0) html = "<p style='color:#aaa; text-align:center; font-size:13px;'>لا يوجد أبطال مسجلين بعد في هذه الغرفة.</p>";
-            items.forEach((item, index) => {
-                html += `<div class="leaderboard-item"><span>${index+1}. @${item.name} 👑</span><span>أعلى صمود: ${item.score} بطولات</span></div>`;
-            });
+            if(items.length === 0) {
+                html = "<p style='color:#aaa; text-align:center; font-size:13px;'>لا يوجد أبطال مسجلين بعد في هذه الغرفة.</p>";
+            } else {
+                items.forEach((item, index) => {
+                    html += `<div class="leaderboard-item"><span>${index+1}. @${item.name} 👑</span><span>أعلى صمود: ${item.score} بطولات</span></div>`;
+                });
+            }
             E('leaderboardList').innerHTML = html;
+        }, err => {
+            console.log("Leaderboard error ignored smoothly.");
         });
     }
 });
@@ -216,13 +224,12 @@ function loginAs(role) {
         clearTimeout(botJoinTimeout);
         botJoinTimeout = setTimeout(() => {
             roomRef.get().then((snapshot) => {
-                const data = snapshot.val();
-                if (data && (!data.challengerName || data.challengerName === "")) {
-                    let randomBotName = botNames[Math.floor(Math.random() * botNames.length)];
-                    roomRef.update({
-                        challengerName: randomBotName,
-                        isBot: true
-                    });
+                if(snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data && (!data.challengerName || data.challengerName === "")) {
+                        let randomBotName = botNames[Math.floor(Math.random() * botNames.length)];
+                        roomRef.update({ challengerName: randomBotName, isBot: true });
+                    }
                 }
             });
         }, 30000);
@@ -230,10 +237,16 @@ function loginAs(role) {
     } else if (myRole === 'challenger') {
         clearTimeout(botJoinTimeout);
         roomRef.get().then((snapshot) => {
-            const data = snapshot.val();
-            if(data && data.challengerName && data.challengerName !== "") {
-                alert("عذراً، المقعد ممتلئ والتحدي قائم حالياً!");
-                location.reload();
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                if(data && data.challengerName && data.challengerName !== "") {
+                    alert("عذراً، المقعد ممتلئ والتحدي قائم حالياً!");
+                    location.reload();
+                } else {
+                    E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
+                    E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
+                    roomRef.update({ challengerName: myName, isBot: false });
+                }
             } else {
                 E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
                 E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
@@ -318,19 +331,17 @@ function loginAs(role) {
     });
 }
 
-// التحديث الجوهري لحماية الأرقام القياسية للاعبين وعدم إزالتها عند الخسارة والبدء من جديد
 function updateLeaderboardIfHigher(playerCleanName, scoreToCheck) {
+    if(!roomRef) return;
     const leaderRef = roomRef.child('leaderboard').child(playerCleanName);
     leaderRef.get().then((snap) => {
         if (snap.exists()) {
             let previousHighScore = parseInt(snap.val()) || 0;
-            if (scoreToCheck > previousHighScore) {
-                leaderRef.set(scoreToCheck);
-            }
+            if (scoreToCheck > previousHighScore) { leaderRef.set(scoreToCheck); }
         } else {
             leaderRef.set(scoreToCheck);
         }
-    });
+    }).catch(e => { leaderRef.set(scoreToCheck); });
 }
 
 function proceedAsWinner(data) {
@@ -351,25 +362,9 @@ function proceedAsWinner(data) {
                 isBot: false
             });
             
-            // استدعاء فحص حماية الرقم القياسي للملك المستقر
             updateLeaderboardIfHigher(data.kingName.replace('@',''), nextStreak);
             
             clearTimeout(botJoinTimeout);
             botJoinTimeout = setTimeout(() => {
                 roomRef.get().then((s) => {
-                    if (s.val() && (!s.val().challengerName || s.val().challengerName === "")) {
-                        roomRef.update({ challengerName: botNames[Math.floor(Math.random()*botNames.length)], isBot: true });
-                    }
-                });
-            }, 30000);
-        }
-    } else {
-        if(myRole === 'challenger') {
-            myRole = 'king'; 
-            E('waitingTitle').textContent = "أنت الملك المستضيف الجديد";
-            roomRef.update({
-                kingName: myName,
-                gameState: "waiting",
-                roundNum: 1,
-                kingPoints: 0,
-                challen
+                    if (s.exists() && s.val() && (!s.val().challengerName || s.val().challengerNam
