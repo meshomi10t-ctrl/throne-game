@@ -65,7 +65,7 @@
     
     <div class="leaderboard-box">
         <div class="leaderboard-title">🏆 سجل أعلى سلاسل الصمود المتتالية 🏆</div>
-        <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">اكتب رقم الغرفة أعلاه لعرض الأبطال...</p></div>
+        <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">سيتم عرض الأبطال فور دخول الغرفة السحابية...</p></div>
     </div>
 </div>
 
@@ -126,16 +126,6 @@ const firebaseConfig = {
 };
 
 let db = null;
-try {
-    if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") && firebaseConfig.databaseURL.startsWith("https://")) {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        console.log("Firebase initialized successfully.");
-    }
-} catch(e) {
-    console.error("Firebase setup error:", e);
-}
-
 let myName = "", myRole = "", roomId = "";
 let gameTimer = null, arrowTimer = null, botActionTimer = null, botJoinTimeout = null; 
 let currentRoundNum = 0; 
@@ -146,11 +136,26 @@ let currentWinnerRole = "";
 
 const botNames = ["@الفارس_المجهول", "@غازي_العرش", "@المقاتل_الشرس", "@برق_الساحة", "@صائد_الملوك", "@المستبسل_X", "@عازف_السيف", "@العقرب_الأسود"];
 
-// دالة لتحديث عرض سجل الأبطال في الواجهة
+// دالة تهيئة الـ Firebase الآمنة تماماً عند الضغط فقط
+function ensureFirebaseInit() {
+    if (db) return true; // تمت التهيئة مسبقاً
+    try {
+        if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") && firebaseConfig.databaseURL.startsWith("https://")) {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            return true;
+        }
+    } catch(e) {
+        console.error("Firebase Init Error:", e);
+    }
+    alert("⚠️ خطأ في التهيئة: يرجى أولاً فتح الملف البرمجي واستبدال العبارة 'YOUR_DATABASE_URL_HERE' برابط الـ Firebase Realtime Database الخاص بك في السطر رقم 156 ليتمكن التطبيق من الاتصال بالإنترنت!");
+    return false;
+}
+
 function loadLeaderboardView(rId) {
     if(!db || !rId) return;
     try {
-        db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).once('value', snap => {
+        db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).once('value').then(snap => {
             let html = "";
             let items = [];
             if(snap && snap.exists()) {
@@ -165,26 +170,17 @@ function loadLeaderboardView(rId) {
                 });
             }
             E('leaderboardList').innerHTML = html;
-        }, err => {});
+        }).catch(err => {});
     } catch(err) {}
 }
 
-// مستمع حقل الإدخال تم تعديله ليعمل بأمان تام دون تعطيل بقية الأكواد
-E('roomNumberInput').addEventListener('input', () => {
-    let rId = E('roomNumberInput').value.trim();
-    if(rId && db) { loadLeaderboardView(rId); }
-});
-
-// تعيين الأحداث للأزرار الثلاثة الرئيسية بشكل مباشر وفوري لضمان عملها
+// تعيين الأزرار بشكل مباشر دون أي عوائق برمجية تمنع الضغط
 E('kingBtn').onclick = function() { if(validateLogin(false)) loginAs('king'); };
 E('challengerBtn').onclick = function() { if(validateLogin(false)) loginAs('challenger'); };
 E('spectatorBtn').onclick = function() { if(validateLogin(true)) loginAs('spectator'); };
 
 function validateLogin(isSpectator) {
-    if(!db) {
-        alert("⚠️ خطأ في التهيئة: يرجى أولاً فتح الملف البرمجي واستبدال العبارة 'YOUR_DATABASE_URL_HERE' برابط الـ Firebase Realtime Database الخاص بك في السطر رقم 156 ليتمكن التطبيق من الاتصال بالإنترنت!");
-        return false;
-    }
+    // التحقق من المدخلات المحلية أولاً وقبل كل شيء لضمان عمل الواجهة
     myName = E('playerName').value.trim();
     roomId = E('roomNumberInput').value.trim();
     
@@ -194,7 +190,9 @@ function validateLogin(isSpectator) {
         if(!myName || !roomId) { alert("الرجاء كتابة الاسم ورقم الغرفة أولاً!"); return false; }
         myName = myName.startsWith('@') ? myName : '@' + myName;
     }
-    return true;
+    
+    // تفعيل الاتصال بقاعدة البيانات في اللحظة الأخيرة وبأمان
+    return ensureFirebaseInit();
 }
 
 function loginAs(role) {
@@ -213,7 +211,7 @@ function loginAs(role) {
         E('roomIdDisplay').textContent = roomId;
     }
 
-    // جلب وعرض سجل الأبطال للغرفة فور الدخول
+    // جلب الصدارة بأمان بعد تخطي مرحلة حظر الواجهة
     loadLeaderboardView(roomId);
 
     if (myRole === 'king') {
@@ -398,4 +396,186 @@ function proceedAsWinner(data) {
             roomRef.update({
                 kingName: myName,
                 gameState: "waiting",
-                roundNum
+                roundNum: 1,
+                kingPoints: 0,
+                challengerPoints: 0,
+                challengerName: "", 
+                kingStreak: 1,
+                isBot: false
+            });
+        }
+    }
+}
+
+function proceedAsLoser() {
+    location.reload();
+}
+
+E('kingStartBtn').addEventListener('click', () => {
+    if(roomRef) {
+        roomRef.update({ gameState: "playing" });
+        kingFireNextRound(1);
+    }
+});
+
+function kingFireNextRound(targetRound) {
+    let extra = "", randomDir = "⬇️", randomCmd = "امتثل";
+    
+    if(targetRound === 5) {
+        const memoryPool = ["🦁", "🦊", "🐼", "🐙", "🐸", "🐵", "🦄", "🐝"];
+        let sequence = [];
+        for(let i=0; i<4; i++) { sequence.push(memoryPool[Math.floor(Math.random() * memoryPool.length)]); }
+        extra = sequence.join(''); 
+    }
+    
+    if(targetRound === 6) {
+        extra = Math.floor(1000 + Math.random() * 9000).toString();
+    }
+    
+    if(targetRound === 4) {
+        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
+        randomDir = dirs[Math.floor(Math.random() * dirs.length)];
+        randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
+    }
+    
+    if(roomRef) {
+        roomRef.update({
+            roundNum: targetRound,
+            arrowDir: randomDir,
+            arrowCmd: randomCmd,
+            secretCode: extra
+        });
+    }
+}
+
+function runGameStartLogic() {
+    myRoundPoints = 0;
+    E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 6`;
+    
+    if(gameTimer) clearInterval(gameTimer);
+    clearTimeout(botActionTimer);
+    clearInterval(botActionTimer);
+    gameTimer = null;
+
+    if (isBotActive && myRole === 'king') { activateBotSimulation(); }
+
+    if (currentRoundNum === 1) startClickGame();
+    else if (currentRoundNum === 2) startColorGame();
+    else if (currentRoundNum === 3) startMathGame();
+    else if (currentRoundNum === 4) renderArrowGameUI(); 
+    else if (currentRoundNum === 5) startMemoryGame(); 
+    else if (currentRoundNum === 6) startGuessGame();  
+}
+
+function activateBotSimulation() {
+    if (currentRoundNum === 1) {
+        function botClickLoop() {
+            if(currentRoundNum !== 1) return;
+            submitBotPoints(1);
+            let nextDelay = Math.floor(450 + Math.random() * 300);
+            botActionTimer = setTimeout(botClickLoop, nextDelay);
+        }
+        botClickLoop();
+    } else if (currentRoundNum === 2) {
+        botActionTimer = setInterval(() => {
+            if(Math.random() < 0.80) { submitBotPoints(2); }
+        }, Math.floor(2000 + Math.random() * 1000));
+    } else if (currentRoundNum === 3) {
+        botActionTimer = setInterval(() => {
+            if(Math.random() < 0.75) { submitBotPoints(3); }
+        }, Math.floor(3000 + Math.random() * 1000));
+    } else if (currentRoundNum === 4) {
+        botActionTimer = setInterval(() => {
+            if(Math.random() < 0.85) { submitBotPoints(4); }
+        }, Math.floor(1500 + Math.random() * 800));
+    } else if (currentRoundNum === 5) {
+        botActionTimer = setTimeout(() => {
+            if(Math.random() < 0.60) { submitBotPoints(40); }
+        }, 8000);
+    } else if (currentRoundNum === 6) {
+        botActionTimer = setInterval(() => {
+            let targetNum = parseInt(window.secretCode);
+            let botGuess = (Math.random() < 0.12) ? targetNum : Math.floor(1000 + Math.random() * 9000);
+            
+            if (botGuess === targetNum && roomRef) {
+                clearInterval(botActionTimer);
+                roomRef.get().then((snapshot) => {
+                    if(snapshot.exists()) {
+                        let currentPoints = snapshot.val().challengerPoints || 0;
+                        roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                    }
+                });
+            }
+        }, 5000);
+    }
+}
+
+function submitBotPoints(amt) {
+    if(!roomRef) return;
+    roomRef.get().then((snapshot) => {
+        if(snapshot.exists()) {
+            const data = snapshot.val();
+            if(data && data.gameState === "playing") {
+                roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
+            }
+        }
+    });
+}
+
+function startClickGame() {
+    E('currentGameTitle').textContent = "النقر السريع 👑"; let timeLeft = 10;
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `<p style="font-size:20px; color:#aaa; animation:pulse 0.5s infinite alternate;">اللاعبون ينقرون الآن بعنف! 🔥</p>`;
+    } else {
+        E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 🔥</button>`;
+        E('actionBtn').addEventListener('click', () => { myRoundPoints++; submitPointsToCloud(1); });
+    }
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
+}
+
+function startColorGame() {
+    E('currentGameTitle').textContent = "تطابق اللون 🎨"; let timeLeft = 12;
+    const colors = [{name:'أحمر',val:'#e74c3c'}, {name:'أزرق',val:'#3498db'}, {name:'أخضر',val:'#2ecc71'}, {name:'أصفر',val:'#f1c40f'}];
+    
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `<p style="font-size:18px; color:#aaa; text-align:center;">يتم عرض الألوان للاعبين للمطابقة البصرية الفورية... 🎨</p>`;
+    } else {
+        function next() {
+            if(currentRoundNum !== 2) return;
+            let text = colors[Math.floor(Math.random()*4)], target = colors[Math.floor(Math.random()*4)];
+            E('gameArea').innerHTML = `<p style="font-size:12px;color:#aaa;">طابق لون الخط وليس الكلمة:</p><h1 style="font-size:32px;color:${target.val};margin:10px 0;">${text.name}</h1><div class="options-grid" id="opt"></div>`;
+            colors.forEach(c => {
+                let b = document.createElement('button'); b.className='option-btn'; b.style.backgroundColor=c.val; b.textContent=c.name;
+                b.onclick = () => { if(c.val===target.val) { myRoundPoints+=2; submitPointsToCloud(2); } next(); };
+                E('opt').appendChild(b);
+            });
+        }
+        next();
+    }
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
+}
+
+function startMathGame() {
+    E('currentGameTitle').textContent = "الحساب الفوري 🧠"; let timeLeft = 12;
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `<p style="font-size:18px; color:#aaa; text-align:center;">اللاعبون يحلون المسائل الرياضية المعقدة حالياً... 🧠</p>`;
+    } else {
+        function next() {
+            if(currentRoundNum !== 3) return;
+            let n1 = Math.floor(2+Math.random()*9), n2 = Math.floor(2+Math.random()*9), isPlus = Math.random()>0.5;
+            let ans = isPlus ? (n1+n2) : (n1*n2);
+            E('gameArea').innerHTML = `<h1 style="font-size:32px;color:var(--gold);">${n1} ${isPlus?'+':'×'} ${n2} = ؟</h1><div class="options-grid" id="mOpt"></div>`;
+            let choices = [ans, ans+2, ans-1, n1+n2+3].filter((v,i,a)=>a.indexOf(v)===i).sort(()=>Math.random()-0.5);
+            choices.forEach(v => {
+                let b = document.createElement('button'); b.className='option-btn'; b.textContent=v;
+                b.onclick = () => { if(parseInt(v)===ans) { myRoundPoints+=3; submitPointsToCloud(3); } next(); };
+                E('mOpt').appendChild(b);
+            });
+        }
+        next();
+    }
+    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
+}
+
+function renderArrowGameUI() {
+    E('currentGameTitle').textContent = "السهم
