@@ -15,7 +15,7 @@
         .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
         input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
         input:focus { outline: none; border-color: #fff; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 10; }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 999; }
         .btn:active { transform: scale(0.98); }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
@@ -124,6 +124,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+// تصفير وتهيئة متغيرات النافذة لتجنب أي تجميد (Crash) في السكربت فور التشغيل
+window.arrowTargetDirection = "⬇️";
+window.arrowCommandMode = "امتثل";
+window.secretCode = "";
+
 const E = id => document.getElementById(id);
 
 // ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل بالسطر 156
@@ -136,10 +141,10 @@ try {
     if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") && firebaseConfig.databaseURL.startsWith("https://")) {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
-        console.log("Firebase initialized successfully.");
+        console.log("Firebase connected.");
     }
 } catch(e) {
-    console.error("Firebase setup error:", e);
+    console.error("Firebase startup secure bypass:", e);
 }
 
 let myName = "", myRole = "", roomId = "";
@@ -174,12 +179,12 @@ E('roomNumberInput').addEventListener('input', () => {
                 E('leaderboardList').innerHTML = html;
             });
         } catch(err) {
-            console.log("Leaderboard error ignored.");
+            console.log("Leaderboard error bypassed safely.");
         }
     }
 });
 
-// تفعيل عمل الأزرار الثلاثة الرئيسية بشكل مباشر وبدون شروط معطلة
+// تفعيل عمل الأزرار بشكل مباشر دون قيود جافا سكريبت مسبقة
 E('kingBtn').onclick = function() { startLoginProcess('king'); };
 E('challengerBtn').onclick = function() { startLoginProcess('challenger'); };
 E('spectatorBtn').onclick = function() { startLoginProcess('spectator'); };
@@ -201,7 +206,7 @@ function startLoginProcess(role) {
         myName = myName.startsWith('@') ? myName : '@' + myName;
     }
 
-    try { roomRef = db.ref('rooms/' + roomId); } catch(e) { alert("خطأ في الاتصال بالغرفة"); return; }
+    try { roomRef = db.ref('rooms/' + roomId); } catch(e) { alert("خطأ في الاتصال بالسيرفر"); return; }
     
     E('loginScreen').classList.remove('active');
 
@@ -266,7 +271,6 @@ function startLoginProcess(role) {
         });
     }
 
-    // ربط مستمع البيانات السحابي بعد تخطي خطوة تسجيل الدخول بأمان
     listenToRoomUpdates();
 }
 
@@ -302,9 +306,9 @@ function listenToRoomUpdates() {
             
             if (currentRoundNum !== data.roundNum || (window.arrowTargetDirection !== data.arrowDir) || (window.arrowCommandMode !== data.arrowCmd) || (window.secretCode !== data.secretCode)) {
                 currentRoundNum = data.roundNum;
-                window.arrowTargetDirection = data.arrowDir;
-                window.arrowCommandMode = data.arrowCmd;
-                window.secretCode = data.secretCode;
+                window.arrowTargetDirection = data.arrowDir || "⬇️";
+                window.arrowCommandMode = data.arrowCmd || "امتثل";
+                window.secretCode = data.secretCode || "";
                 runGameStartLogic();
             }
         }
@@ -632,4 +636,128 @@ window.checkArrow = function(choice) {
     
     if(myRole === 'king' && roomRef) {
         const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
-        roomRef.update({
+        roomRef.update({ 
+            arrowDir: dirs[Math.floor(Math.random()*4)], 
+            arrowCmd: cmds[Math.floor(Math.random()*2)] 
+        });
+    }
+};
+
+function startMemoryGame() {
+    E('currentGameTitle').textContent = "صدمة الذاكرة 🧠";
+    let timeLeft = 12;
+    E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+
+    let emojiArray = [];
+    for (let char of window.secretCode) { emojiArray.push(char); }
+
+    if(myRole === 'spectator') {
+        let numbersHtml = "";
+        let emojisHtml = "";
+        emojiArray.forEach((emoji, index) => {
+            numbersHtml += `<div class="memory-num-indicator">${index + 1}</div>`;
+            emojisHtml += `<div style="width:40px; text-align:center;">${emoji}</div>`;
+        });
+
+        E('gameArea').innerHTML = `
+            <p style="color:#aaa; font-size:16px; margin-bottom:12px;">يتم عرض السلسلة المرقمة للاعبين حالياً... 🤔</p>
+            <div class="memory-container">
+                <div class="memory-numbers" style="margin-bottom:5px;">${numbersHtml}</div>
+                <div class="memory-slots">${emojisHtml}</div>
+            </div>
+        `;
+    } else {
+        let numbersHtml = "";
+        let emojisHtml = "";
+        emojiArray.forEach((emoji, index) => {
+            numbersHtml += `<div class="memory-num-indicator">${index + 1}</div>`;
+            emojisHtml += `<div style="width:40px; text-align:center;">${emoji}</div>`;
+        });
+
+        E('gameArea').innerHTML = `
+            <p style="font-size:15px; font-weight:bold; margin-bottom:5px; color:var(--gold);">احفظ الفيسات بالترتيب من الرقم (1) إلى (4):</p>
+            <div class="memory-container">
+                <div class="memory-numbers" style="margin-bottom:5px;">${numbersHtml}</div>
+                <div class="memory-slots">${emojisHtml}</div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            if(currentRoundNum !== 5) return; 
+            
+            let buttonsPool = [...emojiArray, "🦄", "🐼", "🦁"].sort(() => Math.random() - 0.5);
+            
+            E('gameArea').innerHTML = `
+                <p style="color:#aaa; font-size:14px; margin-bottom:5px;">أعد تكوين التسلسل البدء من الرقم 1:</p>
+                <div style="font-size:24px; min-height:40px; color:var(--blue); font-weight:bold; margin-bottom:10px;" id="userMemoryAnswer"></div>
+                <div class="options-grid" id="memoryButtonsArea"></div>
+                <button class="btn btn-red" style="margin-top:10px; padding:8px;" id="clearMemoryBtn">🔄 مسح وإعادة</button>
+            `;
+
+            let currentAnswer = "";
+            buttonsPool.forEach(emoji => {
+                let b = document.createElement('button'); b.className = 'option-btn'; b.style.fontSize = "26px"; b.textContent = emoji;
+                b.onclick = () => {
+                    currentAnswer += emoji;
+                    E('userMemoryAnswer').textContent = currentAnswer;
+
+                    if(currentAnswer === window.secretCode) {
+                        E('gameArea').innerHTML = `<h2 style="color:var(--green);">🎯 إجابة عبقرية صحيحة بالكامل! (+40)</h2>`;
+                        submitPointsToCloud(40);
+                    }
+                };
+                E('memoryButtonsArea').appendChild(b);
+            });
+
+            E('clearMemoryBtn').onclick = () => { currentAnswer = ""; E('userMemoryAnswer').textContent = ""; };
+
+        }, 3500); 
+    }
+
+    gameTimer = setInterval(() => {
+        timeLeft--;
+        E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
+        if (timeLeft <= 0) endRoundLogic();
+    }, 1000);
+}
+
+function startGuessGame() {
+    clearTimeout(botActionTimer);
+    clearInterval(botActionTimer);
+    if(arrowTimer) clearInterval(arrowTimer); 
+    arrowTimer = null;
+
+    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
+    E('timerDisplay').textContent = `⏱️ مفتوح للأبد`; 
+    
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `<p style="font-size:18px; color:var(--gold); text-align:center; font-weight:bold; animation:pulse 0.6s infinite alternate;">🔒 النزاع في ذروته! اللاعبون يخمّنون الشفرة السرية لإنهاء البطولة الكبرى...!</p>`;
+    } else {
+        E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 50 نقطة وتحسم النزاع فوراً! 🌟</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
+        E('gBtn').addEventListener('click', () => {
+            let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
+            
+            let guessNum = parseInt(val);
+            let targetNum = parseInt(window.secretCode);
+
+            if(guessNum === targetNum) {
+                if(myRole === 'king') {
+                    roomRef.get().then((snapshot) => {
+                        if(snapshot.exists()) {
+                            let currentPoints = snapshot.val().kingPoints || 0;
+                            roomRef.update({ kingPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                        }
+                    });
+                } else {
+                    roomRef.get().then((snapshot) => {
+                        if(snapshot.exists()) {
+                            let currentPoints = snapshot.val().challengerPoints || 0;
+                            roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                        }
+                    });
+                }
+            } else {
+                E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
+                E('gIn').value = "";
+            }
+        });
