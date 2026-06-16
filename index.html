@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع</title>
+    <title>🏰 بطولة ساحة النزاع - نظام البقاء على العرش</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -14,15 +14,29 @@
         @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
         .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
         input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 999; display: block; }
+        .btn:active { transform: scale(0.98); }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
+        .btn-red { background:var(--red); }
         .btn-blue { background:var(--blue); }
+        .btn-gold { background:var(--gold); color:#1a1a1a; }
+        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
+        .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
+        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
+        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; transition: 0.3s; }
+        .player-box.active-turn { border-color: var(--gold); box-shadow: 0 0 20px rgba(241,196,15,0.6); }
+        .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
+        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
         .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
         .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
         .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
-        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
-        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; }
+        .winner-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 15, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+        .winner-modal.active { display: flex; }
+        .winner-card { background: linear-gradient(135deg, #1e1e38 0%, #0f0f26 100%); border: 3px solid var(--gold); border-radius: 25px; padding: 30px; text-align: center; max-width: 450px; width: 100%; }
+        .clash-btn { width:90%; padding:18px; font-size:24px; border-radius:20px; background:linear-gradient(135deg, #e74c3c, #c0392b); color:white; font-weight:bold; border:none; box-shadow:0 6px 0 #7b241c; cursor:pointer; margin-top:15px; letter-spacing:2px; }
+        .clash-btn:active { transform:scale(0.95); box-shadow:0 2px 0 #7b241c; }
+        .clash-btn:disabled { background:#555; box-shadow:0 4px 0 #333; cursor:not-allowed; }
     </style>
 </head>
 <body>
@@ -31,10 +45,10 @@
     <div class="logo">👑</div>
     <div class="title">ساحة البقاء على العرش</div>
     <input id="playerName" placeholder="اسمك الكريم...">
-    <input id="roomNumberInput" type="number" placeholder="رقم الغرفة">
-    <button class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
-    <button class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
-    <button class="btn btn-blue" id="spectatorBtn">👁️ مشاهدة النزاع</button>
+    <input id="roomNumberInput" type="number" placeholder="رقم الغرفة (مثال: 555)">
+    <button class="btn btn-green" id="kingBtn" type="button">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" id="challengerBtn" type="button">🗡️ الدخول كمتحدي</button>
+    <button class="btn btn-blue" id="spectatorBtn" type="button">👁️ مشاهدة النزاع</button>
     <div class="leaderboard-box">
         <div class="leaderboard-title">🏆 سجل أطول صمود على العرش 🏆</div>
         <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">ادخل الغرفة لرؤية الأبطال...</p></div>
@@ -42,16 +56,35 @@
 </div>
 
 <div class="screen" id="waitingScreen">
-    <div class="title">غرفة الانتظار</div>
-    <div id="statusText" style="margin:20px;">بانتظار المنافسين...</div>
+    <div class="logo">⏳</div>
+    <div class="title" id="waitingTitle">غرفة الانتظار</div>
+    <div class="room-id" id="roomIdDisplay">000</div>
+    <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
+    <div class="status" id="waitingStatus">بانتظار المنافسين...</div>
     <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ النزاع</button>
+    <p style="color:#aaa; font-size:13px; margin-top:10px;" id="botHint">إذا لم ينضم أحد خلال 30 ثانية، سيدخل بوت آلي</p>
 </div>
 
 <div class="screen" id="arenaScreen">
-    <div class="title">النزاع جارٍ!</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span id="roundDisplay" style="color:var(--gold); font-weight:bold;">⚡ المواجهة الحاسمة</span>
+    </div>
+    <div class="timer" id="timerDisplay">⏱️ --</div>
     <div class="arena">
-        <div class="player-box"><div>🤴 الملك</div><div id="kingNameDisplay">-</div></div>
-        <div class="player-box"><div>🗡️ المتحدي</div><div id="challengerNameDisplay">-</div></div>
+        <div class="player-box" id="kingBox"><div>🤴 الملك</div><div id="kingNameDisplay" style="color:#aaa;">-</div></div>
+        <div class="player-box" id="challengerBox"><div>🗡️ المتحدي</div><div id="challengerNameDisplay" style="color:#aaa;">-</div></div>
+    </div>
+    <div class="game-area" id="gameArea">
+        <p id="clashPrompt" style="font-size:18px; margin-bottom:15px;">⚡ استعد... ستنطلق المواجهة قريباً ⚡</p>
+        <button class="clash-btn" id="clashActionBtn" disabled>⏳ انتظر الإشارة...</button>
+        <p id="roundFeedback" style="margin-top:12px; color:#aaa; font-size:15px;"></p>
+    </div>
+</div>
+
+<div class="winner-modal" id="winnerModal">
+    <div class="winner-card">
+        <h2 id="winnerText" style="color:white;">-</h2>
+        <button class="btn btn-gold" id="actionModalBtn" style="margin-top:20px;">متابعة</button>
     </div>
 </div>
 
@@ -60,71 +93,182 @@
 
 <script>
 const E = id => document.getElementById(id);
+// ★ استبدل السطر التالي برابط قاعدة البيانات الخاص بك ★
 const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+let db = null;
+try { if(firebaseConfig.databaseURL !== "YOUR_DATABASE_URL_HERE") { firebase.initializeApp(firebaseConfig); db = firebase.database(); } } catch(e) {}
 
-let roomRef = null, myRole = "", botTimer = null;
+let roomRef = null, myName = "", myRole = "", roomId = "", botTimer = null;
+let gameActive = false, roundActive = false, roundStartTime = 0;
+let botActionTimeout = null, isBotGame = false;
 
-function joinRoom(role) {
-    let name = E('playerName').value.trim() || "لاعب";
-    let roomId = E('roomNumberInput').value.trim();
-    if(!roomId) return alert("أدخل رقم الغرفة!");
-    
-    myRole = role;
-    roomRef = db.ref('rooms/' + roomId);
-    
-    // تفعيل سجل الأبطال فور الدخول
-    db.ref('rooms/' + roomId + '/leaderboard').on('value', snap => {
-        let html = "";
-        snap.forEach(child => { html += `<div class="leaderboard-item"><span>${child.key}</span><span>${child.val()}</span></div>`; });
-        E('leaderboardList').innerHTML = html || "لا يوجد أبطال بعد.";
-    });
-
-    E('loginScreen').classList.remove('active');
-    
-    if(role === 'king') {
-        E('waitingScreen').classList.add('active');
-        roomRef.update({ kingName: name, gameState: "waiting" });
-    } else if(role === 'challenger') {
-        E('waitingScreen').classList.add('active');
-        roomRef.update({ challengerName: name });
-    } else {
-        E('arenaScreen').classList.add('active');
-    }
-    listenToRoom();
+function resetAndPrepareUI() {
+    gameActive = false;
+    roundActive = false;
+    clearTimeout(botActionTimeout);
+    E('clashActionBtn').disabled = true;
+    E('clashActionBtn').textContent = '⏳ انتظر الإشارة...';
+    E('clashPrompt').textContent = '⚡ استعد... ستنطلق المواجهة قريباً ⚡';
+    E('roundFeedback').textContent = '';
+    E('kingBox').classList.remove('active-turn');
+    E('challengerBox').classList.remove('active-turn');
 }
 
-function listenToRoom() {
+function activateBot() {
+    if (!roomRef) return;
+    console.log("🤖 البوت دخل بعد 30 ثانية");
+    E('waitingStatus').textContent = '🤖 البوت يستعد للنزال...';
+    E('botHint').textContent = 'البوت انضم! اضغط ابدأ النزاع.';
+    roomRef.update({ 
+        challengerName: "🤖 البوت المقاتل",
+        gameState: "waiting" 
+    });
+    clearTimeout(botTimer);
+    botTimer = null;
+}
+
+function startChallengeRound() {
+    if (!gameActive) return;
+    roundActive = false;
+    E('clashActionBtn').disabled = true;
+    E('clashActionBtn').textContent = '⏳ انتظر...';
+    E('clashPrompt').textContent = '⚡ استعد للانطلاق... ⚡';
+    E('roundFeedback').textContent = '';
+    E('kingBox').classList.remove('active-turn');
+    E('challengerBox').classList.remove('active-turn');
+    clearTimeout(botActionTimeout);
+    
+    const delay = 2000 + Math.random() * 2500; // تأخير عشوائي للعد التنازلي
+    setTimeout(() => {
+        if (!gameActive) return;
+        roundActive = true;
+        roundStartTime = Date.now();
+        E('clashActionBtn').disabled = false;
+        E('clashActionBtn').textContent = '⚔️ اضرب الآن! ⚔️';
+        E('clashPrompt').textContent = '🔥 الفرصة الآن! اضغط بأسرع وقت! 🔥';
+        E('kingBox').classList.add('active-turn');
+        E('challengerBox').classList.add('active-turn');
+        // إذا كان الخصم هو البوت، جدول له رد فعل
+        if (isBotGame || E('challengerNameDisplay').textContent.includes('🤖')) {
+            scheduleBotAction();
+        }
+    }, delay);
+}
+
+function scheduleBotAction() {
+    clearTimeout(botActionTimeout);
+    // زمن رد فعل البوت: بين 800ms إلى 2300ms (متوسط ~1.4 ثانية) مع احتمالية التباطؤ
+    let reaction = 800 + Math.random() * 1500;
+    if (Math.random() < 0.25) reaction += 1200 + Math.random() * 1800;
+    botActionTimeout = setTimeout(() => {
+        if (roundActive && gameActive) {
+            handleClashAction('challenger');
+        }
+    }, reaction);
+}
+
+function handleClashAction(actor) {
+    if (!roundActive || !gameActive) return;
+    const reactionTime = (Date.now() - roundStartTime) / 1000;
+    roundActive = false;
+    clearTimeout(botActionTimeout);
+    E('clashActionBtn').disabled = true;
+    E('kingBox').classList.remove('active-turn');
+    E('challengerBox').classList.remove('active-turn');
+    
+    let winnerName = '';
+    if (actor === 'king') {
+        winnerName = E('kingNameDisplay').textContent;
+        E('roundFeedback').textContent = `⚡ الملك أسرع! (${reactionTime.toFixed(2)} ثانية)`;
+        E('winnerText').textContent = `🤴 ${winnerName} يحتفظ بالعرش!`;
+    } else {
+        winnerName = E('challengerNameDisplay').textContent;
+        E('roundFeedback').textContent = `💨 المتحدي أسرع! (${reactionTime.toFixed(2)} ثانية)`;
+        E('winnerText').textContent = `🗡️ ${winnerName} يخلع الملك!`;
+    }
+    gameActive = false;
+    if (roomRef) roomRef.update({ gameState: "ended", endMessage: E('winnerText').textContent });
+    E('winnerModal').classList.add('active');
+}
+
+function listenToRoomUpdates() {
+    if (!roomRef) return;
     roomRef.on('value', (snap) => {
         const data = snap.val();
-        if(!data) return;
+        if (!data) return;
+        E('kingNameDisplay').textContent = data.kingName || 'ملك';
+        E('challengerNameDisplay').textContent = data.challengerName || '-';
+        E('streakDisplay').textContent = "🔥 أعلى صمود للملك: " + (data.kingStreak || 0);
         
-        E('kingNameDisplay').textContent = data.kingName || "-";
-        E('challengerNameDisplay').textContent = data.challengerName || "-";
-
-        if(myRole === 'king' && data.gameState === "waiting") {
+        // مراقبة حالة الانتظار (للملك فقط)
+        if (myRole === 'king' && data.gameState === "waiting") {
             if (!data.challengerName) {
-                if(!botTimer) botTimer = setTimeout(() => {
-                    roomRef.update({ challengerName: "🤖 البوت المقاتل", gameState: "playing" });
-                }, 30000);
+                if (!botTimer) {
+                    E('waitingStatus').textContent = 'بانتظار المنافسين... (سيظهر بوت خلال 30 ثانية)';
+                    botTimer = setTimeout(activateBot, 30000);
+                }
             } else {
-                clearTimeout(botTimer); botTimer = null;
+                clearTimeout(botTimer);
+                botTimer = null;
                 E('kingStartBtn').style.display = "block";
+                E('waitingStatus').textContent = `🗡️ ${data.challengerName} في الانتظار!`;
+                E('botHint').textContent = 'الخصم موجود. اضغط ابدأ النزاع.';
             }
         }
         
-        if(data.gameState === "playing") {
+        // الانتقال إلى الساحة عند بدء اللعبة
+        if (data.gameState === "playing" && !E('arenaScreen').classList.contains('active')) {
             E('waitingScreen').classList.remove('active');
             E('arenaScreen').classList.add('active');
+            resetAndPrepareUI();
+            gameActive = true;
+            isBotGame = E('challengerNameDisplay').textContent.includes('🤖');
+            startChallengeRound();
+        }
+        
+        if (data.gameState === "ended") {
+            gameActive = false;
+            roundActive = false;
+            clearTimeout(botActionTimeout);
+            E('winnerModal').classList.add('active');
+            E('winnerText').textContent = data.endMessage || 'انتهت المواجهة';
         }
     });
 }
 
-E('kingBtn').onclick = () => joinRoom('king');
-E('challengerBtn').onclick = () => joinRoom('challenger');
-E('spectatorBtn').onclick = () => joinRoom('spectator');
-E('kingStartBtn').onclick = () => roomRef.update({ gameState: "playing" });
+function startLoginProcess(role) {
+    myName = E('playerName').value.trim() || "لاعب";
+    roomId = E('roomNumberInput').value.trim();
+    if(!roomId) return alert("أدخل رقم الغرفة!");
+    myRole = role;
+    roomRef = db.ref('rooms/' + roomId);
+    E('loginScreen').classList.remove('active');
+    E('roomIdDisplay').textContent = roomId;
+    
+    if(role === 'king') {
+        E('waitingScreen').classList.add('active');
+        roomRef.update({ kingName: myName, challengerName: "", gameState: "waiting", kingStreak: 0 });
+    } else if(role === 'challenger') {
+        E('waitingScreen').classList.add('active');
+        roomRef.update({ challengerName: myName });
+    } else {
+        E('arenaScreen').classList.add('active');
+    }
+    listenToRoomUpdates();
+}
+
+E('kingStartBtn').onclick = () => {
+    if (roomRef) roomRef.update({ gameState: "playing" });
+};
+E('kingBtn').onclick = () => startLoginProcess('king');
+E('challengerBtn').onclick = () => startLoginProcess('challenger');
+E('spectatorBtn').onclick = () => startLoginProcess('spectator');
+E('actionModalBtn').onclick = () => location.reload();
+E('clashActionBtn').onclick = () => {
+    if (roundActive && gameActive && (myRole === 'king' || myRole === 'challenger')) {
+        handleClashAction(myRole);
+    }
+};
 </script>
 </body>
 </html>
