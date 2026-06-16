@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - نظام النزاع المستمر مع طور المشاهد</title>
+    <title>🏰 بطولة ساحة النزاع - نظام النزاع المستمر مع طور البوتات</title>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -120,7 +120,7 @@
 <script>
 const E = id => document.getElementById(id);
 
-// ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل بالسطر 134
+// ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل بالسطر 156
 const firebaseConfig = {
     databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" 
 };
@@ -134,13 +134,17 @@ if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATA
 }
 
 let myName = "", myRole = "", roomId = "";
-let gameTimer = null, arrowTimer = null; 
+let gameTimer = null, arrowTimer = null, botActionTimer = null, botJoinTimeout = null; 
 let currentRoundNum = 0; 
 let myRoundPoints = 0;
 let roomRef = null;
+let isBotActive = false; // هل الخصم الحالي عبارة عن بوت؟
 
 let arrowTargetDirection = "", arrowCommandMode = "", secretCode = "";
 let currentWinnerRole = ""; 
+
+// أسماء البوتات العشوائية
+const botNames = ["🤖_الفارس_المجهول", "🤖_غازي_العرش", "🤖_المقاتل_الشرس", "🤖_برق_الساحة", "🤖_صائد_الملوك", "🤖_الجنرال_الميكانيكي"];
 
 E('roomNumberInput').addEventListener('input', () => {
     let rId = E('roomNumberInput').value.trim();
@@ -165,7 +169,7 @@ E('spectatorBtn').addEventListener('click', () => { if(validateLogin(true)) logi
 
 function validateLogin(isSpectator) {
     if(!db) {
-        alert("⚠️ خطأ في السيرفر: لم تقم بتركيب رابط الـ Firebase الخاص بك في السطر رقم 134 للكود حتى الآن!");
+        alert("⚠️ خطأ في السيرفر: لم تقم بتركيب رابط الـ Firebase الخاص بك في السطر رقم 156 للكود حتى الآن!");
         return false;
     }
     myName = E('playerName').value.trim();
@@ -197,7 +201,7 @@ function loginAs(role) {
 
     if (myRole === 'king') {
         E('waitingTitle').textContent = "أنت الملك المستضيف";
-        E('waitingStatus').textContent = "جاري تصفير المقاعد القديمة وتهيئة السيرفر...";
+        E('waitingStatus').textContent = "جاري تصفير المقاعد وتهيئة السيرفر... (انتظار المتحدين لمدة 30 ثانية أو سيتم استدعاء بوت)";
         
         roomRef.update({
             kingName: myName,
@@ -208,19 +212,37 @@ function loginAs(role) {
             challengerPoints: 0,
             arrowDir: "⬇️",
             arrowCmd: "امتثل",
-            secretCode: ""
+            secretCode: "",
+            isBot: false
         });
         roomRef.child('kingStreak').get().then(s => { if(!s.exists()) roomRef.update({kingStreak: 0}); });
+
+        // بدء مؤقت الـ 30 ثانية لاستدعاء البوت إذا لم يدخل أحد
+        clearTimeout(botJoinTimeout);
+        botJoinTimeout = setTimeout(() => {
+            roomRef.get().then((snapshot) => {
+                const data = snapshot.val();
+                if (data && (!data.challengerName || data.challengerName === "")) {
+                    let randomBotName = botNames[Math.floor(Math.random() * botNames.length)];
+                    roomRef.update({
+                        challengerName: randomBotName,
+                        isBot: true
+                    });
+                }
+            });
+        }, 30000);
+
     } else if (myRole === 'challenger') {
+        clearTimeout(botJoinTimeout);
         roomRef.get().then((snapshot) => {
             const data = snapshot.val();
             if(data && data.challengerName && data.challengerName !== "") {
-                alert("عذراً، المقعد ممتلئ والتحدي قائم حالياً! انتظر طرد الخاسر.");
+                alert("عذراً، المقعد ممتلئ والتحدي قائم حالياً!");
                 location.reload();
             } else {
                 E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
                 E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
-                roomRef.update({ challengerName: myName });
+                roomRef.update({ challengerName: myName, isBot: false });
             }
         });
     }
@@ -232,19 +254,21 @@ function loginAs(role) {
         E('kingNameDisplay').textContent = data.kingName || "@الملك";
         E('challengerNameDisplay').textContent = data.challengerName || "في الانتظار...";
         E('streakDisplay').textContent = `🔥 سلسلة الصمود الحالية للملك: ${data.kingStreak || 0} بطولات`;
+        isBotActive = data.isBot || false;
 
         if (myRole === 'king' && data.challengerName && data.challengerName !== "" && data.gameState === "waiting") {
+            clearTimeout(botJoinTimeout);
             E('kingStartBtn').style.setProperty('display', 'block', 'important');
-            E('waitingStatus').textContent = `المتحدي ${data.challengerName} متصل بسيرفرك! اضغط للبدء.`;
+            E('waitingStatus').textContent = isBotActive ? `🤖 تم استدعاء البوت المبرمج ${data.challengerName}! اضغط لبدء النزاع.` : `المتحدي الحقيقي ${data.challengerName} متصل! اضغط للبدء.`;
         } else if (myRole === 'king' && (!data.challengerName || data.challengerName === "")) {
             E('kingStartBtn').style.setProperty('display', 'none', 'important');
-            E('waitingStatus').textContent = "في انتظار دخول المتحدي السيرفر عبر الكود...";
         }
 
         E('kingScoreDisplay').textContent = data.kingPoints || 0;
         E('challengerScoreDisplay').textContent = data.challengerPoints || 0;
 
         if (data.gameState === "playing") {
+            clearTimeout(botJoinTimeout);
             if (E('waitingScreen').classList.contains('active')) {
                 E('waitingScreen').classList.remove('active');
                 E('arenaScreen').classList.add('active');
@@ -262,6 +286,8 @@ function loginAs(role) {
         if (data.gameState === "ended") {
             clearInterval(gameTimer);
             clearInterval(arrowTimer);
+            clearInterval(botActionTimer);
+            clearTimeout(botJoinTimeout);
             
             E('finalKingScore').textContent = data.kingPoints || 0;
             E('finalChallengerScore').textContent = data.challengerPoints || 0;
@@ -311,9 +337,20 @@ function proceedAsWinner(data) {
                 kingPoints: 0,
                 challengerPoints: 0,
                 challengerName: "", 
-                kingStreak: nextStreak
+                kingStreak: nextStreak,
+                isBot: false
             });
             roomRef.child('leaderboard').child(data.kingName.replace('@','')).set(nextStreak);
+            
+            // إعادة تفعيل عداد البوت للملك المستمر
+            clearTimeout(botJoinTimeout);
+            botJoinTimeout = setTimeout(() => {
+                roomRef.get().then((s) => {
+                    if (s.val() && (!s.val().challengerName || s.val().challengerName === "")) {
+                        roomRef.update({ challengerName: botNames[Math.floor(Math.random()*botNames.length)], isBot: true });
+                    }
+                });
+            }, 30000);
         }
     } else {
         if(myRole === 'challenger') {
@@ -326,7 +363,8 @@ function proceedAsWinner(data) {
                 kingPoints: 0,
                 challengerPoints: 0,
                 challengerName: "", 
-                kingStreak: 1
+                kingStreak: 1,
+                isBot: false
             });
             roomRef.child('leaderboard').child(myName.replace('@','')).set(1);
         }
@@ -348,9 +386,7 @@ function kingFireNextRound(targetRound) {
     if(targetRound === 5) {
         const memoryPool = ["🦁", "🦊", "🐼", "🐙", "🐸", "🐵", "🦄", "🐝"];
         let sequence = [];
-        for(let i=0; i<4; i++) {
-            sequence.push(memoryPool[Math.floor(Math.random() * memoryPool.length)]);
-        }
+        for(let i=0; i<4; i++) { sequence.push(memoryPool[Math.floor(Math.random() * memoryPool.length)]); }
         extra = sequence.join(''); 
     }
     
@@ -377,7 +413,11 @@ function runGameStartLogic() {
     E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 6`;
     
     clearInterval(gameTimer);
+    clearInterval(botActionTimer);
     gameTimer = null;
+
+    // تشغيل محاكي البوت البرمجي إذا كان البوت نشطاً وكان المشغل هو الملك
+    if (isBotActive && myRole === 'king') { activateBotSimulation(); }
 
     if (currentRoundNum === 1) startClickGame();
     else if (currentRoundNum === 2) startColorGame();
@@ -385,6 +425,53 @@ function runGameStartLogic() {
     else if (currentRoundNum === 4) renderArrowGameUI(); 
     else if (currentRoundNum === 5) startMemoryGame(); 
     else if (currentRoundNum === 6) startGuessGame();  
+}
+
+// 🤖 محاكاة تصرفات البوت البرمجي الذكي وإرسال نقاطه للـ Firebase
+function activateBotSimulation() {
+    if (currentRoundNum === 1) {
+        // البوت ينقر عشوائياً كل 300 إلى 600 ميلي ثانية
+        botActionTimer = setInterval(() => { submitBotPoints(1); }, Math.floor(300 + Math.random()*300));
+    } else if (currentRoundNum === 2) {
+        // البوت يحل الألوان بنسبة نجاح 70% كل ثانيتين
+        botActionTimer = setInterval(() => { if(Math.random() > 0.3) submitBotPoints(2); }, 2000);
+    } else if (currentRoundNum === 3) {
+        // البوت يحل الحساب بنسبة نجاح 65% كل 2.5 ثانية
+        botActionTimer = setInterval(() => { if(Math.random() > 0.35) submitBotPoints(3); }, 2500);
+    } else if (currentRoundNum === 4) {
+        // البوت يحل الأسهم عشوائياً كل ثانيتين
+        botActionTimer = setInterval(() => { if(Math.random() > 0.3) submitBotPoints(4); }, 2000);
+    } else if (currentRoundNum === 5) {
+        // جولة الذاكرة: البوت لديه فرصة 50% لحلها دفعة واحدة قبل نهاية الوقت
+        botActionTimer = setTimeout(() => { if(Math.random() > 0.5) submitBotPoints(40); }, 7000);
+    } else if (currentRoundNum === 6) {
+        // جولة الشفرة المفتوحة: البوت يحاول التخمين والتقرب من الحل الذكي كل 4 ثواني!
+        let botGuessedCorrectly = false;
+        botActionTimer = setInterval(() => {
+            if (botGuessedCorrectly) return;
+            let targetNum = parseInt(secretCode);
+            // البوت يخمن رقم عشوائي قريب جداً أو يصيب الهدف مباشرة بنسبة 8% كل 4 ثواني
+            let botGuess = Math.random() > 0.92 ? targetNum : Math.floor(1000 + Math.random()*9000);
+            
+            if (botGuess === targetNum) {
+                botGuessedCorrectly = true;
+                clearInterval(botActionTimer);
+                roomRef.get().then((snapshot) => {
+                    let currentPoints = snapshot.val().challengerPoints || 0;
+                    roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
+                });
+            }
+        }, 4000);
+    }
+}
+
+function submitBotPoints(amt) {
+    roomRef.get().then((snapshot) => {
+        const data = snapshot.val();
+        if(data && data.gameState === "playing") {
+            roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
+        }
+    });
 }
 
 function startClickGame() {
@@ -448,7 +535,6 @@ function renderArrowGameUI() {
         E('gameArea').innerHTML = `
             <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">أمر البث: ${arrowCommandMode}</div>
             <div class="arrow-display">${arrowTargetDirection}</div>
-            <p style="color:#aaa; font-size:14px;">المشاهد يراقب الأسهم والأوامر الحية الموجهة للاعبين</p>
         `;
     } else {
         E('gameArea').innerHTML = `
@@ -573,16 +659,7 @@ function startGuessGame() {
                 if(myRole === 'king') {
                     roomRef.get().then((snapshot) => {
                         let currentPoints = snapshot.val().kingPoints || 0;
-                        roomRef.update({ kingPoints: currentPoints + 50 }).then(() => {
-                            settleTournament(); 
-                        });
-                    });
-                } else {
-                    roomRef.get().then((snapshot) => {
-                        let currentPoints = snapshot.val().challengerPoints || 0;
-                        roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => {
-                            settleTournament(); 
-                        });
+                        roomRef.update({ kingPoints: currentPoints + 50 }).then(() => { settleTournament(); });
                     });
                 }
             } else {
@@ -603,6 +680,7 @@ function submitPointsToCloud(amt) {
 }
 
 function endRoundLogic() {
+    clearInterval(botActionTimer);
     if(myRole === 'spectator') {
         E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><p style="color:#aaa; font-size:14px; margin-top:10px;">في انتظار سحب الملك للمرحلة التالية لتبدأ في البث...</p>`;
         return;
@@ -621,10 +699,14 @@ function endRoundLogic() {
 }
 
 function settleTournament() {
+    clearInterval(botActionTimer);
     roomRef.get().then((snapshot) => {
         const data = snapshot.val();
         let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
-        let finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح المتحدي العبقري بفك الشفرة واعتلاء العرش!`;
+        let finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح البوت المبرمج بفك الشفرة واعتلاء العرش!`;
+        if(!isBotActive) {
+            finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح المتحدي العبقري بفك الشفرة واعتلاء العرش!`;
+        }
         roomRef.update({ gameState: "ended", endMessage: finalMsg });
     });
 }
