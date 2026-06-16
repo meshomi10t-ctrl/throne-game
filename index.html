@@ -2,98 +2,59 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 ساحة النزاع</title>
+    <title>ساحة النزاع - نسخة مستقرة</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --gold: #F1C40F; --green: #2ecc71; --purple: #8e44ad; --blue: #3498db; }
-        body { background: #0a0a1a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
-        .screen.active { display:block; }
-        input { width:100%; padding:15px; margin:10px 0; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; text-align:center; }
-        .btn { width:100%; padding:15px; border:none; border-radius:30px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
-        .btn-green { background:var(--green); }
-        .btn-purple { background:var(--purple); }
-        .btn-blue { background:var(--blue); }
+        /* (نفس تنسيقك السابق) */
+        body { background: #0a0a1a; color: white; font-family: Arial; text-align: center; padding: 20px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .btn { width: 100%; max-width: 300px; padding: 15px; margin: 10px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; color: white; }
+        .btn-green { background: #2ecc71; }
+        .btn-purple { background: #8e44ad; }
+        .btn-blue { background: #3498db; }
     </style>
 </head>
 <body>
 
 <div class="screen active" id="loginScreen">
-    <div style="font-size:50px;">👑</div>
-    <input id="playerName" placeholder="اسمك الكريم...">
-    <input id="roomNumberInput" type="number" placeholder="رقم الغرفة">
-    <button class="btn btn-green" onclick="handleLogin('king')">🤴 الدخول كملك</button>
-    <button class="btn btn-purple" onclick="handleLogin('challenger')">🗡️ الدخول كمتحدي</button>
-    <button class="btn btn-blue" onclick="handleLogin('spectator')">👁️ مشاهدة النزاع</button>
+    <h1>🏰 ساحة النزاع</h1>
+    <input id="playerName" placeholder="الاسم الكريم...">
+    <input id="roomNumber" type="number" placeholder="رقم الغرفة...">
+    <button class="btn btn-green" onclick="joinRoom('king')">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" onclick="joinRoom('challenger')">🗡️ الدخول كمتحدي</button>
+    <button class="btn btn-blue" onclick="joinRoom('spectator')">👁️ مشاهدة النزاع</button>
 </div>
 
-<div class="screen" id="waitingScreen"><h3>بانتظار المنافسين...</h3><button class="btn btn-green" id="kingStartBtn" style="display:none;" onclick="startMatch()">🚀 ابدأ النزاع</button></div>
-<div class="screen" id="arenaScreen"><h3>الساحة جاهزة</h3></div>
+<div class="screen" id="waitScreen">
+    <h2>غرفة الانتظار</h2>
+    <div id="statusText">بانتظار المنافسين...</div>
+</div>
 
 <script>
-    // 1. تهيئة Firebase
+    // 1. التهيئة (تأكد من وضع الرابط هنا)
     const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
-    let roomRef = null, myRole = "";
-    let botTimer = null;
 
-    // 2. دالة التعامل مع الأزرار
-    function handleLogin(role) {
-        const name = document.getElementById('playerName').value.trim() || "لاعب";
-        const roomId = document.getElementById('roomNumberInput').value.trim();
+    // 2. دالة بسيطة ومباشرة للأزرار
+    function joinRoom(role) {
+        const name = document.getElementById('playerName').value || "لاعب";
+        const room = document.getElementById('roomNumber').value;
         
-        if(!roomId) { alert("أدخل رقم الغرفة!"); return; }
+        if(!room) { alert("يجب إدخال رقم الغرفة!"); return; }
         
-        myRole = role;
-        roomRef = db.ref('rooms/' + roomId);
-        
+        // الانتقال للشاشة التالية فوراً دون انتظار Firebase
         document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('waitScreen').classList.add('active');
         
-        if(role === 'king') {
-            document.getElementById('waitingScreen').classList.add('active');
-            roomRef.update({ kingName: name, gameState: "waiting" });
-        } else if(role === 'challenger') {
-            document.getElementById('waitingScreen').classList.add('active');
-            roomRef.update({ challengerName: name });
-        } else {
-            document.getElementById('arenaScreen').classList.add('active');
-        }
+        // ثم الاتصال بقاعدة البيانات
+        const roomRef = db.ref('rooms/' + room);
+        if(role === 'king') roomRef.update({ kingName: name, gameState: "waiting" });
+        if(role === 'challenger') roomRef.update({ challengerName: name });
         
-        listenToRoom();
-    }
-
-    function startMatch() { roomRef.update({ gameState: "playing" }); }
-
-    function activateBot() {
-        console.log("البوت دخل المعركة");
-        roomRef.update({ challengerName: "🤖 البوت", gameState: "playing" });
-    }
-
-    function listenToRoom() {
-        roomRef.on('value', (snap) => {
-            const data = snap.val();
-            if(!data) return;
-
-            // مراقبة البوت للملك
-            if (myRole === 'king' && data.gameState === "waiting") {
-                if (!data.challengerName) {
-                    if (!botTimer) botTimer = setTimeout(activateBot, 30000);
-                } else {
-                    clearTimeout(botTimer);
-                    botTimer = null;
-                    document.getElementById('kingStartBtn').style.display = "block";
-                }
-            }
-            
-            if(data.gameState === "playing") {
-                document.getElementById('waitingScreen').classList.remove('active');
-                document.getElementById('arenaScreen').classList.add('active');
-            }
-        });
+        console.log("تم تسجيل الدخول بنجاح كـ " + role);
     }
 </script>
 </body>
