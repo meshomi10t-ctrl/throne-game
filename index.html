@@ -87,36 +87,7 @@ const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebasei
 let db = null;
 try { if(firebaseConfig.databaseURL !== "YOUR_DATABASE_URL_HERE") { firebase.initializeApp(firebaseConfig); db = firebase.database(); } } catch(e) {}
 
-let roomRef = null, myName = "", myRole = "", roomId = "";
-
-function updateLeaderboardIfHigher(kingName, currentStreak) {
-    if(!roomRef || !kingName || currentStreak <= 0) return;
-    let cleanName = kingName.replace('@','');
-    const leaderRef = roomRef.child('leaderboard').child(cleanName);
-    leaderRef.get().then((snap) => {
-        let record = snap.exists() ? parseInt(snap.val()) : 0;
-        if (currentStreak > record) leaderRef.set(currentStreak);
-    });
-}
-
-function activateLeaderboardListener(rId) {
-    if(!db) return;
-    db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
-        let html = "";
-        let items = [];
-        snap.forEach(child => { items.push({name: child.key, score: child.val()}); });
-        items.sort((a,b) => b.score - a.score);
-        items.forEach((item, index) => {
-            html += `<div class="leaderboard-item"><span>${index+1}. @${item.name} 👑</span><span>${item.score} صمود</span></div>`;
-        });
-        E('leaderboardList').innerHTML = html || "لا يوجد أبطال بعد.";
-    });
-}
-
-E('roomNumberInput').addEventListener('input', () => {
-    let rId = E('roomNumberInput').value.trim();
-    if(rId) activateLeaderboardListener(rId);
-});
+let roomRef = null, myName = "", myRole = "", roomId = "", botTimer = null;
 
 function startLoginProcess(role) {
     myName = E('playerName').value.trim() || "لاعب";
@@ -125,6 +96,7 @@ function startLoginProcess(role) {
     myRole = role;
     roomRef = db.ref('rooms/' + roomId);
     E('loginScreen').classList.remove('active');
+    E('roomIdDisplay').textContent = roomId;
     
     if(role === 'king') {
         E('waitingScreen').classList.add('active');
@@ -138,17 +110,39 @@ function startLoginProcess(role) {
     listenToRoomUpdates();
 }
 
+// دالة البوت (مستوى مقارب للبشر)
+function activateBot() {
+    console.log("البوت دخل المعركة بعد انتظار 30 ثانية");
+    // تأخير عشوائي بسيط ليشعر الملك أن البوت "يفكر"
+    setTimeout(() => {
+        roomRef.update({ 
+            challengerName: "🤖 البوت المقاتل",
+            gameState: "playing" 
+        });
+    }, 1500 + Math.random() * 2000); 
+}
+
 function listenToRoomUpdates() {
     roomRef.on('value', (snap) => {
         const data = snap.val();
         if(!data) return;
         
         E('kingNameDisplay').textContent = data.kingName;
-        E('challengerNameDisplay').textContent = data.challengerName;
+        E('challengerNameDisplay').textContent = data.challengerName || "-";
         E('streakDisplay').textContent = "🔥 أعلى صمود للملك: " + (data.kingStreak || 0);
 
-        if(myRole === 'king' && data.challengerName && data.gameState === "waiting") {
-            E('kingStartBtn').style.display = "block";
+        // مراقبة وقت الانتظار للبوت
+        if (myRole === 'king' && data.gameState === "waiting") {
+            if (!data.challengerName) {
+                if (!botTimer) {
+                    botTimer = setTimeout(activateBot, 30000);
+                }
+            } else {
+                // إذا دخل شخص حقيقي، نلغي البوت
+                clearTimeout(botTimer);
+                botTimer = null;
+                E('kingStartBtn').style.display = "block";
+            }
         }
         
         if(data.gameState === "playing" && !E('arenaScreen').classList.contains('active')) {
@@ -163,16 +157,11 @@ function listenToRoomUpdates() {
     });
 }
 
-E('kingStartBtn').onclick = () => {
-    roomRef.update({ gameState: "playing" });
-};
-
+E('kingStartBtn').onclick = () => { roomRef.update({ gameState: "playing" }); };
 E('kingBtn').onclick = () => startLoginProcess('king');
 E('challengerBtn').onclick = () => startLoginProcess('challenger');
 E('spectatorBtn').onclick = () => startLoginProcess('spectator');
-
-// ملاحظة: بقية منطق الجولات (النقاط، الفوز، الخسارة) يتم استدعاؤه هنا 
-// للتأكد من استدعاء updateLeaderboardIfHigher(data.kingName, nextStreak) عند الفوز النهائي.
+E('actionModalBtn').onclick = () => location.reload();
 
 </script>
 </body>
