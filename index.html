@@ -2,80 +2,48 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - نظام البقاء على العرش</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🏰 ساحة العرش - البوت الذكي</title>
     <style>
-        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
+        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; }
         .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
         .screen.active { display:block; }
-        .logo { font-size:50px; animation: float 2s infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
-        .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
-        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 999; display: block; }
-        .btn:active { transform: scale(0.98); }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
-        .btn-red { background:var(--red); }
         .btn-blue { background:var(--blue); }
-        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
-        .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
-        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
-        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; }
-        .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
-        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
-        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
-        .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
-        .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
-        .winner-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 15, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
-        .winner-modal.active { display: flex; }
-        .winner-card { background: linear-gradient(135deg, #1e1e38 0%, #0f0f26 100%); border: 3px solid var(--gold); border-radius: 25px; padding: 30px; text-align: center; max-width: 450px; width: 100%; }
+        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
+        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; }
+        .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; color: #fff; }
     </style>
 </head>
 <body>
 
 <div class="screen active" id="loginScreen">
-    <div class="logo">👑</div>
-    <div class="title">ساحة البقاء على العرش</div>
+    <div style="font-size:50px;">👑</div>
+    <div style="font-size:24px; color:var(--gold);">ساحة البقاء على العرش</div>
     <input id="playerName" placeholder="اسمك الكريم...">
     <input id="roomNumberInput" type="number" placeholder="رقم الغرفة (مثال: 555)">
-    <button class="btn btn-green" id="kingBtn" type="button">🤴 الدخول كملك</button>
-    <button class="btn btn-purple" id="challengerBtn" type="button">🗡️ الدخول كمتحدي</button>
-    <button class="btn btn-blue" id="spectatorBtn" type="button">👁️ مشاهدة النزاع</button>
+    <button class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
     <div class="leaderboard-box">
-        <div class="leaderboard-title">🏆 سجل أطول صمود على العرش 🏆</div>
-        <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">ادخل الغرفة لرؤية الأبطال...</p></div>
+        <div style="color:var(--gold); font-weight:bold;">🏆 سجل أطول صمود على العرش 🏆</div>
+        <div id="leaderboardList">...</div>
     </div>
 </div>
 
 <div class="screen" id="waitingScreen">
-    <div class="logo">⏳</div>
-    <div class="title" id="waitingTitle">غرفة الانتظار</div>
-    <div class="room-id" id="roomIdDisplay">000</div>
-    <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
-    <div class="status" id="waitingStatus">بانتظار المنافسين...</div>
+    <div id="roomIdDisplay" style="font-size:40px; color:var(--gold);">000</div>
+    <div id="statusText">بانتظار المنافسين...</div>
     <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ النزاع</button>
 </div>
 
 <div class="screen" id="arenaScreen">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span id="roundDisplay" style="color:var(--gold); font-weight:bold;">🚩 الجولة 1/6</span>
-    </div>
-    <div class="timer" id="timerDisplay">⏱️ --</div>
-    <div class="arena">
-        <div class="player-box"><div>🤴 الملك</div><div id="kingNameDisplay" style="color:#aaa;">-</div></div>
-        <div class="player-box"><div>🗡️ المتحدي</div><div id="challengerNameDisplay" style="color:#aaa;">-</div></div>
-    </div>
-    <div class="game-area" id="gameArea"></div>
-</div>
-
-<div class="winner-modal" id="winnerModal">
-    <div class="winner-card">
-        <h2 id="winnerText" style="color:white;">-</h2>
-        <button class="btn btn-green" id="actionModalBtn" style="margin-top:20px;">متابعة</button>
-    </div>
+    <div id="roundDisplay" style="color:var(--gold);">🚩 الجولة 1/6</div>
+    <div id="scoreDisplay">الملك: 0 | المتحدي: 0</div>
+    <div id="gameArea" style="margin-top:20px;"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -84,96 +52,83 @@
 <script>
 const E = id => document.getElementById(id);
 const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
-let db = null;
-try { if(firebaseConfig.databaseURL !== "YOUR_DATABASE_URL_HERE") { firebase.initializeApp(firebaseConfig); db = firebase.database(); } } catch(e) {}
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-let roomRef = null, myName = "", myRole = "", roomId = "";
+let roomRef = null, myName = "", myRole = "", botTimer = null;
 
+// التحديث الذكي للسجل (البقاء على العرش)
 function updateLeaderboardIfHigher(kingName, currentStreak) {
     if(!roomRef || !kingName || currentStreak <= 0) return;
     let cleanName = kingName.replace('@','');
     const leaderRef = roomRef.child('leaderboard').child(cleanName);
-    leaderRef.get().then((snap) => {
+    leaderRef.get().then(snap => {
         let record = snap.exists() ? parseInt(snap.val()) : 0;
         if (currentStreak > record) leaderRef.set(currentStreak);
     });
 }
 
-function activateLeaderboardListener(rId) {
-    if(!db) return;
-    db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
-        let html = "";
-        let items = [];
-        snap.forEach(child => { items.push({name: child.key, score: child.val()}); });
-        items.sort((a,b) => b.score - a.score);
-        items.forEach((item, index) => {
-            html += `<div class="leaderboard-item"><span>${index+1}. @${item.name} 👑</span><span>${item.score} صمود</span></div>`;
+// ذكاء البوت: يحاكي لاعب ذكي
+function botAiLogic(roundNum) {
+    if (myRole !== 'king') return;
+    let delay = Math.floor(Math.random() * 1000) + 500;
+    setTimeout(() => {
+        roomRef.get().then(snap => {
+            let data = snap.val();
+            if(!data || data.gameState !== "playing") return;
+            let points = (roundNum === 1) ? 1 : 2;
+            roomRef.update({ challengerPoints: (data.challengerPoints || 0) + points });
         });
-        E('leaderboardList').innerHTML = html || "لا يوجد أبطال بعد.";
-    });
+    }, delay);
 }
-
-E('roomNumberInput').addEventListener('input', () => {
-    let rId = E('roomNumberInput').value.trim();
-    if(rId) activateLeaderboardListener(rId);
-});
 
 function startLoginProcess(role) {
     myName = E('playerName').value.trim() || "لاعب";
-    roomId = E('roomNumberInput').value.trim();
-    if(!roomId) return alert("أدخل رقم الغرفة!");
-    myRole = role;
-    roomRef = db.ref('rooms/' + roomId);
-    E('loginScreen').classList.remove('active');
+    let rId = E('roomNumberInput').value.trim();
+    if(!rId) return alert("أدخل رقم الغرفة!");
     
-    if(role === 'king') {
-        E('waitingScreen').classList.add('active');
-        roomRef.update({ kingName: myName, challengerName: "", gameState: "waiting", kingStreak: 0 });
-    } else if(role === 'challenger') {
-        E('waitingScreen').classList.add('active');
-        roomRef.update({ challengerName: myName });
-    } else {
-        E('arenaScreen').classList.add('active');
-    }
-    listenToRoomUpdates();
-}
+    myRole = role;
+    roomRef = db.ref('rooms/' + rId);
+    E('loginScreen').classList.remove('active');
+    E('waitingScreen').classList.add('active');
 
-function listenToRoomUpdates() {
-    roomRef.on('value', (snap) => {
+    if(role === 'king') {
+        roomRef.update({ kingName: myName, challengerName: "", gameState: "waiting", kingStreak: 0 });
+        // عداد دخول البوت
+        botTimer = setTimeout(() => {
+            roomRef.get().then(snap => {
+                if(!snap.val().challengerName) {
+                    roomRef.update({ challengerName: "🤖 الفارس المجهول", isBot: true });
+                }
+            });
+        }, 30000);
+    } else {
+        roomRef.update({ challengerName: myName });
+    }
+    
+    roomRef.on('value', snap => {
         const data = snap.val();
         if(!data) return;
-        
-        E('kingNameDisplay').textContent = data.kingName;
-        E('challengerNameDisplay').textContent = data.challengerName;
-        E('streakDisplay').textContent = "🔥 أعلى صمود للملك: " + (data.kingStreak || 0);
-
-        if(myRole === 'king' && data.challengerName && data.gameState === "waiting") {
-            E('kingStartBtn').style.display = "block";
-        }
-        
-        if(data.gameState === "playing" && !E('arenaScreen').classList.contains('active')) {
-            E('waitingScreen').classList.remove('active');
-            E('arenaScreen').classList.add('active');
-        }
-
-        if(data.gameState === "ended") {
-            E('winnerModal').classList.add('active');
-            E('winnerText').textContent = data.endMessage;
-        }
+        if(myRole === 'king' && data.challengerName && data.gameState === "waiting") E('kingStartBtn').style.display = "block";
+        if(data.gameState === "playing" && data.isBot) botAiLogic(data.roundNum);
     });
 }
 
-E('kingStartBtn').onclick = () => {
-    roomRef.update({ gameState: "playing" });
-};
-
 E('kingBtn').onclick = () => startLoginProcess('king');
 E('challengerBtn').onclick = () => startLoginProcess('challenger');
-E('spectatorBtn').onclick = () => startLoginProcess('spectator');
+E('kingStartBtn').onclick = () => roomRef.update({ gameState: "playing" });
 
-// ملاحظة: بقية منطق الجولات (النقاط، الفوز، الخسارة) يتم استدعاؤه هنا 
-// للتأكد من استدعاء updateLeaderboardIfHigher(data.kingName, nextStreak) عند الفوز النهائي.
-
+// استماع للوحة الشرف
+db.ref('rooms').on('child_added', snap => {
+    let rId = E('roomNumberInput').value;
+    if(rId) {
+        db.ref('rooms/'+rId+'/leaderboard').orderByValue().on('value', snap => {
+            let html = "";
+            snap.forEach(c => html += `<div class="leaderboard-item"><span>@${c.key}</span><span>${c.val()} صمود</span></div>`);
+            E('leaderboardList').innerHTML = html || "لا يوجد أبطال.";
+        });
+    }
+});
 </script>
 </body>
 </html>
