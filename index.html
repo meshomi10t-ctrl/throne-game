@@ -17,6 +17,7 @@
         input:focus { outline: none; border-color: #fff; }
         .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
         .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #555 !important; opacity: 0.6; cursor: not-allowed; }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
         .btn-red { background:var(--red); }
@@ -58,10 +59,10 @@
     <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
     <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة (مثال: 555)">
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-        <button class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
-        <button class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
+        <button type="button" class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
+        <button type="button" class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
     </div>
-    <button class="btn btn-blue" id="spectatorBtn" style="margin-top: 2px;">👁️ الدخول كمشاهد (بث مباشر)</button>
+    <button type="button" class="btn btn-blue" id="spectatorBtn" style="margin-top: 2px;">👁️ الدخول كمشاهد (بث مباشر)</button>
     
     <div class="leaderboard-box">
         <div class="leaderboard-title">🏆 سجل أعلى سلاسل الصمود المتتالية 🏆</div>
@@ -75,14 +76,14 @@
     <div class="room-id" id="roomIdDisplay">000</div>
     <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
     <div class="status" id="waitingStatus">جاري الاتصال بسيرفرك الخاص...</div>
-    <button class="btn btn-green" id="kingStartBtn" style="display:none !important;">🚀 ابدأ جولات النزاع</button>
-    <button class="btn btn-red" onclick="location.reload()" id="leaveWaitingBtn" style="margin-top: 15px; border-radius: 20px; padding: 10px;">🚪 مغادرة الغرفة</button>
+    <button type="button" class="btn btn-green" id="kingStartBtn" style="display:none !important;">🚀 ابدأ جولات النزاع</button>
+    <button type="button" class="btn btn-red" onclick="location.reload()" id="leaveWaitingBtn" style="margin-top: 15px; border-radius: 20px; padding: 10px;">🚪 مغادرة الغرفة</button>
 </div>
 
 <div class="screen" id="arenaScreen">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 6</span>
-        <button class="btn btn-red" onclick="location.reload()" id="spectatorLeaveBtn" style="display:none; width:auto; margin:0; padding:5px 15px; font-size:13px; border-radius:15px;">🚪 مغادرة المشاهدة</button>
+        <button type="button" class="btn btn-red" onclick="location.reload()" id="spectatorLeaveBtn" style="display:none; width:auto; margin:0; padding:5px 15px; font-size:13px; border-radius:15px;">🚪 مغادرة المشاهدة</button>
         <span style="background:var(--red); padding:3px 12px; border-radius:20px; font-size: 13px;" id="currentGameTitle">انتظار...</span>
     </div>
     <div class="timer" id="timerDisplay">⏱️ --</div>
@@ -110,7 +111,7 @@
                 <div>🗡️ المتحدي: <span id="finalChallengerScore" style="color:var(--blue); font-weight:bold;">0</span></div>
             </div>
         </div>
-        <button class="btn btn-green" id="actionModalBtn">🔄 المتابعة</button>
+        <button type="button" class="btn btn-green" id="actionModalBtn">🔄 المتابعة</button>
     </div>
 </div>
 
@@ -136,9 +137,9 @@ let currentWinnerRole = "";
 
 const botNames = ["@الفارس_المجهول", "@غازي_العرش", "@المقاتل_الشرس", "@برق_الساحة", "@صائد_الملوك", "@المستبسل_X", "@عازف_السيف", "@العقرب_الأسود"];
 
-// دالة تهيئة الـ Firebase الآمنة تماماً عند الضغط فقط
+// دالة تهيئة الـ Firebase الآمنة والمعدلة
 function ensureFirebaseInit() {
-    if (db) return true; // تمت التهيئة مسبقاً
+    if (db) return true;
     try {
         if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") && firebaseConfig.databaseURL.startsWith("https://")) {
             firebase.initializeApp(firebaseConfig);
@@ -174,25 +175,46 @@ function loadLeaderboardView(rId) {
     } catch(err) {}
 }
 
-// تعيين الأزرار بشكل مباشر دون أي عوائق برمجية تمنع الضغط
-E('kingBtn').onclick = function() { if(validateLogin(false)) loginAs('king'); };
-E('challengerBtn').onclick = function() { if(validateLogin(false)) loginAs('challenger'); };
-E('spectatorBtn').onclick = function() { if(validateLogin(true)) loginAs('spectator'); };
+// تفعيل المستمعات المباشرة مع إلغاء سلوك الفورم التلقائي تماماً
+E('kingBtn').onclick = function(e) { if(e) e.preventDefault(); handleButtonClick('king', this); };
+E('challengerBtn').onclick = function(e) { if(e) e.preventDefault(); handleButtonClick('challenger', this); };
+E('spectatorBtn').onclick = function(e) { if(e) e.preventDefault(); handleButtonClick('spectator', this); };
 
-function validateLogin(isSpectator) {
-    // التحقق من المدخلات المحلية أولاً وقبل كل شيء لضمان عمل الواجهة
+function handleButtonClick(role, buttonEl) {
+    // حفظ النص الأصلي للزر لإعادته في حال فشل التحقق
+    const originalText = buttonEl.textContent;
+    buttonEl.disabled = true;
+    buttonEl.textContent = "⏳ جاري الدخول...";
+
+    let isSpectator = (role === 'spectator');
+    
+    // تنفيذ التحقق المحلي
     myName = E('playerName').value.trim();
     roomId = E('roomNumberInput').value.trim();
     
-    if(isSpectator === true) {
-        if(!roomId) { alert("الرجاء كتابة رقم الغرفة أولاً للمشاهدة!"); return false; }
+    if(isSpectator) {
+        if(!roomId) { 
+            alert("الرجاء كتابة رقم الغرفة أولاً للمشاهدة!"); 
+            buttonEl.disabled = false; buttonEl.textContent = originalText;
+            return; 
+        }
     } else {
-        if(!myName || !roomId) { alert("الرجاء كتابة الاسم ورقم الغرفة أولاً!"); return false; }
+        if(!myName || !roomId) { 
+            alert("الرجاء كتابة الاسم ورقم الغرفة أولاً!"); 
+            buttonEl.disabled = false; buttonEl.textContent = originalText;
+            return; 
+        }
         myName = myName.startsWith('@') ? myName : '@' + myName;
     }
     
-    // تفعيل الاتصال بقاعدة البيانات في اللحظة الأخيرة وبأمان
-    return ensureFirebaseInit();
+    // التحقق من قاعدة البيانات
+    if(!ensureFirebaseInit()) {
+        buttonEl.disabled = false; buttonEl.textContent = originalText;
+        return;
+    }
+
+    // الانتقال الآمن للغرفة
+    loginAs(role);
 }
 
 function loginAs(role) {
@@ -211,7 +233,6 @@ function loginAs(role) {
         E('roomIdDisplay').textContent = roomId;
     }
 
-    // جلب الصدارة بأمان بعد تخطي مرحلة حظر الواجهة
     loadLeaderboardView(roomId);
 
     if (myRole === 'king') {
@@ -527,7 +548,7 @@ function startClickGame() {
     if(myRole === 'spectator') {
         E('gameArea').innerHTML = `<p style="font-size:20px; color:#aaa; animation:pulse 0.5s infinite alternate;">اللاعبون ينقرون الآن بعنف! 🔥</p>`;
     } else {
-        E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn">انقر بسرعة! 🔥</button>`;
+        E('gameArea').innerHTML = `<button type="button" class="game-click-btn" id="actionBtn">انقر بسرعة! 🔥</button>`;
         E('actionBtn').addEventListener('click', () => { myRoundPoints++; submitPointsToCloud(1); });
     }
     gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
@@ -545,7 +566,7 @@ function startColorGame() {
             let text = colors[Math.floor(Math.random()*4)], target = colors[Math.floor(Math.random()*4)];
             E('gameArea').innerHTML = `<p style="font-size:12px;color:#aaa;">طابق لون الخط وليس الكلمة:</p><h1 style="font-size:32px;color:${target.val};margin:10px 0;">${text.name}</h1><div class="options-grid" id="opt"></div>`;
             colors.forEach(c => {
-                let b = document.createElement('button'); b.className='option-btn'; b.style.backgroundColor=c.val; b.textContent=c.name;
+                let b = document.createElement('button'); b.type='button'; b.className='option-btn'; b.style.backgroundColor=c.val; b.textContent=c.name;
                 b.onclick = () => { if(c.val===target.val) { myRoundPoints+=2; submitPointsToCloud(2); } next(); };
                 E('opt').appendChild(b);
             });
@@ -567,7 +588,7 @@ function startMathGame() {
             E('gameArea').innerHTML = `<h1 style="font-size:32px;color:var(--gold);">${n1} ${isPlus?'+':'×'} ${n2} = ؟</h1><div class="options-grid" id="mOpt"></div>`;
             let choices = [ans, ans+2, ans-1, n1+n2+3].filter((v,i,a)=>a.indexOf(v)===i).sort(()=>Math.random()-0.5);
             choices.forEach(v => {
-                let b = document.createElement('button'); b.className='option-btn'; b.textContent=v;
+                let b = document.createElement('button'); b.type='button'; b.className='option-btn'; b.textContent=v;
                 b.onclick = () => { if(parseInt(v)===ans) { myRoundPoints+=3; submitPointsToCloud(3); } next(); };
                 E('mOpt').appendChild(b);
             });
@@ -578,4 +599,9 @@ function startMathGame() {
 }
 
 function renderArrowGameUI() {
-    E('currentGameTitle').textContent = "السهم
+    E('currentGameTitle').textContent = "السهم المعاكس 🏹";
+    let clr = window.arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
+    
+    if(myRole === 'spectator') {
+        E('gameArea').innerHTML = `
+            <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">أمر البث: ${window
