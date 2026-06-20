@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - نظام حفظ الأرقام القياسية</title>
+    <title>🏰 بطولة ساحة النزاع</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
@@ -11,157 +11,79 @@
         body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
         .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
         .screen.active { display:block; }
-        .logo { font-size:50px; animation: float 2s infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
-        .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
-        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        input:focus { outline: none; border-color: #fff; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 999; display: block; }
-        .btn:active { transform: scale(0.98); }
-        .btn-green { background:var(--green); }
-        .btn-purple { background:var(--purple); }
-        .btn-red { background:var(--red); }
-        .btn-blue { background:var(--blue); }
-        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
-        .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
-        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
-        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; }
-        .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
-        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .game-click-btn { background: linear-gradient(135deg, #e74c3c, #9b59b6); border: none; color: white; font-size: 20px; font-weight: bold; padding: 20px 30px; border-radius: 50px; cursor: pointer; width: 90%; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
-        .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
-        .arrow-display { font-size: 65px; margin: 5px 0; font-weight: bold; color: #fff; animation: pulse 0.4s infinite alternate; }
-        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.12); } }
-        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
-        .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
-        .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
-        .winner-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 15, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
-        .winner-modal.active { display: flex; animation: fadeIn 0.5s ease-out forwards; }
-        .winner-card { background: linear-gradient(135deg, #1e1e38 0%, #0f0f26 100%); border: 3px solid var(--gold); border-radius: 25px; padding: 30px; text-align: center; max-width: 450px; width: 100%; box-shadow: 0 0 30px rgba(241, 196, 15, 0.3); transform: scale(0.7); opacity: 0; animation: popUp 0.5s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popUp { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .winner-crown { font-size: 70px; margin-bottom: 10px; animation: crownFloat 1.5s infinite ease-in-out alternate; }
-        @keyframes crownFloat { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-10px) rotate(5deg); } }
-        .winner-text { font-size: 24px; font-weight: bold; color: #fff; margin: 15px 0; line-height: 1.6; }
-        .winner-score-box { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
+        .btn-green { background:var(--green); } .btn-purple { background:var(--purple); } .btn-red { background:var(--red); } .btn-blue { background:var(--blue); }
+        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; border: 1px solid rgba(255,255,255,0.1); }
+        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="screen active" id="loginScreen">
-    <div class="logo">👑</div>
-    <div class="title">بطولة ساحة النزاع السحابية</div>
-    <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
-    <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة (مثال: 555)">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-        <button class="btn btn-green" id="kingBtn" type="button">🤴 الدخول كملك</button>
-        <button class="btn btn-purple" id="challengerBtn" type="button">🗡️ الدخول كمتحدي</button>
-    </div>
-    <button class="btn btn-blue" id="spectatorBtn" type="button" style="margin-top: 10px; width: 100%;">👁️ الدخول كمشاهد (بث مباشر)</button>
-    <div class="leaderboard-box">
-        <div class="leaderboard-title">🏆 سجل أعلى سلاسل الصمود المتتالية 🏆</div>
-        <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">اكتب رقم الغرفة لعرض الأبطال...</p></div>
-    </div>
-</div>
-
-<div class="screen" id="waitingScreen">
-    <div class="logo">⏳</div>
-    <div class="title" id="waitingTitle">غرفة الانتظار</div>
-    <div class="room-id" id="roomIdDisplay">000</div>
-    <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
-    <div class="status" id="waitingStatus">جاري الاتصال...</div>
-    <button class="btn btn-green" id="kingStartBtn" style="display:none !important;">🚀 ابدأ جولات النزاع</button>
-    <button class="btn btn-red" onclick="location.reload()" id="leaveWaitingBtn" style="margin-top: 15px; border-radius: 20px; padding: 10px; width: 100%;">🚪 مغادرة الغرفة</button>
+    <input id="playerName" placeholder="الاسم...">
+    <input id="roomNumberInput" type="number" placeholder="رقم الغرفة...">
+    <button class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
+    <button class="btn btn-blue" id="spectatorBtn">👁️ الدخول كمشاهد</button>
+    <div class="leaderboard-box"><div id="leaderboardList"></div></div>
 </div>
 
 <div class="screen" id="arenaScreen">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 6</span>
-        <button class="btn btn-red" onclick="location.reload()" id="spectatorLeaveBtn" style="display:none; width:auto; margin:0; padding:5px 15px; font-size:13px; border-radius:15px;">🚪 مغادرة المشاهدة</button>
-        <span style="background:var(--red); padding:3px 12px; border-radius:20px; font-size: 13px;" id="currentGameTitle">انتظار...</span>
-    </div>
-    <div class="timer" id="timerDisplay">⏱️ --</div>
-    <div class="arena">
-        <div class="player-box">
-            <div>🤴 الملك المستقر</div><div id="kingNameDisplay" style="font-size:13px; color:#aaa;">@الملك</div>
-            <div style="font-size:32px; color:var(--gold); font-weight:bold;" id="kingScoreDisplay">0</div>
-        </div>
-        <div class="player-box">
-            <div>🗡️ المتحدي الجديد</div><div id="challengerNameDisplay" style="font-size:13px; color:#aaa;">@المتحدي</div>
-            <div style="font-size:32px; color:var(--blue); font-weight:bold;" id="challengerScoreDisplay">0</div>
-        </div>
-    </div>
     <div class="game-area" id="gameArea">
-        <p style="color:#aaa;">في انتظار إشارة انطلاق الجولة الأولى...</p>
-        <!-- حاوية الباركود للمشاهد -->
+        <h2 id="kingNameDisplay">الملك: ...</h2>
+        <h2 id="challengerNameDisplay">المتحدي: ...</h2>
+        <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ المعركة</button>
         <div id="qrArea" style="display:none; margin-top:20px; text-align:center;">
-            <p style="color:#fff; font-size:12px;">للدخول للموقع الرئيسي:</p>
             <div id="qrcode" style="background:white; padding:5px; display:inline-block;"></div>
         </div>
     </div>
-</div>
-
-<div class="winner-modal" id="winnerModal">
-    <div class="winner-card">
-        <div class="winner-crown" id="winnerCrown">🏆</div>
-        <h2 style="color: var(--gold); font-size: 28px;">👑 نهاية الملحمة 👑</h2>
-        <div class="winner-text" id="winnerText">جاري حساب النقاط...</div>
-        <div class="winner-score-box">
-            <div style="display: flex; justify-content: space-around; font-size: 18px;">
-                <div>🤴 الملك: <span id="finalKingScore" style="color:var(--gold); font-weight:bold;">0</span></div>
-                <div>🗡️ المتحدي: <span id="finalChallengerScore" style="color:var(--blue); font-weight:bold;">0</span></div>
-            </div>
-        </div>
-        <button class="btn btn-green" id="actionModalBtn" style="width: 100%;">🔄 المتابعة</button>
-    </div>
+    <button class="btn btn-red" onclick="location.reload()">🚪 مغادرة</button>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
-    const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const E = id => document.getElementById(id);
-    let myRole, roomRef, roomId, myName;
-
-    function activateLeaderboardListener(rId) {
-        db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
-            let html = ""; let items = [];
-            if(snap.exists()) snap.forEach(c => items.push({name: c.key, score: c.val()}));
-            items.reverse();
-            items.forEach((it, i) => html += `<div class="leaderboard-item"><span>${i+1}. @${it.name} 👑</span><span>${it.score} فوز</span></div>`);
-            E('leaderboardList').innerHTML = html || "لا يوجد أبطال.";
-        });
-    }
-
-    E('roomNumberInput').addEventListener('input', () => { let r = E('roomNumberInput').value.trim(); if(r) activateLeaderboardListener(r); });
-
+    const db = firebase.initializeApp({ databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" }).database();
+    
     function startLoginProcess(role) {
-        myName = E('playerName').value.trim();
-        roomId = E('roomNumberInput').value.trim();
-        myRole = role;
+        const roomId = document.getElementById('roomNumberInput').value;
         if(!roomId) return alert("أدخل رقم الغرفة");
         
-        roomRef = db.ref('rooms/' + roomId);
-        E('loginScreen').classList.remove('active');
-        
+        const myRole = role;
+        const roomRef = db.ref('rooms/' + roomId);
+
+        document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('arenaScreen').classList.add('active');
+
         if(myRole === 'spectator') {
-            E('arenaScreen').classList.add('active');
-            E('spectatorLeaveBtn').style.display = "block";
-            E('qrArea').style.display = "block";
-            new QRCode(E("qrcode"), { text: "https://throne-game.vercel.app/", width: 120, height: 120 });
-        } else {
-            E('waitingScreen').classList.add('active');
-            // ... (بقية منطق دخول اللاعبين كما هو في كودك)
+            document.getElementById('qrArea').style.display = "block";
+            new QRCode(document.getElementById("qrcode"), { text: "https://throne-game.vercel.app/", width: 120, height: 120 });
         }
-        // [تأكد من إدراج كامل منطق ListenToRoomUpdates الموجود في كودك الأصلي هنا لضمان عمل النتيجة]
+
+        // هنا المنطق الذي يظهر زر البداية للملك
+        roomRef.on('value', (snap) => {
+            const data = snap.val();
+            if(!data) return;
+            
+            document.getElementById('kingNameDisplay').textContent = "الملك: " + (data.kingName || "...");
+            document.getElementById('challengerNameDisplay').textContent = "المتحدي: " + (data.challengerName || "...");
+
+            // شرط إظهار زر البدء: يجب أن يكون الدور "ملك" و يوجد اسم متحدي و الحالة "waiting"
+            if (myRole === 'king' && data.challengerName && data.challengerName !== "" && data.gameState === "waiting") {
+                document.getElementById('kingStartBtn').style.display = "block";
+            } else {
+                document.getElementById('kingStartBtn').style.display = "none";
+            }
+        });
+
+        // زر البدء يغير الحالة للعب
+        document.getElementById('kingStartBtn').onclick = () => roomRef.update({gameState: "playing"});
     }
 
-    E('kingBtn').onclick = () => startLoginProcess('king');
-    E('challengerBtn').onclick = () => startLoginProcess('challenger');
-    E('spectatorBtn').onclick = () => startLoginProcess('spectator');
+    document.getElementById('kingBtn').onclick = () => startLoginProcess('king');
+    document.getElementById('challengerBtn').onclick = () => startLoginProcess('challenger');
+    document.getElementById('spectatorBtn').onclick = () => startLoginProcess('spectator');
 </script>
 </body>
 </html>
