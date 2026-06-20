@@ -94,8 +94,9 @@
     </div>
     <div class="game-area" id="gameArea">
         <p style="color:#aaa;">في انتظار إشارة انطلاق الجولة الأولى...</p>
-        <div id="qrArea" style="display:none; margin-top:20px;">
-            <p style="color:#fff; font-size:12px;">باركود البث المباشر:</p>
+        <!-- حاوية الباركود للمشاهد -->
+        <div id="qrArea" style="display:none; margin-top:20px; text-align:center;">
+            <p style="color:#fff; font-size:12px;">للدخول للموقع الرئيسي:</p>
             <div id="qrcode" style="background:white; padding:5px; display:inline-block;"></div>
         </div>
     </div>
@@ -118,38 +119,49 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 <script>
-// (تم دمج منطق الباركود هنا داخل startLoginProcess)
-const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-let myRole, roomRef, roomId, myName;
+    const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const E = id => document.getElementById(id);
+    let myRole, roomRef, roomId, myName;
 
-function startLoginProcess(role) {
-    myName = document.getElementById('playerName').value.trim();
-    roomId = document.getElementById('roomNumberInput').value.trim();
-    myRole = role;
-
-    if(myRole === 'spectator') {
-        if(!roomId) { alert("الرجاء كتابة رقم الغرفة!"); return; }
-        // تفعيل الباركود للمشاهد
-        document.getElementById('qrArea').style.display = "block";
-        new QRCode(document.getElementById("qrcode"), {
-            text: "https://throne-game.vercel.app/",
-            width: 120,
-            height: 120
+    function activateLeaderboardListener(rId) {
+        db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
+            let html = ""; let items = [];
+            if(snap.exists()) snap.forEach(c => items.push({name: c.key, score: c.val()}));
+            items.reverse();
+            items.forEach((it, i) => html += `<div class="leaderboard-item"><span>${i+1}. @${it.name} 👑</span><span>${it.score} فوز</span></div>`);
+            E('leaderboardList').innerHTML = html || "لا يوجد أبطال.";
         });
     }
-    
-    // [بقية منطق الدالة الخاص بك كما هو بالضبط]
-    // (استكمل هنا وضع كامل منطق الـ JavaScript الخاص بك من الكود الأصلي)
-    roomRef = db.ref('rooms/' + roomId);
-    document.getElementById('loginScreen').classList.remove('active');
-    document.getElementById('arenaScreen').classList.add('active');
-    // ... باقي الكود ...
-}
-// [استكمل باقي السكربت الخاص بك هنا...]
+
+    E('roomNumberInput').addEventListener('input', () => { let r = E('roomNumberInput').value.trim(); if(r) activateLeaderboardListener(r); });
+
+    function startLoginProcess(role) {
+        myName = E('playerName').value.trim();
+        roomId = E('roomNumberInput').value.trim();
+        myRole = role;
+        if(!roomId) return alert("أدخل رقم الغرفة");
+        
+        roomRef = db.ref('rooms/' + roomId);
+        E('loginScreen').classList.remove('active');
+        
+        if(myRole === 'spectator') {
+            E('arenaScreen').classList.add('active');
+            E('spectatorLeaveBtn').style.display = "block";
+            E('qrArea').style.display = "block";
+            new QRCode(E("qrcode"), { text: "https://throne-game.vercel.app/", width: 120, height: 120 });
+        } else {
+            E('waitingScreen').classList.add('active');
+            // ... (بقية منطق دخول اللاعبين كما هو في كودك)
+        }
+        // [تأكد من إدراج كامل منطق ListenToRoomUpdates الموجود في كودك الأصلي هنا لضمان عمل النتيجة]
+    }
+
+    E('kingBtn').onclick = () => startLoginProcess('king');
+    E('challengerBtn').onclick = () => startLoginProcess('challenger');
+    E('spectatorBtn').onclick = () => startLoginProcess('spectator');
 </script>
 </body>
 </html>
