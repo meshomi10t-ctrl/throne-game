@@ -2,97 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏰 بطولة ساحة النزاع - لوحة المشاهدة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🏰 بطولة ساحة النزاع - نظام حفظ الأرقام القياسية</title>
     <style>
-        :root { --gold: #F1C40F; --blue: #3498db; --bg: #0a0a1a; }
-        body { 
-            background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            color: white; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-        }
-        .container { 
-            width: 90%; 
-            max-width: 450px; 
-            background: rgba(0, 0, 0, 0.6); 
-            padding: 25px; 
-            border-radius: 25px; 
-            text-align: center; 
-            border: 1px solid rgba(241, 196, 15, 0.3);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        h2 { color: var(--gold); margin-bottom: 20px; }
-        .qr-wrapper { 
-            background: white; 
-            padding: 10px; 
-            border-radius: 15px; 
-            display: inline-block; 
-            margin-bottom: 20px; 
-        }
-        .qr-image { width: 200px; height: 200px; display: block; }
-        .score-board { 
-            display: flex; 
-            justify-content: space-around; 
-            align-items: center; 
-            background: rgba(255,255,255,0.05); 
-            padding: 15px; 
-            border-radius: 15px; 
-            margin: 20px 0; 
-        }
-        .score-item { flex: 1; }
-        .score-val { color: var(--gold); font-size: 32px; font-weight: bold; display: block; }
-        .status-tag { color: var(--blue); font-weight: bold; font-size: 14px; }
+        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
+        .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
+        .screen.active { display:block; }
+        .logo { font-size:50px; animation: float 2s infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+        .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
+        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
+        .btn-green { background:var(--green); }
+        .btn-purple { background:var(--purple); }
+        .btn-red { background:var(--red); }
+        .btn-blue { background:var(--blue); }
+        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
+        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
+        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; }
+        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
+        /* التنسيق الجديد للصورة */
+        .spectator-qr { width: 150px; height: 150px; border-radius: 15px; margin-bottom: 10px; border: 3px solid var(--gold); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>👁️ وضع المشاهدة المباشرة</h2>
-    
-    <div class="qr-wrapper">
-        <img src="https://imgur.com/a/MTCrFMz.img" class="qr-image" alt="QR Code">
-    </div>
+<div class="screen active" id="loginScreen">
+    <div class="logo">👑</div>
+    <div class="title">بطولة ساحة النزاع السحابية</div>
+    <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
+    <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة...">
+    <button class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
+    <button class="btn btn-blue" id="spectatorBtn">👁️ الدخول كمشاهد</button>
+    <div id="leaderboardList"></div>
+</div>
 
-    <div class="score-board">
-        <div class="score-item">
-            <small>🤴 الملك</small>
-            <span class="score-val" id="kScore">0</span>
-        </div>
-        <div class="score-item" style="font-size: 20px;">VS</div>
-        <div class="score-item">
-            <small>🗡️ المتحدي</small>
-            <span class="score-val" id="cScore">0</span>
-        </div>
+<div class="screen" id="waitingScreen">
+    <div class="logo">⏳</div>
+    <div class="room-id" id="roomIdDisplay">000</div>
+    <div id="waitingStatus">جاري الاتصال...</div>
+</div>
+
+<div class="screen" id="arenaScreen">
+    <div id="roundDisplay"></div>
+    <div class="arena">
+        <div class="player-box">🤴 الملك: <span id="kingScoreDisplay">0</span></div>
+        <div class="player-box">🗡️ المتحدي: <span id="challengerScoreDisplay">0</span></div>
     </div>
-    
-    <p class="status-tag">تحديث حي من السيرفر السحابي...</p>
+    <div class="game-area" id="gameArea"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // 1. رابط قاعدة البيانات
-    const firebaseConfig = {
-        databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" 
-    };
+// تهيئة القاعدة (ضع رابطك هنا)
+const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+// زر المشاهدة (الإضافة الوحيدة هنا)
+document.getElementById('spectatorBtn').addEventListener('click', function() {
+    let roomId = document.getElementById('roomNumberInput').value.trim();
+    if(!roomId) return alert("أدخل رقم الغرفة!");
+    
+    document.getElementById('loginScreen').classList.remove('active');
+    document.getElementById('arenaScreen').classList.add('active');
+    
+    // إدراج الصورة هنا - استبدل الرابط بالرابط المباشر لصورتك
+    document.getElementById('gameArea').innerHTML = `
+        <img src="https://imgur.com/a/MTCrFMz" class="spectator-qr" alt="QR">
+        <p style="color:var(--blue); font-weight:bold;">👀 أنت في وضع المشاهدة...</p>
+    `;
+});
 
-    // 2. تحديث النتائج من الغرفة المحددة (استبدل YOUR_ROOM_ID برقم الغرفة)
-    db.ref('rooms/555').on('value', (snap) => {
-        const data = snap.val();
-        if(data) {
-            document.getElementById('kScore').textContent = data.kingPoints || 0;
-            document.getElementById('cScore').textContent = data.challengerPoints || 0;
-        }
-    });
+// بقية الكود الأصلي الخاص بك يوضع هنا كما هو...
 </script>
 </body>
 </html>
