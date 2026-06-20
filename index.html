@@ -2,11 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بطولة ساحة النزاع</title>
     <style>
-        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; }
-        body { background: #0a0a1a; font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; margin: 0; }
-        .screen { display: none; width: 100%; max-width: 500px; padding: 20px; text-align: center; }
+        body { background: #0a0a1a; font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; margin: 0; box-sizing: border-box; }
+        .screen { display: none; width: 100%; max-width: 500px; text-align: center; }
         .screen.active { display: block; }
         .logo { font-size: 50px; }
         .title { font-size: 26px; color: #F1C40F; margin: 5px 0; font-weight: bold; }
@@ -31,7 +31,7 @@
     <button class="btn btn-blue" onclick="joinGame('spectator')">👁️ دخول كمشاهد</button>
     <div class="leaderboard-box">
         <div style="color:#F1C40F; font-weight:bold;">🏆 سجل الأبطال</div>
-        <div id="leaderboardList" style="margin-top:10px;">اكتب رقم الغرفة لعرض الأبطال...</div>
+        <div id="leaderboardList" style="margin-top:10px;">أدخل رقم الغرفة...</div>
     </div>
 </div>
 
@@ -49,13 +49,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-    // ربط مباشر مع Firebase
     const db = firebase.database();
     let currentRoomId = "";
     let myRole = "";
 
-    // هذه الدالة العالمية للأزرار
-    window.joinGame = function(role) {
+    function joinGame(role) {
         currentRoomId = document.getElementById('roomNumberInput').value;
         let name = document.getElementById('playerName').value;
         if(!currentRoomId) return alert("يرجى إدخال رقم الغرفة!");
@@ -72,7 +70,6 @@
             else db.ref('rooms/' + currentRoomId).update({ challenger: name });
         }
 
-        // مراقبة الغرفة
         db.ref('rooms/' + currentRoomId).on('value', (s) => {
             let data = s.val();
             if(!data) return;
@@ -85,11 +82,11 @@
                 document.getElementById('gameContent').innerHTML = "<h3>النزاع بدأ الآن!</h3>";
             }
         });
-    };
+    }
 
-    window.startGame = function() {
+    function startGame() {
         db.ref('rooms/' + currentRoomId).update({ state: 'start' });
-    };
+    }
 </script>
 </body>
 </html>
