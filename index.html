@@ -3,91 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع</title>
+    <title>🏰 بطولة ساحة النزاع - نظام حفظ الأرقام القياسية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; }
-        body { background: #0a0a1a; color: white; font-family: Arial, sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .screen { display: none; width: 100%; max-width: 500px; text-align: center; }
-        .screen.active { display: block; }
-        .btn { width: 100%; padding: 15px; border-radius: 30px; border: none; font-weight: bold; margin: 5px 0; cursor: pointer; color: white; }
-        input { width: 100%; padding: 15px; border-radius: 25px; border: 2px solid var(--gold); background: #000; color: white; text-align: center; margin: 10px 0; }
-        .leaderboard-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--gold); }
-        .game-area { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; min-height: 200px; margin-top: 10px; }
+        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
+        .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
+        .screen.active { display:block; }
+        .logo { font-size:50px; animation: float 2s infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+        .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
+        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
+        .btn-green { background:var(--green); }
+        .btn-purple { background:var(--purple); }
+        .btn-blue { background:var(--blue); }
+        .btn-red { background:var(--red); }
+        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
+        .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
+        .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
+        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; }
+        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
 <div class="screen active" id="loginScreen">
-    <h1>👑 بطولة ساحة النزاع</h1>
-    <input id="playerName" placeholder="اسمك الكريم...">
+    <div class="logo">👑</div>
+    <div class="title">بطولة ساحة النزاع</div>
+    <input id="playerName" placeholder="أدخل اسم المستخدم...">
     <input id="roomNumberInput" type="number" placeholder="رقم الغرفة...">
-    <button class="btn" style="background:var(--green)" onclick="login('king')">🤴 دخول كملك</button>
-    <button class="btn" style="background:var(--purple)" onclick="login('challenger')">🗡️ دخول كمتحدي</button>
-    <button class="btn" style="background:var(--blue)" onclick="login('spectator')">👁️ دخول كمشاهد</button>
-    <div class="leaderboard-box" id="leaderboard">
-        <h3>🏆 سجل الأبطال</h3>
-        <div id="lbList">جارٍ تحميل الأبطال...</div>
-    </div>
+    <button class="btn btn-green" id="kingBtn">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" id="challengerBtn">🗡️ الدخول كمتحدي</button>
+    <button class="btn btn-blue" id="spectatorBtn">👁️ الدخول كمشاهد</button>
+    <div class="leaderboard-box"><div class="leaderboard-title">🏆 سجل الأبطال</div><div id="leaderboardList"></div></div>
 </div>
 
-<div class="screen" id="mainScreen">
-    <h2 id="roomTitle">الغرفة: 000</h2>
-    <button class="btn" id="kingStartBtn" style="display:none; background:var(--green)" onclick="startGame()">🚀 ابدأ المعركة</button>
-    <div class="game-area" id="gameArea"></div>
-    <div id="qrArea" style="margin-top:20px; display:none;">
-        <div id="qrcode" style="background:white; padding:5px; display:inline-block;"></div>
+<div class="screen" id="arenaScreen">
+    <div class="game-area" id="gameArea">
+        <div id="kingNameDisplay">--</div>
+        <div id="challengerNameDisplay">--</div>
+        <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ المعركة</button>
+        <div id="qrContainer" style="display:none; margin-top:15px; background:white; padding:5px; border-radius:10px;">
+            <div id="qrcode"></div>
+        </div>
     </div>
+    <button class="btn btn-red" onclick="location.reload()">🚪 مغادرة</button>
 </div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+    const E = id => document.getElementById(id);
     const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let myRole, roomRef, roomId;
+    
+    let myRole, roomRef;
 
-    function login(role) {
-        roomId = document.getElementById('roomNumberInput').value;
-        if(!roomId) return alert("أدخل رقم الغرفة");
+    function startLogin(role) {
         myRole = role;
-        roomRef = db.ref('rooms/' + roomId);
+        const roomId = E('roomNumberInput').value;
+        if(!roomId) return alert("أدخل رقم الغرفة!");
         
-        document.getElementById('loginScreen').classList.remove('active');
-        document.getElementById('mainScreen').classList.add('active');
-        document.getElementById('roomTitle').textContent = "الغرفة: " + roomId;
+        roomRef = db.ref('rooms/' + roomId);
+        E('loginScreen').classList.remove('active');
+        E('arenaScreen').classList.add('active');
 
         if(role === 'spectator') {
-            document.getElementById('qrArea').style.display = "block";
-            new QRCode(document.getElementById("qrcode"), { text: "https://throne-game.vercel.app/", width: 128, height: 128 });
+            E('qrContainer').style.display = "block";
+            new QRCode(E("qrcode"), { text: "https://throne-game.vercel.app/", width: 120, height: 120 });
         }
 
-        // مستمع البيانات الرئيسي (يشغل زر البداية وسجل الأبطال)
         roomRef.on('value', (snap) => {
             const data = snap.val();
             if(!data) return;
-
-            // 1. تفعيل زر البداية للملك فقط
-            if(myRole === 'king' && data.challengerName && data.gameState === "waiting") {
-                document.getElementById('kingStartBtn').style.display = "block";
-            }
-
-            // 2. تحديث سجل الأبطال
-            if(data.leaderboard) {
-                let html = "";
-                for(let name in data.leaderboard) {
-                    html += `<div style="display:flex; justify-content:space-between;"><span>${name}</span><span>${data.leaderboard[name]} 👑</span></div>`;
-                }
-                document.getElementById('lbList').innerHTML = html;
-            }
-        });
-    }
-
-    function startGame() {
-        roomRef.update({gameState: "playing"});
-        document.getElementById('kingStartBtn').style.display = "none";
-    }
-</script>
-</body>
-</html>
+            
+            E('kingNameDisplay').textContent = "
