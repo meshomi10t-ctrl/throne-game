@@ -2,47 +2,43 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>🏰 بطولة ساحة النزاع</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بطولة الساحة</title>
     <style>
-        body { background: #0a0a1a; font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; margin: 0; }
-        .screen { display: none; width: 100%; max-width: 500px; padding: 20px; text-align: center; }
-        .screen.active { display: block; }
-        .logo { font-size: 50px; }
-        .title { font-size: 26px; color: #F1C40F; margin: 5px 0; font-weight: bold; }
-        input { width: 100%; padding: 14px; border-radius: 25px; border: 2px solid #F1C40F; background: rgba(0,0,0,0.5); color: white; text-align: center; margin: 10px 0; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; margin: 8px 0; }
-        .btn-green { background: #2ecc71; }
-        .btn-purple { background: #8e44ad; }
-        .btn-red { background: #e74c3c; }
-        .btn-blue { background: #3498db; }
-        .leaderboard-box { background: rgba(255,255,255,0.1); border: 1px solid #F1C40F; border-radius: 15px; padding: 15px; margin-top: 15px; }
+        body { background: #0a0a1a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; }
+        .screen { display: none; width: 100%; max-width: 400px; text-align: center; }
+        .active { display: block; }
+        input { width: 90%; padding: 12px; margin: 8px 0; border-radius: 20px; border: 2px solid #F1C40F; background: #1a1a35; color: white; text-align: center; }
+        .btn { width: 95%; padding: 15px; margin: 8px 0; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; color: white; font-size: 16px; }
+        .btn-green { background: #2ecc71; } .btn-purple { background: #8e44ad; } 
+        .btn-blue { background: #3498db; } .btn-red { background: #e74c3c; }
+        .box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-top: 15px; border: 1px solid #F1C40F; }
     </style>
 </head>
 <body>
 
-<div class="screen active" id="loginScreen">
-    <div class="logo">👑</div>
-    <div class="title">بطولة ساحة النزاع</div>
-    <input id="playerName" placeholder="أدخل اسمك...">
-    <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة...">
+<div id="loginScreen" class="screen active">
+    <h2>👑 ساحة النزاع</h2>
+    <input type="text" id="username" placeholder="اسمك">
+    <input type="number" id="room" placeholder="رقم الغرفة">
     <button class="btn btn-green" onclick="join('king')">🤴 الدخول كملك</button>
     <button class="btn btn-purple" onclick="join('challenger')">🗡️ الدخول كمتحدي</button>
-    <button class="btn btn-blue" onclick="join('spectator')">👁️ دخول كمشاهد</button>
-    <div class="leaderboard-box">
+    <button class="btn btn-blue" onclick="join('spectator')">👁️ الدخول كمشاهد</button>
+    <div class="box">
         <div style="color:#F1C40F; font-weight:bold;">🏆 سجل الأبطال</div>
-        <div id="leaderboardList" style="margin-top:10px;">اكتب رقم الغرفة لعرض الأبطال...</div>
+        <div id="lbList" style="font-size: 14px;">أدخل رقم الغرفة...</div>
     </div>
 </div>
 
-<div class="screen" id="waitScreen">
+<div id="waitScreen" class="screen">
     <h2>غرفة الانتظار</h2>
-    <p id="statusTxt">بانتظار المنافسين...</p>
-    <button class="btn btn-green" id="startBtn" style="display:none;" onclick="startMatch()">🚀 ابدأ النزاع</button>
-    <button class="btn btn-red" onclick="location.reload()">🚪 مغادرة</button>
+    <p id="status">بانتظار المنافس...</p>
+    <button class="btn btn-green" id="startBtn" style="display:none;" onclick="start()">🚀 ابدأ النزاع</button>
+    <button class="btn btn-red" onclick="location.reload()">🚪 خروج</button>
 </div>
 
-<div class="screen" id="arenaScreen">
-    <div id="gameContent">النزاع جارٍ...</div>
+<div id="arenaScreen" class="screen">
+    <div id="gameUI"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -52,19 +48,13 @@
     let myRole, roomId;
 
     function join(role) {
-        roomId = document.getElementById('roomNumberInput').value;
-        let name = document.getElementById('playerName').value;
-        if(!roomId) return alert("أدخل رقم الغرفة!");
+        roomId = document.getElementById('room').value;
+        let name = document.getElementById('username').value;
+        if(!roomId) return alert("ادخل رقم الغرفة!");
 
         myRole = role;
         document.getElementById('loginScreen').classList.remove('active');
         
-        // سجل الأبطال
-        db.ref('rooms/' + roomId + '/leaderboard').on('value', snap => {
-            let html = snap.exists() ? Object.entries(snap.val()).map(i => `${i[0]}: ${i[1]}`).join("<br>") : "لا يوجد أبطال بعد";
-            document.getElementById('leaderboardList').innerHTML = html;
-        });
-
         if(role === 'king') {
             db.ref('rooms/' + roomId).update({ king: name, state: 'wait' });
             document.getElementById('waitScreen').classList.add('active');
@@ -73,27 +63,27 @@
             document.getElementById('waitScreen').classList.add('active');
         } else {
             document.getElementById('arenaScreen').classList.add('active');
-            document.getElementById('gameContent').innerHTML = `<img src="https://i.postimg.cc/t4VpPjrf/rmz-alastjabt-alsryʿt-alkhas-by-1-1024-(1).jpg" style="width:100%; border-radius:15px; border:2px solid #F1C40F;">`;
+            document.getElementById('gameUI').innerHTML = `<img src="https://i.postimg.cc/t4VpPjrf/rmz-alastjabt-alsryʿt-alkhas-by-1-1024-(1).jpg" style="width:100%; border-radius:15px; border:2px solid gold;">`;
         }
 
         db.ref('rooms/' + roomId).on('value', (s) => {
-            let data = s.val();
-            if(!data) return;
-            if(myRole === 'king' && data.challenger && data.state === 'wait') {
-                document.getElementById('startBtn').style.display = "block";
-                document.getElementById('statusTxt').innerText = "المتحدي " + data.challenger + " وصل!";
+            let d = s.val();
+            if(!d) return;
+            if(d.leaderboard) document.getElementById('lbList').innerHTML = Object.entries(d.leaderboard).map(i => i[0]+': '+i[1]).join("<br>");
+            
+            if(myRole === 'king' && d.challenger && d.state === 'wait') {
+                document.getElementById('startBtn').style.display = "inline-block";
+                document.getElementById('status').innerText = "المتحدي جاهز!";
             }
-            if(data.state === 'start') {
+            if(d.state === 'start') {
                 document.getElementById('waitScreen').classList.remove('active');
                 document.getElementById('arenaScreen').classList.add('active');
-                document.getElementById('gameContent').innerHTML = "<h3>النزاع بدأ الآن!</h3>";
+                document.getElementById('gameUI').innerHTML = "<h3>النزاع جارٍ الآن!</h3>";
             }
         });
     }
 
-    function startMatch() {
-        db.ref('rooms/' + roomId).update({ state: 'start' });
-    }
+    function start() { db.ref('rooms/' + roomId).update({ state: 'start' }); }
 </script>
 </body>
 </html>
