@@ -2,820 +2,97 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🏰 بطولة ساحة النزاع - نظام حفظ الأرقام القياسية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏰 بطولة ساحة النزاع - لوحة المشاهدة</title>
     <style>
-        :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
-        .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
-        .screen.active { display:block; }
-        .logo { font-size:50px; animation: float 2s infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
-        .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
-        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        input:focus { outline: none; border-color: #fff; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 999; display: block; }
-        .btn:active { transform: scale(0.98); }
-        .btn-green { background:var(--green); }
-        .btn-purple { background:var(--purple); }
-        .btn-red { background:var(--red); }
-        .btn-blue { background:var(--blue); }
-        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
-        .status { margin:8px; font-size:15px; color:#ccc; min-height: 24px; }
-        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
-        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; border: 2px solid transparent; }
-        .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
-        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .game-click-btn { background: linear-gradient(135deg, #e74c3c, #9b59b6); border: none; color: white; font-size: 20px; font-weight: bold; padding: 20px 30px; border-radius: 50px; cursor: pointer; width: 90%; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 10px; }
-        .option-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; color: white; background: rgba(255,255,255,0.15); }
-        .arrow-display { font-size: 65px; margin: 5px 0; font-weight: bold; color: #fff; animation: pulse 0.4s infinite alternate; }
-        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.12); } }
-
-        /* سجل الأبطال */
-        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
-        .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
-        .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
-
-        /* جولة الذاكرة المرقمة */
-        .memory-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
-        .memory-numbers { display: flex; justify-content: center; gap: 22px; margin-bottom: -5px; }
-        .memory-num-indicator { font-size: 14px; font-weight: bold; color: #aaa; width: 40px; text-align: center; background: rgba(255,255,255,0.1); border-radius: 5px; padding: 2px 0; }
-        .memory-slots { display: flex; justify-content: center; gap: 22px; font-size: 42px; font-weight: bold; color: var(--gold); }
-
-        /* لوحة إعلان الفائز */
-        .winner-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 5, 15, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
-        .winner-modal.active { display: flex; animation: fadeIn 0.5s ease-out forwards; }
-        .winner-card { background: linear-gradient(135deg, #1e1e38 0%, #0f0f26 100%); border: 3px solid var(--gold); border-radius: 25px; padding: 30px; text-align: center; max-width: 450px; width: 100%; box-shadow: 0 0 30px rgba(241, 196, 15, 0.3); transform: scale(0.7); opacity: 0; animation: popUp 0.5s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popUp { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .winner-crown { font-size: 70px; margin-bottom: 10px; animation: crownFloat 1.5s infinite ease-in-out alternate; }
-        @keyframes crownFloat { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-10px) rotate(5deg); } }
-        .winner-text { font-size: 24px; font-weight: bold; color: #fff; margin: 15px 0; line-height: 1.6; }
-        .winner-score-box { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1); }
+        :root { --gold: #F1C40F; --blue: #3498db; --bg: #0a0a1a; }
+        body { 
+            background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            color: white; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+        .container { 
+            width: 90%; 
+            max-width: 450px; 
+            background: rgba(0, 0, 0, 0.6); 
+            padding: 25px; 
+            border-radius: 25px; 
+            text-align: center; 
+            border: 1px solid rgba(241, 196, 15, 0.3);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        h2 { color: var(--gold); margin-bottom: 20px; }
+        .qr-wrapper { 
+            background: white; 
+            padding: 10px; 
+            border-radius: 15px; 
+            display: inline-block; 
+            margin-bottom: 20px; 
+        }
+        .qr-image { width: 200px; height: 200px; display: block; }
+        .score-board { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            background: rgba(255,255,255,0.05); 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin: 20px 0; 
+        }
+        .score-item { flex: 1; }
+        .score-val { color: var(--gold); font-size: 32px; font-weight: bold; display: block; }
+        .status-tag { color: var(--blue); font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<div class="screen active" id="loginScreen">
-    <div class="logo">👑</div>
-    <div class="title">بطولة ساحة النزاع السحابية</div>
-    <input id="playerName" placeholder="أدخل اسم المستخدم هنا...">
-    <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة (مثال: 555)">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-        <button class="btn btn-green" id="kingBtn" type="button">🤴 الدخول كملك</button>
-        <button class="btn btn-purple" id="challengerBtn" type="button">🗡️ الدخول كمتحدي</button>
-    </div>
-    <button class="btn btn-blue" id="spectatorBtn" type="button" style="margin-top: 10px; width: 100%;">👁️ الدخول كمشاهد (بث مباشر)</button>
+<div class="container">
+    <h2>👁️ وضع المشاهدة المباشرة</h2>
     
-    <div class="leaderboard-box">
-        <div class="leaderboard-title">🏆 سجل أعلى سلاسل الصمود المتتالية 🏆</div>
-        <div id="leaderboardList"><p style="color:#aaa; text-align:center; font-size:13px;">اكتب رقم الغرفة وعمّد دخولك لعرض الأبطال...</p></div>
+    <div class="qr-wrapper">
+        <img src="https://imgur.com/a/MTCrFMz.img" class="qr-image" alt="QR Code">
     </div>
-</div>
 
-<div class="screen" id="waitingScreen">
-    <div class="logo">⏳</div>
-    <div class="title" id="waitingTitle">غرفة الانتظار</div>
-    <div class="room-id" id="roomIdDisplay">000</div>
-    <div id="streakDisplay" style="color:var(--gold); font-weight:bold; margin-bottom:10px;">🔥 سلسلة الصمود الحالية: 0 جولات</div>
-    <div class="status" id="waitingStatus">جاري الاتصال بسيرفرك الخاص...</div>
-    <button class="btn btn-green" id="kingStartBtn" style="display:none !important;">🚀 ابدأ جولات النزاع</button>
-    <button class="btn btn-red" onclick="location.reload()" id="leaveWaitingBtn" style="margin-top: 15px; border-radius: 20px; padding: 10px; width: 100%;">🚪 مغادرة الغرفة</button>
-</div>
-
-<div class="screen" id="arenaScreen">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span style="font-size:18px; color:var(--gold); font-weight:bold;" id="roundDisplay">🚩 الجولة: 1 / 6</span>
-        <button class="btn btn-red" onclick="location.reload()" id="spectatorLeaveBtn" style="display:none; width:auto; margin:0; padding:5px 15px; font-size:13px; border-radius:15px;">🚪 مغادرة المشاهدة</button>
-        <span style="background:var(--red); padding:3px 12px; border-radius:20px; font-size: 13px;" id="currentGameTitle">انتظار...</span>
-    </div>
-    <div class="timer" id="timerDisplay">⏱️ --</div>
-    <div class="arena">
-        <div class="player-box">
-            <div>🤴 الملك المستقر</div><div id="kingNameDisplay" style="font-size:13px; color:#aaa;">@الملك</div>
-            <div style="font-size:32px; color:var(--gold); font-weight:bold;" id="kingScoreDisplay">0</div>
+    <div class="score-board">
+        <div class="score-item">
+            <small>🤴 الملك</small>
+            <span class="score-val" id="kScore">0</span>
         </div>
-        <div class="player-box">
-            <div>🗡️ المتحدي الجديد</div><div id="challengerNameDisplay" style="font-size:13px; color:#aaa;">@المتحدي</div>
-            <div style="font-size:32px; color:var(--blue); font-weight:bold;" id="challengerScoreDisplay">0</div>
+        <div class="score-item" style="font-size: 20px;">VS</div>
+        <div class="score-item">
+            <small>🗡️ المتحدي</small>
+            <span class="score-val" id="cScore">0</span>
         </div>
     </div>
-    <div class="game-area" id="gameArea"><p style="color:#aaa;">في انتظار إشارة انطلاق الجولة الأولى...</p></div>
-</div>
-
-<div class="winner-modal" id="winnerModal">
-    <div class="winner-card">
-        <div class="winner-crown" id="winnerCrown">🏆</div>
-        <h2 style="color: var(--gold); font-size: 28px;">👑 نهاية الملحمة 👑</h2>
-        <div class="winner-text" id="winnerText">جاري حساب النقاط وتحديد سيد العرش...</div>
-        <div class="winner-score-box">
-            <div style="display: flex; justify-content: space-around; font-size: 18px;">
-                <div>🤴 الملك: <span id="finalKingScore" style="color:var(--gold); font-weight:bold;">0</span></div>
-                <div>🗡️ المتحدي: <span id="finalChallengerScore" style="color:var(--blue); font-weight:bold;">0</span></div>
-            </div>
-        </div>
-        <button class="btn btn-green" id="actionModalBtn" style="width: 100%;">🔄 المتابعة</button>
-    </div>
+    
+    <p class="status-tag">تحديث حي من السيرفر السحابي...</p>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-// تهيئة المتغيرات الأساسية لمنع انهيار السكربت كلياً
-window.arrowTargetDirection = "⬇️";
-window.arrowCommandMode = "امتثل";
-window.secretCode = "";
+    // 1. رابط قاعدة البيانات
+    const firebaseConfig = {
+        databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" 
+    };
 
-const E = id => document.getElementById(id);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-// ⚠️ ضع رابط قاعدة البيانات الخاص بك هنا بالأسفل بالسطر 157
-const firebaseConfig = {
-    databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" 
-};
-
-let db = null;
-try {
-    if(firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("YOUR_DATABASE_URL_HERE") && firebaseConfig.databaseURL.startsWith("https://")) {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-    }
-} catch(e) {
-    console.log("Firebase bypass init");
-}
-
-let myName = "", myRole = "", roomId = "";
-let gameTimer = null, arrowTimer = null, botActionTimer = null, botJoinTimeout = null; 
-let currentRoundNum = 0; 
-let myRoundPoints = 0;
-let roomRef = null;
-let isBotActive = false; 
-let currentWinnerRole = "";
-
-const botNames = ["@الفارس_المجهول", "@غازي_العرش", "@المقاتل_الشرس", "@برق_الساحة", "@صائد_الملوك", "@المستبسل_X", "@عازف_السيف", "@العقرب_الأسود"];
-
-// تشغيل مستمع لوحة الشرف بأمان تام فقط بعد التأكد من صحة الاتصال بالداتابيز
-function activateLeaderboardListener(rId) {
-    if(!db || !rId) return;
-    try {
-        db.ref('rooms/' + rId + '/leaderboard').orderByValue().limitToLast(5).on('value', snap => {
-            let html = "";
-            let items = [];
-            if(snap && snap.exists()) {
-                snap.forEach(child => { items.push({name: child.key, score: child.val()}); });
-            }
-            items.reverse(); 
-            if(items.length === 0) {
-                html = "<p style='color:#aaa; text-align:center; font-size:13px;'>لا يوجد أبطال مسجلين بعد في هذه الغرفة.</p>";
-            } else {
-                items.forEach((item, index) => {
-                    html += `<div class="leaderboard-item"><span>${index+1}. @${item.name} 👑</span><span>أعلى سلسلة متتالية: ${item.score} فوز</span></div>`;
-                });
-            }
-            E('leaderboardList').innerHTML = html;
-        }, err => console.log("Bypassed layout error"));
-    } catch(e) {
-        console.log("Secure lock activated");
-    }
-}
-
-// تفعيل كتابة الغرفة بشكل آمن
-E('roomNumberInput').addEventListener('input', () => {
-    let rId = E('roomNumberInput').value.trim();
-    if(rId) { activateLeaderboardListener(rId); }
-});
-
-// ربط مباشر ونظيف للأزرار يمنع تجميدها نهائياً
-E('kingBtn').addEventListener('click', function() { startLoginProcess('king'); });
-E('challengerBtn').addEventListener('click', function() { startLoginProcess('challenger'); });
-E('spectatorBtn').addEventListener('click', function() { startLoginProcess('spectator'); });
-
-function startLoginProcess(role) {
-    if(!db) {
-        alert("⚠️ خطأ في التهيئة: يرجى أولاً فتح الملف البرمجي واستبدال العبارة 'YOUR_DATABASE_URL_HERE' برابط الـ Firebase Realtime Database الخاص بك في السطر رقم 157 ليتمكن التطبيق من الاتصال بالإنترنت!");
-        return;
-    }
-
-    myName = E('playerName').value.trim();
-    roomId = E('roomNumberInput').value.trim();
-    myRole = role;
-
-    if(myRole === 'spectator') {
-        if(!roomId) { alert("الرجاء كتابة رقم الغرفة أولاً للمشاهدة!"); return; }
-    } else {
-        if(!myName || !roomId) { alert("الرجاء كتابة الاسم ورقم الغرفة أولاً!"); return; }
-        myName = myName.startsWith('@') ? myName : '@' + myName;
-    }
-
-    try { 
-        roomRef = db.ref('rooms/' + roomId); 
-    } catch(e) { 
-        alert("خطأ في الاتصال بالخادم"); 
-        return; 
-    }
-    
-    E('loginScreen').classList.remove('active');
-
-    if(myRole === 'spectator') {
-        E('arenaScreen').classList.add('active');
-        E('spectatorLeaveBtn').style.display = "block"; 
-        E('gameArea').innerHTML = `<p style="color:var(--blue); font-weight:bold;">👀 أنت في وضع المشاهدة المباشرة الآن... في انتظار بدء جولات اللاعبين.</p>`;
-    } else {
-        E('waitingScreen').classList.add('active');
-        E('roomIdDisplay').textContent = roomId;
-    }
-
-    if (myRole === 'king') {
-        E('waitingTitle').textContent = "أنت الملك المستضيف";
-        E('waitingStatus').textContent = "جاري تصفير المقاعد وتهيئة السيرفر... بانتظار دخول متحدي...";
-        
-        roomRef.update({
-            kingName: myName,
-            challengerName: "", 
-            gameState: "waiting",
-            roundNum: 1,
-            kingPoints: 0,
-            challengerPoints: 0,
-            arrowDir: "⬇️",
-            arrowCmd: "امتثل",
-            secretCode: "",
-            isBot: false
-        });
-        roomRef.child('kingStreak').get().then(s => { if(!s.exists()) roomRef.update({kingStreak: 0}); });
-
-        clearTimeout(botJoinTimeout);
-        botJoinTimeout = setTimeout(() => {
-            roomRef.get().then((snapshot) => {
-                if(snapshot.exists()) {
-                    const data = snapshot.val();
-                    if (data && (!data.challengerName || data.challengerName === "")) {
-                        let randomBotName = botNames[Math.floor(Math.random() * botNames.length)];
-                        roomRef.update({ challengerName: randomBotName, isBot: true });
-                    }
-                }
-            });
-        }, 30000);
-
-    } else if (myRole === 'challenger') {
-        clearTimeout(botJoinTimeout);
-        roomRef.get().then((snapshot) => {
-            if(snapshot.exists()) {
-                const data = snapshot.val();
-                if(data && data.challengerName && data.challengerName !== "") {
-                    alert("عذراً، المقعد ممتلئ والتحدي قائم حالياً!");
-                    location.reload();
-                } else {
-                    E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
-                    E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
-                    roomRef.update({ challengerName: myName, isBot: false });
-                }
-            } else {
-                E('waitingTitle').textContent = "أنت المتحدي غازي العرش";
-                E('waitingStatus').textContent = "جاري تسجيل مقعدك الفوري بالخادم السحابي الخاص...";
-                roomRef.update({ challengerName: myName, isBot: false });
-            }
-        });
-    }
-
-    listenToRoomUpdates();
-}
-
-function listenToRoomUpdates() {
-    if(!roomRef) return;
-    
-    roomRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if(!data) return;
-
-        E('kingNameDisplay').textContent = data.kingName || "@الملك";
-        E('challengerNameDisplay').textContent = data.challengerName || "في الانتظار...";
-        E('streakDisplay').textContent = `🔥 سلسلة الصمود الحالية للملك: ${data.kingStreak || 0} بطولات`;
-        isBotActive = data.isBot || false;
-
-        if (myRole === 'king' && data.challengerName && data.challengerName !== "" && data.gameState === "waiting") {
-            clearTimeout(botJoinTimeout);
-            E('kingStartBtn').style.setProperty('display', 'block', 'important');
-            E('waitingStatus').textContent = `اللاعب ${data.challengerName} متصل بالساحة! اضغط لبدء النزاع.`;
-        } else if (myRole === 'king' && (!data.challengerName || data.challengerName === "")) {
-            E('kingStartBtn').style.setProperty('display', 'none', 'important');
-        }
-
-        E('kingScoreDisplay').textContent = data.kingPoints || 0;
-        E('challengerScoreDisplay').textContent = data.challengerPoints || 0;
-
-        if (data.gameState === "playing") {
-            clearTimeout(botJoinTimeout);
-            if (E('waitingScreen').classList.contains('active')) {
-                E('waitingScreen').classList.remove('active');
-                E('arenaScreen').classList.add('active');
-            }
-            
-            if (currentRoundNum !== data.roundNum || (window.arrowTargetDirection !== data.arrowDir) || (window.arrowCommandMode !== data.arrowCmd) || (window.secretCode !== data.secretCode)) {
-                currentRoundNum = data.roundNum;
-                window.arrowTargetDirection = data.arrowDir || "⬇️";
-                window.arrowCommandMode = data.arrowCmd || "امتثل";
-                window.secretCode = data.secretCode || "";
-                runGameStartLogic();
-            }
-        }
-
-        if (data.gameState === "ended") {
-            clearInterval(gameTimer);
-            if(arrowTimer) clearInterval(arrowTimer);
-            clearTimeout(botActionTimer);
-            clearInterval(botActionTimer);
-            clearTimeout(botJoinTimeout);
-            
-            E('finalKingScore').textContent = data.kingPoints || 0;
-            E('finalChallengerScore').textContent = data.challengerPoints || 0;
-            E('winnerText').textContent = data.endMessage;
-            
-            let kingWon = data.kingPoints >= data.challengerPoints;
-            currentWinnerRole = kingWon ? 'king' : 'challenger';
-
-            if(kingWon) {
-                E('winnerCrown').textContent = "👑";
-                E('winnerModal').style.borderColor = "var(--gold)";
-            } else {
-                E('winnerCrown').textContent = "⚔️";
-                E('winnerModal').style.borderColor = "var(--blue)";
-            }
-            
-            if(myRole === 'spectator') {
-                E('actionModalBtn').textContent = "🚪 إنهاء البث والمغادرة";
-                E('actionModalBtn').className = "btn btn-blue";
-                E('actionModalBtn').onclick = () => { location.reload(); };
-            } else if((myRole === 'king' && kingWon) || (myRole === 'challenger' && !kingWon)) {
-                E('actionModalBtn').textContent = "👑 البقاء في الغرفة وحماية العرش";
-                E('actionModalBtn').className = "btn btn-green";
-                E('actionModalBtn').onclick = () => { proceedAsWinner(data); };
-            } else {
-                E('actionModalBtn').textContent = "🚪 مغادرة الغرفة (لقد خسرت الجولة)";
-                E('actionModalBtn').className = "btn btn-red";
-                E('actionModalBtn').onclick = () => { proceedAsLoser(); };
-            }
-
-            E('winnerModal').classList.add('active');
+    // 2. تحديث النتائج من الغرفة المحددة (استبدل YOUR_ROOM_ID برقم الغرفة)
+    db.ref('rooms/555').on('value', (snap) => {
+        const data = snap.val();
+        if(data) {
+            document.getElementById('kScore').textContent = data.kingPoints || 0;
+            document.getElementById('cScore').textContent = data.challengerPoints || 0;
         }
     });
-}
-
-function updateLeaderboardIfHigher(playerCleanName, newStreakValue) {
-    if(!roomRef || !playerCleanName) return;
-    if(playerCleanName.startsWith("🤖") || playerCleanName.includes("الفارس_المجهول") || playerCleanName.includes("غازي_العرش") || playerCleanName.includes("المقاتل") || playerCleanName.includes("برق") || playerCleanName.includes("صائد") || playerCleanName.includes("المستبسل") || playerCleanName.includes("عازف") || playerCleanName.includes("العقرب")) return; 
-
-    const leaderRef = roomRef.child('leaderboard').child(playerCleanName);
-    leaderRef.get().then((snap) => {
-        if (snap.exists()) {
-            let recordMaxStreak = parseInt(snap.val()) || 0;
-            if (newStreakValue > recordMaxStreak) { 
-                leaderRef.set(newStreakValue); 
-            }
-        } else {
-            leaderRef.set(newStreakValue);
-        }
-    }).catch(e => { leaderRef.set(newStreakValue); });
-}
-
-function proceedAsWinner(data) {
-    E('winnerModal').classList.remove('active');
-    E('arenaScreen').classList.remove('active');
-    E('waitingScreen').classList.add('active');
-    
-    if(currentWinnerRole === 'king') {
-        if(myRole === 'king') {
-            let nextStreak = (data.kingStreak || 0) + 1;
-            updateLeaderboardIfHigher(data.kingName.replace('@',''), nextStreak);
-
-            roomRef.update({
-                gameState: "waiting",
-                roundNum: 1,
-                kingPoints: 0,
-                challengerPoints: 0,
-                challengerName: "", 
-                kingStreak: nextStreak,
-                isBot: false
-            });
-            
-            clearTimeout(botJoinTimeout);
-            botJoinTimeout = setTimeout(() => {
-                roomRef.get().then((s) => {
-                    if (s.exists() && s.val() && (!s.val().challengerName || s.val().challengerName === "")) {
-                        roomRef.update({ challengerName: botNames[Math.floor(Math.random()*botNames.length)], isBot: true });
-                    }
-                });
-            }, 30000);
-        }
-    } else {
-        if(myRole === 'challenger') {
-            myRole = 'king'; 
-            E('waitingTitle').textContent = "أنت الملك المستضيف الجديد";
-            updateLeaderboardIfHigher(myName.replace('@',''), 1);
-
-            roomRef.update({
-                kingName: myName,
-                gameState: "waiting",
-                roundNum: 1,
-                kingPoints: 0,
-                challengerPoints: 0,
-                challengerName: "", 
-                kingStreak: 1,
-                isBot: false
-            });
-        }
-    }
-}
-
-function proceedAsLoser() {
-    location.reload();
-}
-
-E('kingStartBtn').addEventListener('click', () => {
-    roomRef.update({ gameState: "playing" });
-    kingFireNextRound(1);
-});
-
-function kingFireNextRound(targetRound) {
-    let extra = "", randomDir = "⬇️", randomCmd = "امتثل";
-    
-    if(targetRound === 5) {
-        const memoryPool = ["🦁", "🦊", "🐼", "🐙", "🐸", "🐵", "🦄", "🐝"];
-        let sequence = [];
-        for(let i=0; i<4; i++) { sequence.push(memoryPool[Math.floor(Math.random() * memoryPool.length)]); }
-        extra = sequence.join(''); 
-    }
-    
-    if(targetRound === 6) {
-        extra = Math.floor(1000 + Math.random() * 9000).toString();
-    }
-    
-    if(targetRound === 4) {
-        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
-        randomDir = dirs[Math.floor(Math.random() * dirs.length)];
-        randomCmd = cmds[Math.floor(Math.random() * cmds.length)];
-    }
-    
-    roomRef.update({
-        roundNum: targetRound,
-        arrowDir: randomDir,
-        arrowCmd: randomCmd,
-        secretCode: extra
-    });
-}
-
-function runGameStartLogic() {
-    myRoundPoints = 0;
-    E('roundDisplay').textContent = `🚩 الجولة: ${currentRoundNum} / 6`;
-    
-    if(gameTimer) clearInterval(gameTimer);
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    gameTimer = null;
-
-    if (isBotActive && myRole === 'king') { activateBotSimulation(); }
-
-    if (currentRoundNum === 1) startClickGame();
-    else if (currentRoundNum === 2) startColorGame();
-    else if (currentRoundNum === 3) startMathGame();
-    else if (currentRoundNum === 4) renderArrowGameUI(); 
-    else if (currentRoundNum === 5) startMemoryGame(); 
-    else if (currentRoundNum === 6) startGuessGame();  
-}
-
-function activateBotSimulation() {
-    if (currentRoundNum === 1) {
-        function botClickLoop() {
-            if(currentRoundNum !== 1) return;
-            submitBotPoints(1);
-            let nextDelay = Math.floor(450 + Math.random() * 300);
-            botActionTimer = setTimeout(botClickLoop, nextDelay);
-        }
-        botClickLoop();
-    } else if (currentRoundNum === 2) {
-        botActionTimer = setInterval(() => {
-            if(Math.random() < 0.80) { submitBotPoints(2); }
-        }, Math.floor(2000 + Math.random() * 1000));
-    } else if (currentRoundNum === 3) {
-        botActionTimer = setInterval(() => {
-            if(Math.random() < 0.75) { submitBotPoints(3); }
-        }, Math.floor(3000 + Math.random() * 1000));
-    } else if (currentRoundNum === 4) {
-        botActionTimer = setInterval(() => {
-            if(Math.random() < 0.85) { submitBotPoints(4); }
-        }, Math.floor(1500 + Math.random() * 800));
-    } else if (currentRoundNum === 5) {
-        botActionTimer = setTimeout(() => {
-            if(Math.random() < 0.60) { submitBotPoints(40); }
-        }, 8000);
-    } else if (currentRoundNum === 6) {
-        botActionTimer = setInterval(() => {
-            let targetNum = parseInt(window.secretCode);
-            let botGuess = (Math.random() < 0.12) ? targetNum : Math.floor(1000 + Math.random() * 9000);
-            
-            if (botGuess === targetNum) {
-                clearInterval(botActionTimer);
-                roomRef.get().then((snapshot) => {
-                    if(snapshot.exists()) {
-                        let currentPoints = snapshot.val().challengerPoints || 0;
-                        roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
-                    }
-                });
-            }
-        }, 5000);
-    }
-}
-
-function submitBotPoints(amt) {
-    if(!roomRef) return;
-    roomRef.get().then((snapshot) => {
-        if(snapshot.exists()) {
-            const data = snapshot.val();
-            if(data && data.gameState === "playing") {
-                roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
-            }
-        }
-    });
-}
-
-function startClickGame() {
-    E('currentGameTitle').textContent = "النقر السريع 👑"; let timeLeft = 10;
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<p style="font-size:20px; color:#aaa; animation:pulse 0.5s infinite alternate;">اللاعبون ينقرون الآن بعنف! 🔥</p>`;
-    } else {
-        E('gameArea').innerHTML = `<button class="game-click-btn" id="actionBtn" type="button">انقر بسرعة! 🔥</button>`;
-        E('actionBtn').addEventListener('click', () => { myRoundPoints++; submitPointsToCloud(1); });
-    }
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
-}
-
-function startColorGame() {
-    E('currentGameTitle').textContent = "تطابق اللون 🎨"; let timeLeft = 12;
-    const colors = [{name:'أحمر',val:'#e74c3c'}, {name:'أزرق',val:'#3498db'}, {name:'أخضر',val:'#2ecc71'}, {name:'أصفر',val:'#f1c40f'}];
-    
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<p style="font-size:18px; color:#aaa; text-align:center;">يتم عرض الألوان للاعبين للمطابقة البصرية الفورية... 🎨</p>`;
-    } else {
-        function next() {
-            let text = colors[Math.floor(Math.random()*4)], target = colors[Math.floor(Math.random()*4)];
-            E('gameArea').innerHTML = `<p style="font-size:12px;color:#aaa;">طابق لون الخط وليس الكلمة:</p><h1 style="font-size:32px;color:${target.val};margin:10px 0;">${text.name}</h1><div class="options-grid" id="opt"></div>`;
-            colors.forEach(c => {
-                let b = document.createElement('button'); b.className='option-btn'; b.style.backgroundColor=c.val; b.textContent=c.name; b.type="button";
-                b.onclick = () => { if(c.val===target.val) { myRoundPoints+=2; submitPointsToCloud(2); } next(); };
-                E('opt').appendChild(b);
-            });
-        }
-        next();
-    }
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
-}
-
-function startMathGame() {
-    E('currentGameTitle').textContent = "الحساب الفوري 🧠"; let timeLeft = 12;
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<p style="font-size:18px; color:#aaa; text-align:center;">اللاعبون يحلون المسائل الرياضية المعقدة حالياً... 🧠</p>`;
-    } else {
-        function next() {
-            let n1 = Math.floor(2+Math.random()*9), n2 = Math.floor(2+Math.random()*9), isPlus = Math.random()>0.5;
-            let ans = isPlus ? (n1+n2) : (n1*n2);
-            E('gameArea').innerHTML = `<h1 style="font-size:32px;color:var(--gold);">${n1} ${isPlus?'+':'×'} ${n2} = ؟</h1><div class="options-grid" id="mOpt"></div>`;
-            let choices = [ans, ans+2, ans-1, n1+n2+3].filter((v,i,a)=>a.indexOf(v)===i).sort(()=>Math.random()-0.5);
-            choices.forEach(v => {
-                let b = document.createElement('button'); b.className='option-btn'; b.textContent=v; b.type="button";
-                b.onclick = () => { if(parseInt(v)===ans) { myRoundPoints+=3; submitPointsToCloud(3); } next(); };
-                E('mOpt').appendChild(b);
-            });
-        }
-        next();
-    }
-    gameTimer = setInterval(() => { timeLeft--; E('timerDisplay').textContent = `⏱️ ${timeLeft}`; if (timeLeft <= 0) endRoundLogic(); }, 1000);
-}
-
-function renderArrowGameUI() {
-    E('currentGameTitle').textContent = "السهم المعاكس 🏹";
-    let clr = window.arrowCommandMode === "امتثل" ? "var(--green)" : "var(--red)";
-    
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `
-            <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">أمر البث: ${window.arrowCommandMode}</div>
-            <div class="arrow-display">${window.arrowTargetDirection}</div>
-        `;
-    } else {
-        E('gameArea').innerHTML = `
-            <div style="background:rgba(255,255,255,0.05);padding:5px 25px;border-radius:10px;font-size:22px;color:${clr};font-weight:bold;">${window.arrowCommandMode}</div>
-            <div class="arrow-display">${window.arrowTargetDirection}</div>
-            <div class="options-grid">
-                <button class="option-btn" type="button" onclick="checkArrow('⬅️')">يمين ⬅️</button>
-                <button class="option-btn" type="button" onclick="checkArrow('➡️')">يسار ➡️</button>
-                <button class="option-btn" type="button" onclick="checkArrow('⬆️')">فوق ⬆️</button>
-                <button class="option-btn" type="button" onclick="checkArrow('⬇️')">تحت ⬇️</button>
-            </div>
-        `;
-    }
-
-    if(!arrowTimer) {
-        let arrowTimeLeft = 12;
-        arrowTimer = setInterval(() => {
-            arrowTimeLeft--;
-            E('timerDisplay').textContent = `⏱️ ${arrowTimeLeft}`;
-            if (arrowTimeLeft <= 0) {
-                clearInterval(arrowTimer);
-                arrowTimer = null;
-                endRoundLogic();
-            }
-        }, 1000);
-    }
-}
-
-window.checkArrow = function(choice) {
-    if(myRole === 'spectator') return; 
-    let ok = false;
-    if(window.arrowCommandMode === "امتثل") {
-        ok = (choice === window.arrowTargetDirection);
-    } else {
-        if(window.arrowTargetDirection==="➡️" && choice==="⬅️") ok=true; 
-        if(window.arrowTargetDirection==="⬅️" && choice==="➡️") ok=true;
-        if(window.arrowTargetDirection==="⬆️" && choice==="⬇️") ok=true; 
-        if(window.arrowTargetDirection==="⬇️" && choice==="⬆️") ok=true;
-    }
-    
-    if(ok) { submitPointsToCloud(4); }
-    
-    if(myRole === 'king' && roomRef) {
-        const dirs = ["➡️", "⬅️", "⬆️", "⬇️"], cmds = ["امتثل", "خالف"];
-        roomRef.update({ 
-            arrowDir: dirs[Math.floor(Math.random()*4)], 
-            arrowCmd: cmds[Math.floor(Math.random()*2)] 
-        });
-    }
-};
-
-function startMemoryGame() {
-    E('currentGameTitle').textContent = "صدمة الذاكرة 🧠";
-    let timeLeft = 12;
-    E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-
-    let emojiArray = [];
-    for (let char of window.secretCode) { emojiArray.push(char); }
-
-    if(myRole === 'spectator') {
-        let numbersHtml = "";
-        let emojisHtml = "";
-        emojiArray.forEach((emoji, index) => {
-            numbersHtml += `<div class="memory-num-indicator">${index + 1}</div>`;
-            emojisHtml += `<div style="width:40px; text-align:center;">${emoji}</div>`;
-        });
-
-        E('gameArea').innerHTML = `
-            <p style="color:#aaa; font-size:16px; margin-bottom:12px;">يتم عرض السلسلة المرقمة للاعبين حالياً... 🤔</p>
-            <div class="memory-container">
-                <div class="memory-numbers" style="margin-bottom:5px;">${numbersHtml}</div>
-                <div class="memory-slots">${emojisHtml}</div>
-            </div>
-        `;
-    } else {
-        let numbersHtml = "";
-        let emojisHtml = "";
-        emojiArray.forEach((emoji, index) => {
-            numbersHtml += `<div class="memory-num-indicator">${index + 1}</div>`;
-            emojisHtml += `<div style="width:40px; text-align:center;">${emoji}</div>`;
-        });
-
-        E('gameArea').innerHTML = `
-            <p style="font-size:15px; font-weight:bold; margin-bottom:5px; color:var(--gold);">احفظ الفيسات بالترتيب من الرقم (1) إلى (4):</p>
-            <div class="memory-container">
-                <div class="memory-numbers" style="margin-bottom:5px;">${numbersHtml}</div>
-                <div class="memory-slots">${emojisHtml}</div>
-            </div>
-        `;
-
-        setTimeout(() => {
-            if(currentRoundNum !== 5) return; 
-            
-            let buttonsPool = [...emojiArray, "🦄", "🐼", "🦁"].sort(() => Math.random() - 0.5);
-            
-            E('gameArea').innerHTML = `
-                <p style="color:#aaa; font-size:14px; margin-bottom:5px;">أعد تكوين التسلسل البدء من الرقم 1:</p>
-                <div style="font-size:24px; min-height:40px; color:var(--blue); font-weight:bold; margin-bottom:10px;" id="userMemoryAnswer"></div>
-                <div class="options-grid" id="memoryButtonsArea"></div>
-                <button class="btn btn-red" style="margin-top:10px; padding:8px; width:100%;" id="clearMemoryBtn" type="button">🔄 مسح وإعادة</button>
-            `;
-
-            let currentAnswer = "";
-            buttonsPool.forEach(emoji => {
-                let b = document.createElement('button'); b.className = 'option-btn'; b.style.fontSize = "26px"; b.textContent = emoji; b.type="button";
-                b.onclick = () => {
-                    currentAnswer += emoji;
-                    E('userMemoryAnswer').textContent = currentAnswer;
-
-                    if(currentAnswer === window.secretCode) {
-                        E('gameArea').innerHTML = `<h2 style="color:var(--green);">🎯 إجابة عبقرية صحيحة بالكامل! (+40)</h2>`;
-                        submitPointsToCloud(40);
-                    }
-                };
-                E('memoryButtonsArea').appendChild(b);
-            });
-
-            E('clearMemoryBtn').onclick = () => { currentAnswer = ""; E('userMemoryAnswer').textContent = ""; };
-
-        }, 3500); 
-    }
-
-    gameTimer = setInterval(() => {
-        timeLeft--;
-        E('timerDisplay').textContent = `⏱️ ${timeLeft}`;
-        if (timeLeft <= 0) endRoundLogic();
-    }, 1000);
-}
-
-function startGuessGame() {
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    if(arrowTimer) clearInterval(arrowTimer); 
-    arrowTimer = null;
-
-    E('currentGameTitle').textContent = "تخمين الرقم 🔒"; 
-    E('timerDisplay').textContent = `⏱️ مفتوح للأبد`; 
-    
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<p style="font-size:18px; color:var(--gold); text-align:center; font-weight:bold; animation:pulse 0.6s infinite alternate;">🔒 النزاع في ذروته! اللاعبون يخمّنون الشفرة السرية لإنهاء البطولة الكبرى...!</p>`;
-    } else {
-        E('gameArea').innerHTML = `<p style="font-size:13px;color:#aaa;">خمن الشفرة من 4 أرقام لتنال 50 نقطة وتحسم النزاع فوراً! 🌟</p><input id="gIn" type="number"><button class="btn btn-purple" id="gBtn" type="button" style="width:100%;">إرسال التخمين 🔍</button><p id="gHint" style="font-weight:bold;color:var(--gold);margin-top:5px;"></p>`;
-        E('gBtn').addEventListener('click', () => {
-            let val = E('gIn').value.trim(); if(val.length !== 4) return alert('يتطلب 4 أرقام!');
-            
-            let guessNum = parseInt(val);
-            let targetNum = parseInt(window.secretCode);
-
-            if(guessNum === targetNum) {
-                if(myRole === 'king') {
-                    roomRef.get().then((snapshot) => {
-                        if(snapshot.exists()) {
-                            let currentPoints = snapshot.val().kingPoints || 0;
-                            roomRef.update({ kingPoints: currentPoints + 50 }).then(() => { settleTournament(); });
-                        }
-                    });
-                } else {
-                    roomRef.get().then((snapshot) => {
-                        if(snapshot.exists()) {
-                            let currentPoints = snapshot.val().challengerPoints || 0;
-                            roomRef.update({ challengerPoints: currentPoints + 50 }).then(() => { settleTournament(); });
-                        }
-                    });
-                }
-            } else {
-                E('gHint').textContent = guessNum < targetNum ? `الشفرة أكبر من [ ${val} ] ⬆️` : `الشفرة أصغر من [ ${val} ] ⬇️`;
-                E('gIn').value = "";
-            }
-        });
-    }
-}
-
-function submitPointsToCloud(amt) {
-    if(myRole === 'spectator' || !roomRef) return;
-    roomRef.get().then((snapshot) => {
-        if(snapshot.exists()) {
-            const data = snapshot.val(); if(!data) return;
-            if(myRole === 'king') roomRef.update({ kingPoints: (data.kingPoints || 0) + amt });
-            else roomRef.update({ challengerPoints: (data.challengerPoints || 0) + amt });
-        }
-    });
-}
-
-function endRoundLogic() {
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    if(myRole === 'spectator') {
-        E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><p style="color:#aaa; font-size:14px; margin-top:10px;">في انتظار سحب الملك للمرحلة التالية لتبدأ في البث...</p>`;
-        return;
-    }
-    
-    E('gameArea').innerHTML = `<h3>انتهت الجولة ${currentRoundNum}!</h3><div id="actCont"></div>`;
-    if (currentRoundNum < 6) { 
-        if (myRole === 'king') {
-            const btn = document.createElement('button'); btn.className="btn btn-green"; btn.textContent="⚔️ الجولة التالية"; btn.type="button"; btn.style.width="100%";
-            btn.onclick = () => { kingFireNextRound(currentRoundNum + 1); };
-            E('actCont').appendChild(btn);
-        } else { 
-            E('actCont').innerHTML = `<p style="color:#aaa;">بانتظار سحب الملك للمرحلة التالية...</p>`; 
-        }
-    }
-}
-
-function settleTournament() {
-    if(!roomRef) return;
-    clearTimeout(botActionTimer);
-    clearInterval(botActionTimer);
-    roomRef.get().then((snapshot) => {
-        if(snapshot.exists()) {
-            const data = snapshot.val();
-            let kP = data.kingPoints || 0, cP = data.challengerPoints || 0;
-            let finalMsg = kP >= cP ? `انتهت المعركة بانتصار مستحق للملك بعد اختراق الشفرة النهائية والتحصن بالعرش!` : `انقلب ميزان القوى بالكامل! نجح المتحدي ${data.challengerName} بفك الشفرة واعتلاء العرش!`;
-            roomRef.update({ gameState: "ended", endMessage: finalMsg });
-        }
-    });
-}
 </script>
 </body>
-</html>       
+</html>
