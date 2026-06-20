@@ -15,7 +15,8 @@
         @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
         .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
         input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; display: block; }
+        .btn:active { transform: scale(0.98); }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
         .btn-blue { background:var(--blue); }
@@ -23,8 +24,6 @@
         .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; text-align: right; }
         .leaderboard-title { color: var(--gold); font-size: 16px; font-weight: bold; margin-bottom: 8px; text-align: center; border-bottom: 1px dashed rgba(241,196,15,0.3); padding-bottom: 5px;}
         .leaderboard-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
-        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
-        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; }
         .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
@@ -43,8 +42,8 @@
 
 <div class="screen" id="arenaScreen">
     <div class="game-area" id="gameArea">
-        <div id="kingNameDisplay">--</div>
-        <div id="challengerNameDisplay">--</div>
+        <div id="kingNameDisplay" style="margin:5px;">الملك: --</div>
+        <div id="challengerNameDisplay" style="margin:5px;">المتحدي: --</div>
         <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ المعركة</button>
         <div id="qrContainer" style="display:none; margin-top:15px; background:white; padding:5px; border-radius:10px;">
             <div id="qrcode"></div>
@@ -64,10 +63,11 @@
     
     let myRole, roomRef;
 
-    function startLogin(role) {
+    // الدالة الموحدة لعملية الدخول
+    function startLoginProcess(role) {
         myRole = role;
         const roomId = E('roomNumberInput').value;
-        if(!roomId) return alert("أدخل رقم الغرفة!");
+        if(!roomId) return alert("أدخل رقم الغرفة أولاً!");
         
         roomRef = db.ref('rooms/' + roomId);
         E('loginScreen').classList.remove('active');
@@ -81,5 +81,30 @@
         roomRef.on('value', (snap) => {
             const data = snap.val();
             if(!data) return;
+            E('kingNameDisplay').textContent = "الملك: " + (data.kingName || "--");
+            E('challengerNameDisplay').textContent = "المتحدي: " + (data.challengerName || "--");
             
-            E('kingNameDisplay').textContent = "
+            // ظهور زر البداية للملك فقط
+            if(myRole === 'king' && data.challengerName && data.gameState === "waiting") {
+                E('kingStartBtn').style.display = "block";
+            } else {
+                E('kingStartBtn').style.display = "none";
+            }
+
+            // سجل الأبطال
+            if(data.leaderboard) {
+                let html = "";
+                for(let name in data.leaderboard) html += `<div class="leaderboard-item"><span>@${name}</span><span>${data.leaderboard[name]}</span></div>`;
+                E('leaderboardList').innerHTML = html;
+            }
+        });
+    }
+
+    // ربط الأزرار برمجياً بعد تحميل الصفحة
+    E('kingBtn').addEventListener('click', () => startLoginProcess('king'));
+    E('challengerBtn').addEventListener('click', () => startLoginProcess('challenger'));
+    E('spectatorBtn').addEventListener('click', () => startLoginProcess('spectator'));
+    E('kingStartBtn').addEventListener('click', () => roomRef.update({gameState: "playing"}));
+</script>
+</body>
+</html>
