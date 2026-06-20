@@ -8,32 +8,56 @@
     <style>
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; overflow-x: hidden; }
         .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
         .screen.active { display:block; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; }
+        .logo { font-size:50px; animation: float 2s infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+        .title { font-size:26px; color:var(--gold); margin:5px 0; font-weight: bold; }
+        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
+        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; transition: 0.2s; position: relative; z-index: 999; display: block; }
+        .btn:active { transform: scale(0.98); }
         .btn-green { background:var(--green); }
         .btn-purple { background:var(--purple); }
+        .btn-red { background:var(--red); }
         .btn-blue { background:var(--blue); }
-        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
+        .room-id { background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:35px; font-weight:bold; color:var(--gold); letter-spacing:6px; margin:10px 0; }
+        .arena { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:15px 0; }
+        .player-box { background:rgba(255,255,255,0.1); border-radius:15px; padding:12px; }
+        .timer { font-size:35px; font-weight:bold; color:var(--gold); margin:10px 0; }
         .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
 
 <div class="screen active" id="loginScreen">
-    <div style="font-size:50px;">👑</div>
-    <div style="font-size:26px; color:var(--gold); font-weight:bold;">بطولة ساحة النزاع</div>
-    <input id="playerName" placeholder="أدخل اسم المستخدم...">
-    <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة...">
-    <button class="btn btn-green" onclick="startLogin('king')">🤴 الدخول كملك</button>
-    <button class="btn btn-purple" onclick="startLogin('challenger')">🗡️ الدخول كمتحدي</button>
-    <button class="btn btn-blue" onclick="startLogin('spectator')">👁️ الدخول كمشاهد</button>
+    <div class="logo">👑</div>
+    <div class="title">بطولة ساحة النزاع</div>
+    <input id="playerName" placeholder="اسمك الكريم...">
+    <input id="roomNumberInput" type="number" placeholder="رقم الغرفة...">
+    <button class="btn btn-green" id="kingBtn">🤴 ملك</button>
+    <button class="btn btn-purple" id="challengerBtn">🗡️ متحدي</button>
+    <button class="btn btn-blue" id="spectatorBtn">👁️ مشاهد</button>
+</div>
+
+<div class="screen" id="waitingScreen">
+    <div class="logo">⏳</div>
+    <div class="room-id" id="roomIdDisplay">000</div>
+    <div id="waitingStatus">جاري الاتصال...</div>
+    <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ المعركة</button>
 </div>
 
 <div class="screen" id="arenaScreen">
+    <div class="timer" id="timerDisplay">⏱️ --</div>
+    <div class="arena">
+        <div class="player-box"><div id="kingNameDisplay">@الملك</div><div id="kingScoreDisplay">0</div></div>
+        <div class="player-box"><div id="challengerNameDisplay">@المتحدي</div><div id="challengerScoreDisplay">0</div></div>
+    </div>
     <div class="game-area" id="gameArea"></div>
-    <button class="btn btn-red" onclick="location.reload()">🚪 مغادرة</button>
+    <div id="qrContainer" style="margin-top:10px; display:none;">
+        <p style="font-size:12px; margin-bottom:5px;">امسح للذهاب للموقع الرئيسي:</p>
+        <div id="qrcode" style="background:white; padding:5px; display:inline-block;"></div>
+    </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -41,35 +65,55 @@
 
 <script>
     const E = id => document.getElementById(id);
-    // تم وضع الرابط الخاص بك هنا
     const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
+    let myRole, roomRef;
 
     function startLogin(role) {
+        myRole = role;
         const roomId = E('roomNumberInput').value;
-        if(!roomId) return alert("الرجاء إدخال رقم الغرفة!");
-
+        if(!roomId) return alert("أدخل رقم الغرفة!");
+        
+        roomRef = db.ref('rooms/' + roomId);
         E('loginScreen').classList.remove('active');
-        E('arenaScreen').classList.add('active');
-
+        
         if(role === 'spectator') {
-            E('gameArea').innerHTML = `
-                <p style="margin-bottom:15px; font-weight:bold;">مشاهدة البث المباشر</p>
-                <div id="qrcode" style="background:white; padding:10px; border-radius:10px;"></div>
-                <p style="margin-top:15px; font-size:14px; color:#aaa;">امسح الباركود للانتقال للموقع الرئيسي</p>
-            `;
-            // تم وضع رابط موقعك الرئيسي هنا
-            new QRCode(E("qrcode"), {
-                text: "https://throne-game.vercel.app/",
-                width: 150,
-                height: 150
-            });
+            E('arenaScreen').classList.add('active');
+            E('qrContainer').style.display = "block";
+            new QRCode(E("qrcode"), { text: "https://throne-game.vercel.app/", width: 100, height: 100 });
         } else {
-            E('gameArea').innerHTML = `<p>جاري الاتصال بساحة النزاع في الغرفة رقم ${roomId}...</p>`;
-            // هنا يكمل منطق أزرار اللعبة الخاص بك
+            E('waitingScreen').classList.add('active');
+            E('roomIdDisplay').textContent = roomId;
         }
+
+        roomRef.on('value', (snap) => {
+            const data = snap.val();
+            if(!data) return;
+            
+            // تحديث الواجهة للاعبين والمشاهدين
+            E('kingNameDisplay').textContent = data.kingName;
+            E('challengerNameDisplay').textContent = data.challengerName;
+            E('kingScoreDisplay').textContent = data.kingPoints || 0;
+            E('challengerScoreDisplay').textContent = data.challengerPoints || 0;
+
+            // زر ابدأ المعركة للملك
+            if(myRole === 'king' && data.challengerName && data.gameState === "waiting") {
+                E('kingStartBtn').style.display = "block";
+            }
+            
+            if(data.gameState === "playing") {
+                E('waitingScreen').classList.remove('active');
+                E('arenaScreen').classList.add('active');
+            }
+        });
     }
+
+    E('kingBtn').onclick = () => startLogin('king');
+    E('challengerBtn').onclick = () => startLogin('challenger');
+    E('spectatorBtn').onclick = () => startLogin('spectator');
+    E('kingStartBtn').onclick = () => roomRef.update({gameState: "playing"});
 </script>
 </body>
 </html>
