@@ -26,19 +26,19 @@
     <div class="title">بطولة ساحة النزاع</div>
     <input id="playerName" placeholder="أدخل اسمك...">
     <input id="roomNumberInput" type="number" placeholder="أدخل رقم الغرفة...">
-    <button class="btn btn-green" onclick="joinGame('king')">🤴 الدخول كملك</button>
-    <button class="btn btn-purple" onclick="joinGame('challenger')">🗡️ الدخول كمتحدي</button>
-    <button class="btn btn-blue" onclick="joinGame('spectator')">👁️ دخول كمشاهد</button>
+    <button class="btn btn-green" id="btnKing">🤴 الدخول كملك</button>
+    <button class="btn btn-purple" id="btnChallenger">🗡️ الدخول كمتحدي</button>
+    <button class="btn btn-blue" id="btnSpectator">👁️ دخول كمشاهد</button>
     <div class="leaderboard-box">
         <div style="color:#F1C40F; font-weight:bold;">🏆 سجل الأبطال</div>
-        <div id="leaderboardList" style="margin-top:10px;">أدخل رقم الغرفة...</div>
+        <div id="leaderboardList" style="margin-top:10px;">أدخل رقم الغرفة لعرض الأبطال...</div>
     </div>
 </div>
 
 <div class="screen" id="waitScreen">
     <h2>غرفة الانتظار</h2>
     <p id="statusTxt">بانتظار المنافسين...</p>
-    <button class="btn btn-green" id="startBtn" style="display:none;" onclick="startGame()">🚀 ابدأ النزاع</button>
+    <button class="btn btn-green" id="startBtn" style="display:none;">🚀 ابدأ النزاع</button>
     <button class="btn btn-red" onclick="location.reload()">🚪 مغادرة</button>
 </div>
 
@@ -49,44 +49,62 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-    const db = firebase.database();
-    let currentRoomId = "";
-    let myRole = "";
+    // انتظار تحميل Firebase بالكامل
+    setTimeout(() => {
+        const db = firebase.database();
+        let currentRoomId = "";
+        let myRole = "";
 
-    function joinGame(role) {
-        currentRoomId = document.getElementById('roomNumberInput').value;
-        let name = document.getElementById('playerName').value;
-        if(!currentRoomId) return alert("يرجى إدخال رقم الغرفة!");
-
-        myRole = role;
-        document.getElementById('loginScreen').classList.remove('active');
-        
-        if(role === 'spectator') {
-            document.getElementById('arenaScreen').classList.add('active');
-            document.getElementById('gameContent').innerHTML = `<img src="https://i.postimg.cc/t4VpPjrf/rmz-alastjabt-alsryʿt-alkhas-by-1-1024-(1).jpg" style="width:100%; border-radius:15px; border:2px solid #F1C40F;">`;
-        } else {
-            document.getElementById('waitScreen').classList.add('active');
-            if(role === 'king') db.ref('rooms/' + currentRoomId).update({ king: name, state: 'wait' });
-            else db.ref('rooms/' + currentRoomId).update({ challenger: name });
-        }
-
-        db.ref('rooms/' + currentRoomId).on('value', (s) => {
-            let data = s.val();
-            if(!data) return;
-            if(myRole === 'king' && data.challenger && data.state === 'wait') {
-                document.getElementById('startBtn').style.display = "block";
-            }
-            if(data.state === 'start') {
-                document.getElementById('waitScreen').classList.remove('active');
-                document.getElementById('arenaScreen').classList.add('active');
-                document.getElementById('gameContent').innerHTML = "<h3>النزاع بدأ الآن!</h3>";
+        // تفعيل سجل الأبطال لحظياً بمجرد كتابة رقم الغرفة
+        document.getElementById('roomNumberInput').addEventListener('input', function() {
+            let rId = this.value;
+            if (rId) {
+                db.ref('rooms/' + rId + '/leaderboard').on('value', snap => {
+                    let html = snap.exists() ? Object.entries(snap.val()).map(i => `${i[0]}: ${i[1]}`).join("<br>") : "لا يوجد أبطال بعد";
+                    document.getElementById('leaderboardList').innerHTML = html;
+                });
             }
         });
-    }
 
-    function startGame() {
-        db.ref('rooms/' + currentRoomId).update({ state: 'start' });
-    }
+        // دوال الانضمام
+        function joinGame(role) {
+            currentRoomId = document.getElementById('roomNumberInput').value;
+            let name = document.getElementById('playerName').value;
+            if(!currentRoomId) return alert("يرجى إدخال رقم الغرفة!");
+
+            myRole = role;
+            document.getElementById('loginScreen').classList.remove('active');
+            
+            if(role === 'spectator') {
+                document.getElementById('arenaScreen').classList.add('active');
+                document.getElementById('gameContent').innerHTML = `<img src="https://i.postimg.cc/t4VpPjrf/rmz-alastjabt-alsryʿt-alkhas-by-1-1024-(1).jpg" style="width:100%; border-radius:15px; border:2px solid #F1C40F;">`;
+            } else {
+                document.getElementById('waitScreen').classList.add('active');
+                if(role === 'king') db.ref('rooms/' + currentRoomId).update({ king: name, state: 'wait' });
+                else db.ref('rooms/' + currentRoomId).update({ challenger: name });
+            }
+
+            db.ref('rooms/' + currentRoomId).on('value', (s) => {
+                let data = s.val();
+                if(!data) return;
+                if(myRole === 'king' && data.challenger && data.state === 'wait') {
+                    document.getElementById('startBtn').style.display = "block";
+                }
+                if(data.state === 'start') {
+                    document.getElementById('waitScreen').classList.remove('active');
+                    document.getElementById('arenaScreen').classList.add('active');
+                    document.getElementById('gameContent').innerHTML = "<h3>النزاع بدأ الآن!</h3>";
+                }
+            });
+        }
+
+        // ربط الأزرار بعد التأكد من تحميل الكود
+        document.getElementById('btnKing').onclick = () => joinGame('king');
+        document.getElementById('btnChallenger').onclick = () => joinGame('challenger');
+        document.getElementById('btnSpectator').onclick = () => joinGame('spectator');
+        document.getElementById('startBtn').onclick = () => db.ref('rooms/' + currentRoomId).update({ state: 'start' });
+
+    }, 1000); // تأخير 1 ثانية لضمان استقرار Firebase
 </script>
 </body>
 </html>
