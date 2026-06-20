@@ -6,16 +6,19 @@
     <title>🏰 بطولة ساحة النزاع</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* CSS الأصلي الخاص بك كما هو تماماً لضمان عدم تغير الثيم */
         :root { --gold: #F1C40F; --blue: #3498db; --red: #e74c3c; --green: #2ecc71; --purple: #8e44ad; --bg: #0a0a1a; }
-        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; }
-        .screen { display:none; width:100%; max-width:500px; padding:20px; text-align:center; }
-        .screen.active { display:block; }
-        input { width:100%; padding:14px; border-radius:25px; border:2px solid var(--gold); background:rgba(0,0,0,0.5); color:white; font-size:18px; text-align:center; margin:10px 0; }
-        .btn { width:100%; padding:14px; border:none; border-radius:30px; font-size:18px; font-weight:bold; cursor:pointer; color:white; margin:8px 0; }
-        .btn-green { background:var(--green); } .btn-purple { background:var(--purple); } .btn-blue { background:var(--blue); } .btn-red { background:var(--red); }
-        .leaderboard-box { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-top: 15px; }
-        .game-area { background:rgba(0,0,0,0.4); border-radius:15px; padding:20px; margin:10px 0; border: 1px solid rgba(255,255,255,0.1); }
+        body { background: radial-gradient(ellipse at 50% 0%, #1a1a35 0%, #0a0a1a 70%); font-family: Arial, sans-serif; color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px; text-align: center; }
+        .screen { display: none; width: 100%; max-width: 500px; }
+        .screen.active { display: block; }
+        input { width: 100%; padding: 15px; border-radius: 25px; border: 2px solid var(--gold); background: #000; color: white; text-align: center; margin: 10px 0; }
+        .btn { width: 100%; padding: 15px; border-radius: 30px; border: none; font-weight: bold; margin: 8px 0; cursor: pointer; color: white; }
+        .btn-green { background: var(--green); }
+        .btn-purple { background: var(--purple); }
+        .btn-blue { background: var(--blue); }
+        .btn-red { background: var(--red); }
+        .leaderboard-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px solid var(--gold); }
+        .game-area { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; margin-top: 10px; }
+        #qrcode { background: white; padding: 5px; margin-top: 15px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -27,16 +30,17 @@
     <button class="btn btn-green" id="kingBtn">🤴 دخول كملك</button>
     <button class="btn btn-purple" id="challengerBtn">🗡️ دخول كمتحدي</button>
     <button class="btn btn-blue" id="spectatorBtn">👁️ دخول كمشاهد</button>
-    <div class="leaderboard-box"><h3>🏆 سجل الأبطال</h3><div id="leaderboardList">لا يوجد بيانات</div></div>
+    <div class="leaderboard-box"><h3>🏆 سجل الأبطال</h3><div id="lbList">جاري التحميل...</div></div>
 </div>
 
 <div class="screen" id="arenaScreen">
     <div class="game-area">
-        <h2 id="kingNameDisplay">الملك: --</h2>
-        <h2 id="challengerNameDisplay">المتحدي: --</h2>
+        <h2 id="kingNameDisplay">الملك: ...</h2>
+        <h2 id="challengerNameDisplay">المتحدي: ...</h2>
         <h3 id="scoreDisplay">النقاط: 0 - 0</h3>
         <button class="btn btn-green" id="kingStartBtn" style="display:none;">🚀 ابدأ المعركة</button>
-        <div id="qrWrapper" style="display:none; margin-top:20px; background:white; padding:10px; border-radius:10px; display:inline-block;">
+        <div id="qrArea" style="display:none;">
+            <p>مسح للذهاب للموقع الرئيسي:</p>
             <div id="qrcode"></div>
         </div>
     </div>
@@ -46,12 +50,10 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-    const firebaseConfig = { databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const db = firebase.initializeApp({ databaseURL: "https://fofo-f48f4-default-rtdb.firebaseio.com/" }).database();
     let myRole, roomRef;
 
-    function initGame(role) {
+    function enterGame(role) {
         const roomId = document.getElementById('roomNumberInput').value;
         if(!roomId) return alert("أدخل رقم الغرفة");
         myRole = role;
@@ -61,36 +63,33 @@
         document.getElementById('arenaScreen').classList.add('active');
 
         if(role === 'spectator') {
-            document.getElementById('qrWrapper').style.display = "block";
+            document.getElementById('qrArea').style.display = "block";
             new QRCode(document.getElementById("qrcode"), { text: "https://throne-game.vercel.app/", width: 120, height: 120 });
         }
 
         roomRef.on('value', (snap) => {
             const d = snap.val();
             if(!d) return;
-            // تحديث الأسماء والنقاط
             document.getElementById('kingNameDisplay').textContent = "الملك: " + (d.kingName || "...");
             document.getElementById('challengerNameDisplay').textContent = "المتحدي: " + (d.challengerName || "...");
             document.getElementById('scoreDisplay').textContent = (d.kingPoints || 0) + " - " + (d.challengerPoints || 0);
             
-            // زر البدء للملك
             if(myRole === 'king' && d.challengerName && d.gameState === "waiting") {
                 document.getElementById('kingStartBtn').style.display = "block";
             } else {
                 document.getElementById('kingStartBtn').style.display = "none";
             }
-            // سجل الأبطال
             if(d.leaderboard) {
                 let html = "";
-                for(let n in d.leaderboard) html += `<div>${n}: ${d.leaderboard[n]}</div>`;
-                document.getElementById('leaderboardList').innerHTML = html;
+                for(let n in d.leaderboard) html += `<div>${n}: ${d.leaderboard[n]} 👑</div>`;
+                document.getElementById('lbList').innerHTML = html;
             }
         });
     }
 
-    document.getElementById('kingBtn').onclick = () => initGame('king');
-    document.getElementById('challengerBtn').onclick = () => initGame('challenger');
-    document.getElementById('spectatorBtn').onclick = () => initGame('spectator');
+    document.getElementById('kingBtn').onclick = () => enterGame('king');
+    document.getElementById('challengerBtn').onclick = () => enterGame('challenger');
+    document.getElementById('spectatorBtn').onclick = () => enterGame('spectator');
     document.getElementById('kingStartBtn').onclick = () => roomRef.update({gameState: "playing"});
 </script>
 </body>
