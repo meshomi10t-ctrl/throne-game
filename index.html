@@ -9,9 +9,8 @@
         .page { width: 100%; max-width: 400px; text-align: center; }
         .hidden { display: none; }
         input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 25px; border: 2px solid #F1C40F; background: #161630; color: white; text-align: center; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; color: white; font-size: 16px; display: block; }
+        .btn { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; color: white; font-size: 16px; }
         .g { background: #2ecc71; } .p { background: #8e44ad; } .b { background: #3498db; } .r { background: #e74c3c; }
-        .card { background: #161630; padding: 15px; border-radius: 15px; border: 1px solid #F1C40F; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -23,17 +22,12 @@
     <button class="btn g" id="btnKing">🤴 الدخول كملك</button>
     <button class="btn p" id="btnChallenger">🗡️ الدخول كمتحدي</button>
     <button class="btn b" id="btnSpectator">👁️ الدخول كمشاهد</button>
-    <div class="card">
-        <div style="color:#F1C40F; font-weight:bold;">🏆 سجل الأبطال</div>
-        <div id="lb">أدخل رقم الغرفة...</div>
-    </div>
 </div>
 
 <div id="wait" class="page hidden">
     <h2>غرفة الانتظار</h2>
     <p id="msg">بانتظار الخصم...</p>
     <button class="btn g" id="startBtn" style="display:none;">🚀 ابدأ النزاع</button>
-    <button class="btn r" onclick="location.reload()">🚪 خروج</button>
 </div>
 
 <div id="arena" class="page hidden">
@@ -43,47 +37,49 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script>
-    const db = firebase.database();
-    let myRole, roomId;
+    // التأكد من تحميل الصفحة بالكامل قبل تشغيل أي شيء
+    window.onload = function() {
+        const db = firebase.database();
+        let myRole, roomId;
 
-    function join(role) {
-        roomId = document.getElementById('room').value;
-        let name = document.getElementById('name').value;
-        if(!roomId) return alert("أدخل رقم الغرفة!");
+        function enterGame(role) {
+            roomId = document.getElementById('room').value;
+            let name = document.getElementById('name').value;
+            if(!roomId) return alert("أدخل رقم الغرفة!");
 
-        myRole = role;
-        document.getElementById('login').classList.add('hidden');
-        document.getElementById('wait').classList.remove('hidden');
-        
-        if(role === 'king') {
-            db.ref('rooms/' + roomId).update({ king: name, state: 'wait' });
-        } else if(role === 'challenger') {
-            db.ref('rooms/' + roomId).update({ challenger: name });
-        } else {
-            document.getElementById('wait').classList.add('hidden');
-            document.getElementById('arena').classList.remove('hidden');
-            document.getElementById('ui').innerHTML = `<img src="https://i.postimg.cc/t4VpPjrf/rmz-alastjabt-alsryʿt-alkhas-by-1-1024-(1).jpg" style="width:100%; border-radius:15px; border:2px solid gold;">`;
+            myRole = role;
+            document.getElementById('login').classList.add('hidden');
+            
+            if(role === 'king') {
+                db.ref('rooms/' + roomId).update({ king: name, state: 'wait' });
+                document.getElementById('wait').classList.remove('hidden');
+            } else if(role === 'challenger') {
+                db.ref('rooms/' + roomId).update({ challenger: name });
+                document.getElementById('wait').classList.remove('hidden');
+            } else {
+                document.getElementById('arena').classList.remove('hidden');
+                document.getElementById('ui').innerHTML = `<img src="https://i.postimg.cc/t4VpPjrf/rmz-alastjabt-alsryʿt-alkhas-by-1-1024-(1).jpg" style="width:100%; border-radius:15px; border:2px solid gold;">`;
+            }
+
+            db.ref('rooms/' + roomId).on('value', (s) => {
+                let d = s.val();
+                if(!d) return;
+                if(myRole === 'king' && d.challenger && d.state === 'wait') {
+                    document.getElementById('startBtn').style.display = "block";
+                }
+                if(d.state === 'start') {
+                    document.getElementById('wait').classList.add('hidden');
+                    document.getElementById('arena').classList.remove('hidden');
+                    document.getElementById('ui').innerHTML = "<h3>النزاع جارٍ الآن!</h3>";
+                }
+            });
         }
 
-        db.ref('rooms/' + roomId).on('value', (s) => {
-            let d = s.val();
-            if(!d) return;
-            if(d.leaderboard) document.getElementById('lb').innerHTML = Object.entries(d.leaderboard).map(i => i[0]+': '+i[1]).join("<br>");
-            if(myRole === 'king' && d.challenger && d.state === 'wait') {
-                document.getElementById('startBtn').style.display = "block";
-            }
-            if(d.state === 'start') {
-                document.getElementById('wait').classList.add('hidden');
-                document.getElementById('arena').classList.remove('hidden');
-                document.getElementById('ui').innerHTML = "<h3>النزاع جارٍ الآن!</h3>";
-            }
-        });
-    }
-
-    document.getElementById('btnKing').addEventListener('click', () => join('king'));
-    document.getElementById('btnChallenger').addEventListener('click', () => join('challenger'));
-    document.getElementById('btnSpectator').addEventListener('click', () => join('spectator'));
-    document.getElementById('startBtn').addEventListener('click', () => db.ref('rooms/' + roomId).update({ state: 'start' }));
+        document.getElementById('btnKing').onclick = () => enterGame('king');
+        document.getElementById('btnChallenger').onclick = () => enterGame('challenger');
+        document.getElementById('btnSpectator').onclick = () => enterGame('spectator');
+        document.getElementById('startBtn').onclick = () => db.ref('rooms/' + roomId).update({ state: 'start' });
+    };
 </script>
 </body>
 </html>
